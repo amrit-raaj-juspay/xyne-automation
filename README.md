@@ -53,6 +53,7 @@ nvm use --lts
 
 ### 2. Clone and Setup Framework
 
+
 ```bash
 # Navigate to the TypeScript framework directory
 cd xyne-automation-ts
