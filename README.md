@@ -60,6 +60,7 @@ cd xyne-automation-ts
 # Install dependencies
 npm install
 
+
 # Install Playwright browsers
 npx playwright install
 
