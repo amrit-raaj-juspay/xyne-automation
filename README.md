@@ -60,13 +60,16 @@ cd xyne-automation-ts
 # Install dependencies
 npm install
 
-
-# Install Playwright browsers
-npx playwright install
-
-# Copy environment configuration
-cp .env.example .env
+# Run complete setup (installs browsers, builds TypeScript, validates config)
+npm run setup:complete
 ```
+
+**Note**: The `setup:complete` command will:
+- Install all npm dependencies
+- Install Playwright browsers
+- Build TypeScript files
+- Validate configuration
+- Create necessary directories
 
 ### 3. Configure Environment
 
@@ -118,6 +121,25 @@ npm run test:login                 # Login page validation tests
 
 # Debug mode
 npm run test:debug                 # Debug mode with Chromium
+```
+
+### Single Worker vs Parallel Execution
+
+For tests that require single browser instances (like TOTP/OAuth tests):
+
+```bash
+# Single worker execution (prevents TOTP conflicts)
+npm run test:single                # Any test with single worker, headed
+npm run test:single:headless       # Any test with single worker, headless
+npm run test:google-login          # Google OAuth + TOTP login test
+npm run test:google-login:headless # Google login test, headless
+npm run test:login:safe            # Alternative safe login command
+
+# Parallel execution (faster for regular tests)
+npm run test:parallel              # Multiple workers, headed mode
+npm run test:parallel:headless     # Multiple workers, headless
+npm run test:parallel:all          # All browser projects
+npm run test:fast                  # Fastest execution with defaults
 ```
 
 ### Advanced Test Options
