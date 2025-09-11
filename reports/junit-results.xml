@@ -1,0 +1,21 @@
+<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="16.082252">
+<testsuite name="smoke/basic-navigation.spec.ts" timestamp="2025-09-10T21:25:39.202Z" hostname="chromium" tests="2" failures="0" skipped="0" time="21.135" errors="0">
+<testcase name="Xyne Basic Navigation Tests › should open browser and navigate to Xyne homepage" classname="smoke/basic-navigation.spec.ts" time="6.138">
+<system-out>
+<![CDATA[🚀 Starting basic navigation test
+📍 Navigating to: https://xyne.juspay.net
+📄 Page title: Xyne Search
+✅ Basic navigation test completed successfully
+]]>
+</system-out>
+</testcase>
+<testcase name="Xyne Basic Navigation Tests › should verify page elements are loaded" classname="smoke/basic-navigation.spec.ts" time="14.997">
+<system-out>
+<![CDATA[🚀 Starting page elements verification test
+📊 Page content length: 72 characters
+✅ Page elements verification completed
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

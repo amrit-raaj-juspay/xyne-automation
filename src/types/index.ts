@@ -1,0 +1,229 @@
+/**
+ * Core type definitions for Xyne automation framework
+ */
+
+export interface TestConfig {
+  baseUrl: string;
+  apiBaseUrl: string;
+  browser: 'chromium' | 'firefox' | 'webkit';
+  headless: boolean;
+  viewport: {
+    width: number;
+    height: number;
+  };
+  timeout: {
+    action: number;
+    navigation: number;
+    test: number;
+  };
+  llm: {
+    openaiApiKey?: string;
+    model: string;
+    similarityThreshold: number;
+  };
+  performance: {
+    maxResponseTime: number;
+    maxErrorRate: number;
+  };
+  reporting: {
+    screenshotOnFailure: boolean;
+    videoRecording: boolean;
+    harRecording: boolean;
+  };
+}
+
+export interface NetworkRequest {
+  id: string;
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  postData?: string;
+  timestamp: string;
+  resourceType: string;
+  isNavigationRequest: boolean;
+}
+
+export interface NetworkResponse {
+  id: string;
+  url: string;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  timestamp: string;
+  ok: boolean;
+  body?: string;
+  fromServiceWorker: boolean;
+}
+
+export interface APICallData {
+  url: string;
+  method: string;
+  status: number;
+  responseTime: number;
+  requestHeaders: Record<string, string>;
+  responseHeaders: Record<string, string>;
+  requestBody: string | null;
+  responseBody: string | null;
+  timestamp: string;
+}
+
+export interface NetworkData {
+  requests: number;
+  responses: number;
+  apiCalls: APICallData[];
+  performanceMetrics: PerformanceMetrics;
+  timestamp: string;
+}
+
+export interface WebSocketData {
+  url: string;
+  timestamp: string;
+  messages: WebSocketMessage[];
+}
+
+export interface WebSocketMessage {
+  data: string;
+  timestamp: string;
+  type: 'sent' | 'received';
+}
+
+export interface FailedRequest {
+  url: string;
+  method: string;
+  failureText: string;
+  timestamp: string;
+}
+
+export interface PerformanceMetrics {
+  totalRequests: number;
+  totalResponseTime: number;
+  averageResponseTime: number;
+  slowestRequest: {
+    url: string;
+    responseTime: number;
+  };
+  fastestRequest: {
+    url: string;
+    responseTime: number;
+  };
+  errorCount: number;
+  successCount: number;
+}
+
+export interface LLMEvaluationResult {
+  overallScore: number;
+  semanticSimilarity?: {
+    score: number;
+    feedback: string;
+    details: Record<string, any>;
+  };
+  factualAccuracy?: {
+    score: number;
+    feedback: string;
+    details: Record<string, any>;
+  };
+  citationAccuracy?: {
+    score: number;
+    feedback: string;
+    details: Record<string, any>;
+  };
+  businessContext?: {
+    score: number;
+    feedback: string;
+    details: Record<string, any>;
+  };
+  safetyCheck?: {
+    score: number;
+    feedback: string;
+    details: Record<string, any>;
+  };
+}
+
+export interface Citation {
+  url: string;
+  title: string;
+  snippet?: string;
+  relevance?: number;
+}
+
+export interface TestScenario {
+  query: string;
+  type: 'factual' | 'code' | 'analytical' | 'conversational';
+  expectedKeywords: string[];
+  minResponseLength?: number;
+  maxResponseTime?: number;
+}
+
+export interface LoginPageElements {
+  pageLoaded: boolean;
+  pageTitle: string;
+  loginHeading: string | null;
+  subtitle: string | null;
+  googleButtonVisible: boolean;
+  googleButtonEnabled: boolean;
+  loginContainerVisible: boolean;
+  hasErrors: boolean;
+  errorMessage: string | null;
+  isLoading: boolean;
+  currentUrl: string;
+}
+
+export interface ChatResponse {
+  content: string;
+  timestamp: string;
+  duration: number;
+  chunks?: string[];
+  citations?: Citation[];
+  metadata?: Record<string, any>;
+}
+
+export interface TestResult {
+  testName: string;
+  status: 'passed' | 'failed' | 'skipped';
+  duration: number;
+  error?: string;
+  screenshots?: string[];
+  networkData?: NetworkData;
+  llmEvaluation?: LLMEvaluationResult;
+  performanceMetrics?: PerformanceMetrics;
+}
+
+export interface ReportData {
+  summary: {
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+    duration: number;
+  };
+  tests: TestResult[];
+  environment: {
+    browser: string;
+    viewport: string;
+    baseUrl: string;
+    timestamp: string;
+  };
+  networkAnalysis?: {
+    totalRequests: number;
+    apiCalls: number;
+    failedRequests: number;
+    averageResponseTime: number;
+    performanceIssues: string[];
+  };
+}
+
+export type EvaluatorType = 
+  | 'semantic_similarity' 
+  | 'factual_accuracy' 
+  | 'citation_accuracy' 
+  | 'business_context' 
+  | 'safety_check';
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export interface Logger {
+  debug(message: string, meta?: any): void;
+  info(message: string, meta?: any): void;
+  warn(message: string, meta?: any): void;
+  error(message: string, meta?: any): void;
+}

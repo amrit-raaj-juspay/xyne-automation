@@ -1,0 +1,59 @@
+{
+  "name": "xyne-automation-ts",
+  "version": "1.0.0",
+  "description": "TypeScript test automation framework for Xyne AI-first Search & Answer Engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test --project=chromium --headed",
+    "test:chromium": "playwright test --project=chromium --headed",
+    "test:chromium:headless": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox --headed",
+    "test:webkit": "playwright test --project=webkit --headed",
+    "test:cross-browser": "playwright test",
+    "test:smoke": "playwright test tests/smoke/ --project=chromium --headed",
+    "test:smoke:headless": "playwright test tests/smoke/ --project=chromium",
+    "test:integration": "playwright test tests/integration/ --project=chromium --headed",
+    "test:debug": "playwright test --project=chromium --debug",
+    "test:login": "playwright test tests/functional/chat-complete.spec.ts --grep \"login page validation\" --project=chromium --headed",
+    "test:chat": "playwright test tests/functional/chat-complete.spec.ts --project=chromium --headed",
+    "report": "playwright show-report",
+    "install-browsers": "playwright install",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/ tests/ --ext .ts",
+    "lint:fix": "eslint src/ tests/ --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "setup": "npm install && npm run install-browsers && npm run build",
+    "setup:complete": "node setup-complete.js",
+    "test:timeout": "node test-timeout-functionality.js",
+    "test:api-key": "node test-api-key-input.js"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "test-automation",
+    "ai-testing",
+    "llm-evaluation",
+    "xyne"
+  ],
+  "author": "Xyne Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.19.13",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "compromise": "^14.10.0",
+    "dotenv": "^16.3.0",
+    "ml-distance": "^4.0.1",
+    "openai": "^4.20.0",
+    "winston": "^3.10.0",
+    "yaml": "^2.3.0"
+  }
+}
