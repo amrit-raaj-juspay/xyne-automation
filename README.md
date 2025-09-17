@@ -78,8 +78,8 @@ Edit the `.env` file with your settings:
 
 ```env
 # Xyne Application URLs
-XYNE_BASE_URL=https://xyne.juspay.net
-XYNE_AUTH_URL=https://xyne.juspay.net/auth
+XYNE_BASE_URL=https://sbx.xyne.juspay.net
+XYNE_AUTH_URL=https://sbx.xyne.juspay.net/auth
 
 # Test Configuration
 TEST_TIMEOUT=30000

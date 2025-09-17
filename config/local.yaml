@@ -1,12 +1,13 @@
 # Xyne Automation Framework Configuration
 # Environment: local
 
-# Application URLs
-baseUrl: "https://xyne.juspay.net"
-apiBaseUrl: "https://xyne.juspay.net/api"
 
 # Browser settings
-browser: "chromium"
+browser:
+  type: "chromium"
+  sharedMode: true
+  sharedScope: "file"
+  autoSequential: true
 headless: false
 
 # Viewport settings

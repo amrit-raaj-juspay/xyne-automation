@@ -5,7 +5,12 @@
 export interface TestConfig {
   baseUrl: string;
   apiBaseUrl: string;
-  browser: 'chromium' | 'firefox' | 'webkit';
+  browser: 'chromium' | 'firefox' | 'webkit' | {
+    type: 'chromium' | 'firefox' | 'webkit';
+    sharedMode?: boolean;
+    sharedScope?: 'file' | 'suite' | 'global';
+    autoSequential?: boolean;
+  };
   headless: boolean;
   viewport: {
     width: number;
