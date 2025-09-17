@@ -232,3 +232,58 @@ export interface Logger {
   warn(message: string, meta?: any): void;
   error(message: string, meta?: any): void;
 }
+
+// Test Priority and Dependency Management Types
+export type TestPriority = 'highest' | 'high' | 'medium' | 'low';
+
+export interface TestMetadata {
+  priority?: TestPriority;
+  dependsOn?: string[]; // Array of test names this test depends on
+  tags?: string[];
+  timeout?: number;
+  description?: string;
+}
+
+export interface TestExecutionResult {
+  testName: string;
+  fullTitle: string; // Complete test path including describe blocks
+  status: 'passed' | 'failed' | 'skipped';
+  reason?: string; // For skipped tests: "dependency failed: login test"
+  dependents?: string[]; // Tests that depend on this one
+  duration?: number;
+  error?: string;
+  priority?: TestPriority;
+  dependencies?: string[];
+}
+
+export interface DependencyNode {
+  testName: string;
+  fullTitle: string;
+  priority: TestPriority;
+  dependencies: string[];
+  dependents: string[];
+  status: 'pending' | 'running' | 'passed' | 'failed' | 'skipped';
+  metadata?: TestMetadata;
+}
+
+export interface DependencyGraph {
+  nodes: Map<string, DependencyNode>;
+  executionOrder: string[];
+  hasCycles: boolean;
+  cycles?: string[][];
+}
+
+export interface TestSkipInfo {
+  skip: boolean;
+  reason?: string;
+  failedDependency?: string;
+}
+
+export interface PriorityExecutionStats {
+  highest: { total: number; passed: number; failed: number; skipped: number };
+  high: { total: number; passed: number; failed: number; skipped: number };
+  medium: { total: number; passed: number; failed: number; skipped: number };
+  low: { total: number; passed: number; failed: number; skipped: number };
+  totalDependencySkips: number;
+  dependencyChains: number;
+}

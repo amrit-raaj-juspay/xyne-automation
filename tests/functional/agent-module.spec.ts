@@ -1,8 +1,8 @@
 /**
- * Agent Module Test - Using new shared page fixtures
+ * Agent Module Test - Using priority and dependency management
  */
 
-import { test, expect } from '@/framework/core/test-fixtures';
+import {test, testHighest, testHigh, expect } from '@/framework/core/test-fixtures';
 import { LoginHelper } from '@/framework/pages/login-helper';
 
 // Configure tests to run sequentially and share browser context
@@ -10,8 +10,11 @@ test.describe.configure({ mode: 'serial' });
 
 test.describe('Agent Module Tests', () => {
   
-  test('user login', async ({ sharedPage }) => {
-    console.log('🚀 Starting login test');
+  testHighest('user login', {
+    tags: ['@critical', '@auth', '@agent'],
+    description: 'Authenticate user for agent module access'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting highest priority login test');
     
     // Check if already logged in to avoid unnecessary login attempts
     const alreadyLoggedIn = await LoginHelper.isLoggedIn(sharedPage);
@@ -20,16 +23,23 @@ test.describe('Agent Module Tests', () => {
       return;
     }
     
-    // Perform login using LoginHelper
-    const loginSuccess = await LoginHelper.performLogin(sharedPage);
-    expect(loginSuccess, 'Login should be successful').toBe(true);
+    // Perform login using LoginHelper with no retries (single attempt only)
+    const loginResult = await LoginHelper.performLoginWithDetails(sharedPage, {
+      retries: 0  // Only attempt once, no retries
+    });
+    
+    expect(loginResult.success, 'Login should be successful').toBe(true);
     
     console.log('✅ Login completed successfully');
     console.log('Current URL after login:', sharedPage.url());
   });
 
-  test('navigate to agent page', async ({ sharedPage }) => {
-    console.log('🚀 Navigating to agent page');
+  testHigh('navigate to agent page', {
+    dependsOn: ['user login'],
+    tags: ['@core', '@navigation', '@agent'],
+    description: 'Navigate to agent page after successful login'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting high priority agent navigation');
     
     // Verify the agent navigation link is visible
     const agentNavLink = sharedPage.locator('a[href="/agent"]');
