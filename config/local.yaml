@@ -10,10 +10,7 @@ browser:
   autoSequential: true
 headless: false
 
-# Viewport settings
-viewport:
-  width: 1920
-  height: 1080
+
 
 # Timeout settings (in milliseconds)
 timeout:

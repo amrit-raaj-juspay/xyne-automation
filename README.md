@@ -1,256 +1,235 @@
-# Xyne TypeScript Automation Framework
+# Xyne Automation Framework
 
-A comprehensive test automation framework for the Xyne AI-first Search & Answer Engine, built with TypeScript and Playwright. This framework provides advanced testing capabilities including LLM response evaluation, network monitoring, and performance analysis.
+Complete TypeScript test automation framework for the Xyne AI-first Search & Answer Engine. Built with Playwright, featuring advanced LLM testing, network monitoring, and authentication handling.
 
-## 🚀 Features
-
-### Core Testing Capabilities
-- **Cross-browser Testing**: Support for Chromium, Firefox, and WebKit
-- **Page Object Model**: Structured and maintainable test organization
-- **Network Monitoring**: Real-time API call capture and analysis
-- **Performance Testing**: Response time monitoring and bottleneck detection
-- **Visual Testing**: Screenshot comparison and visual regression detection
-
-### LLM-Specific Testing
-- **Response Evaluation**: Multi-dimensional LLM response quality assessment
-- **Semantic Similarity**: Keyword matching and content relevance analysis
-- **Factual Accuracy**: LLM-as-judge evaluation using OpenAI API
-- **Citation Validation**: Source verification and link checking
-- **Safety Assessment**: Content safety and appropriateness evaluation
-- **Business Context**: Professional tone and context appropriateness
-
-### Advanced Features
-- **Streaming Response Monitoring**: Real-time chat response analysis
-- **API Integration Testing**: Backend service validation
-- **Configuration Management**: Environment-specific test configuration
-- **Comprehensive Reporting**: Detailed test results with metrics
-- **TypeScript Support**: Full type safety and IntelliSense
-
-## 📋 Prerequisites
-
-- **Node.js** (v16 or higher)
-- **npm** or **yarn**
-- **Git**
-
-## 🛠️ Installation
-
-### 1. Install Node.js and npm
-
-#### macOS (using Homebrew)
-```bash
-brew install node
-```
-
-#### Using Node Version Manager (nvm)
-```bash
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Install latest LTS Node.js
-nvm install --lts
-nvm use --lts
-```
-
-### 2. Clone and Setup Framework
-
+## 🚀 Quick Start (2 minutes)
 
 ```bash
-# Navigate to the TypeScript framework directory
-cd xyne-automation-ts
-
-# Install dependencies
-npm install
-
-# Run complete setup (installs browsers, builds TypeScript, validates config)
+# 1. Clone and setup
+git clone git@github.com:amrit-raaj-juspay/xyne-automation.git
+cd xyne-automation
 npm run setup:complete
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your credentials
+
+# 3. Run first test
+npm run test:smoke
 ```
 
-**Note**: The `setup:complete` command will:
-- Install all npm dependencies
-- Install Playwright browsers
-- Build TypeScript files
-- Validate configuration
-- Create necessary directories
-
-### 3. Configure Environment
-
-Edit the `.env` file with your settings:
-
-```env
-# Xyne Application URLs
-XYNE_BASE_URL=https://sbx.xyne.juspay.net
-XYNE_AUTH_URL=https://sbx.xyne.juspay.net/auth
-
-# Test Configuration
-TEST_TIMEOUT=30000
-HEADLESS=true
-BROWSER=chromium
-
-# LLM Evaluation (Optional)
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4
-
-# Logging
-LOG_LEVEL=info
-```
-
-## 🏃‍♂️ Running Tests
-
-### Basic Test Execution
-
-```bash
-# Default: Chromium browser, headed mode (UI visible)
-npm test                           # Alias for npm run test:chromium
-npm run test:chromium              # Chromium, headed mode
-npm run test:chromium:headless     # Chromium, headless mode
-
-# Specific browsers
-npm run test:firefox               # Firefox, headed mode
-npm run test:webkit                # WebKit, headed mode
-
-# Cross-browser testing
-npm run test:cross-browser         # All browsers, headless mode
-
-# Test suites
-npm run test:smoke                 # Smoke tests, Chromium headed
-npm run test:smoke:headless        # Smoke tests, Chromium headless
-npm run test:integration           # Integration tests, Chromium headed
-
-# Specific tests
-npm run test:chat                  # Chat functionality tests
-npm run test:login                 # Login page validation tests
-
-# Debug mode
-npm run test:debug                 # Debug mode with Chromium
-```
-
-### Single Worker vs Parallel Execution
-
-For tests that require single browser instances (like TOTP/OAuth tests):
-
-```bash
-# Single worker execution (prevents TOTP conflicts)
-npm run test:single                # Any test with single worker, headed
-npm run test:single:headless       # Any test with single worker, headless
-npm run test:google-login          # Google OAuth + TOTP login test
-npm run test:google-login:headless # Google login test, headless
-npm run test:login:safe            # Alternative safe login command
-
-# Parallel execution (faster for regular tests)
-npm run test:parallel              # Multiple workers, headed mode
-npm run test:parallel:headless     # Multiple workers, headless
-npm run test:parallel:all          # All browser projects
-npm run test:fast                  # Fastest execution with defaults
-```
-
-### Advanced Test Options
-
-```bash
-# Run tests on specific browser
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-npx playwright test --project=webkit
-
-# Run tests with specific tag
-npx playwright test --grep="@smoke"
-npx playwright test --grep="@integration"
-
-# Generate and view test report
-npm run test:report
-npx playwright show-report
-```
-
-## 📁 Framework Structure
+## 📁 Project Structure
 
 ```
-xyne-automation-ts/
-├── src/
-│   ├── framework/
-│   │   ├── core/                    # Core framework components
-│   │   │   ├── base-page.ts         # Base page object class
-│   │   │   ├── config-manager.ts    # Configuration management
-│   │   │   ├── global-setup.ts      # Global test setup
-│   │   │   └── global-teardown.ts   # Global test cleanup
-│   │   ├── pages/                   # Page Object Models
-│   │   │   └── login-page.ts        # Login page interactions
-│   │   └── utils/                   # Utility functions
-│   │       ├── network-analyzer.ts  # Network monitoring
-│   │       └── llm-evaluator.ts     # LLM response evaluation
-│   └── types/                       # TypeScript type definitions
-│       └── index.ts                 # Core type definitions
+xyne-automation/
+├── src/framework/
+│   ├── core/                     # BasePage, ConfigManager, Global Setup
+│   ├── pages/                    # LoginPage, GoogleOAuthLoginPage, etc.
+│   └── utils/                    # NetworkAnalyzer, LLMEvaluator, TOTPGenerator
 ├── tests/
-│   ├── functional/                  # Functional tests
-│   │   └── chat-complete.spec.ts    # Main chat functionality tests
-│   ├── integration/                 # Integration tests
-│   └── smoke/                       # Smoke tests
-├── reports/                         # Test reports and artifacts
-├── playwright.config.ts             # Playwright configuration
-├── tsconfig.json                    # TypeScript configuration
-├── package.json                     # Dependencies and scripts
-└── .env                            # Environment configuration
+│   ├── functional/               # Main feature tests
+│   ├── smoke/                    # Quick validation tests
+│   └── integration/              # End-to-end tests
+├── config/local.yaml             # Test configuration
+├── playwright.config.ts          # Playwright settings
+└── docs/                        # Complete documentation
 ```
 
-## 🧪 Test Examples
+## 🧪 Writing Tests
 
-### Basic Login Test
-
+### Basic Test Pattern
 ```typescript
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../src/framework/pages/login-page';
+import { LoginPage } from '../../src/framework/pages/login-page';
 
-test('should validate login page elements', async ({ page }) => {
+test('validate login page', async ({ page }) => {
   const loginPage = new LoginPage(page);
   
   await loginPage.navigate();
-  const elements = await loginPage.validatePageElements();
+  const isLoaded = await loginPage.isPageLoaded();
+  expect(isLoaded).toBe(true);
   
-  expect(elements.pageLoaded).toBe(true);
-  expect(elements.googleButtonVisible).toBe(true);
-  expect(elements.hasErrors).toBe(false);
+  console.log('✅ Test completed');
 });
 ```
 
-### Network Monitoring Test
-
+### Page Object Usage
 ```typescript
-import { test, expect } from '@playwright/test';
-import { NetworkAnalyzer } from '../src/framework/utils/network-analyzer';
+// ✅ Always use page objects
+const loginPage = new LoginPage(page);
+await loginPage.clickGoogleLogin();
 
-test('should monitor API calls during chat', async ({ page }) => {
-  const networkAnalyzer = new NetworkAnalyzer();
+// ❌ Never use direct Playwright in tests
+await page.click('text=Login with Google');
+```
+
+## 🔧 Key Framework Classes
+
+### BasePage (Foundation)
+```typescript
+export class MyPage extends BasePage {
+  async performAction(): Promise<void> {
+    await this.clickElement('button');           // Click elements
+    await this.fillElement('#input', 'text');   // Fill inputs
+    await this.waitForElement('.result');       // Wait for elements
+    const text = await this.getElementText('.msg'); // Get text
+    await this.takeScreenshot('debug.png');     // Screenshots
+  }
+}
+```
+
+### ConfigManager (Settings)
+```typescript
+import { configManager } from '../core/config-manager';
+
+const baseUrl = configManager.getBaseUrl();
+const config = configManager.getConfig();
+```
+
+### NetworkAnalyzer (API Monitoring)
+```typescript
+import { NetworkAnalyzer } from '../utils/network-analyzer';
+
+const analyzer = new NetworkAnalyzer();
+page.on('request', request => analyzer.addRequest(request));
+page.on('response', response => analyzer.addResponse(response));
+
+const metrics = analyzer.getPerformanceMetrics();
+const failedCalls = analyzer.getFailedAPICalls();
+```
+
+### LLMEvaluator (AI Testing)
+```typescript
+import { LLMEvaluator } from '../utils/llm-evaluator';
+
+const evaluator = LLMEvaluator.createSimpleEvaluator();
+const evaluation = await evaluator.evaluateResponse(
+  'What is AI?',
+  aiResponse,
+  ['artificial', 'intelligence', 'machine']
+);
+
+expect(evaluation.overallScore).toBeGreaterThan(0.7);
+```
+
+### LoginHelper (Authentication)
+```typescript
+import { LoginHelper } from '../pages/login-helper';
+
+await LoginHelper.performLogin(page, {
+  email: process.env.GOOGLE_EMAIL!,
+  password: process.env.GOOGLE_PASSWORD!,
+  totpSecret: process.env.TOTP_SECRET_KEY!
+});
+```
+
+## 🎮 Running Tests
+
+```bash
+# Basic commands
+npm test                          # All tests (headed)
+npm run test:chromium:headless    # Headless mode
+npm run test:debug               # Debug mode
+
+# Specific tests
+npm run test:login               # Login tests
+npm run test:chat                # Chat functionality
+npm run test:smoke               # Smoke tests
+
+# Authentication tests (single worker to avoid conflicts)
+npm run test:google-login        # Google OAuth + TOTP
+npm run test:single              # Any test with single worker
+
+# Cross-browser
+npm run test:firefox             # Firefox
+npm run test:webkit              # Safari/WebKit
+npm run test:cross-browser       # All browsers
+```
+
+## ⚙️ Configuration
+
+### Environment Variables (.env)
+```env
+# Application URLs
+XYNE_BASE_URL=https://xyne.juspay.net
+XYNE_AUTH_URL=https://xyne.juspay.net/auth
+
+# Authentication
+GOOGLE_EMAIL=your_test_email@gmail.com
+GOOGLE_PASSWORD=your_test_password
+TOTP_SECRET_KEY=your_totp_secret_key
+
+# LLM Testing (optional)
+OPENAI_API_KEY=your_openai_api_key
+
+# Test Settings
+HEADLESS=false
+BROWSER=chromium
+```
+
+### Test Configuration (config/local.yaml)
+```yaml
+# Browser settings
+browser:
+  type: "chromium"
+  headless: false
+
+# Screen size
+viewport:
+  width: 1920
+  height: 1080
+
+# Timeouts (milliseconds)
+timeout:
+  action: 30000
+  navigation: 30000
+  test: 60000
+
+# LLM evaluation
+llm:
+  openaiApiKey: "${OPENAI_API_KEY}"
+  model: "gpt-4"
+  similarityThreshold: 0.7
+```
+
+## 🌟 Advanced Features
+
+### Network Monitoring
+```typescript
+test('monitor API performance', async ({ page }) => {
+  const analyzer = new NetworkAnalyzer();
   
-  // Setup network monitoring
-  page.on('request', request => networkAnalyzer.addRequest(request));
-  page.on('response', response => networkAnalyzer.addResponse(response));
+  page.on('request', request => analyzer.addRequest(request));
+  page.on('response', response => analyzer.addResponse(response));
   
   // Perform test actions
   await page.goto('/chat');
-  // ... chat interactions
+  await page.fill('#input', 'Hello');
+  await page.click('#send');
   
   // Analyze results
-  const metrics = networkAnalyzer.getPerformanceMetrics();
+  const metrics = analyzer.getPerformanceMetrics();
   expect(metrics.errorCount).toBe(0);
   expect(metrics.averageResponseTime).toBeLessThan(2000);
 });
 ```
 
-### LLM Response Evaluation
-
+### LLM Response Testing
 ```typescript
-import { test, expect } from '@playwright/test';
-import { LLMEvaluator } from '../src/framework/utils/llm-evaluator';
-
-test('should evaluate chat response quality', async ({ page }) => {
-  const evaluator = LLMEvaluator.createSimpleEvaluator();
+test('evaluate AI response quality', async ({ page }) => {
+  const evaluator = LLMEvaluator.createComprehensiveEvaluator();
   
-  // Get chat response
-  const response = await getChatResponse(page, 'What is machine learning?');
+  // Get AI response
+  await page.goto('/chat');
+  await page.fill('#input', 'Explain machine learning');
+  await page.click('#send');
+  const response = await page.textContent('.response');
   
-  // Evaluate response
+  // Evaluate quality
   const evaluation = await evaluator.evaluateResponse(
-    'What is machine learning?',
-    response,
-    ['algorithm', 'data', 'learning', 'artificial intelligence']
+    'Explain machine learning',
+    response!,
+    ['algorithm', 'data', 'model', 'training']
   );
   
   expect(evaluation.overallScore).toBeGreaterThan(0.7);
@@ -258,178 +237,151 @@ test('should evaluate chat response quality', async ({ page }) => {
 });
 ```
 
-## 🔧 Configuration
-
-### Test Configuration
-
-The framework uses a centralized configuration system. Key configuration options:
-
+### TOTP Authentication
 ```typescript
-interface TestConfig {
-  baseUrl: string;                    // Application base URL
-  browser: 'chromium' | 'firefox' | 'webkit';
-  headless: boolean;                  // Run in headless mode
-  timeout: {
-    action: number;                   // Action timeout (ms)
-    navigation: number;               // Navigation timeout (ms)
-    test: number;                     // Test timeout (ms)
-  };
-  llm: {
-    openaiApiKey?: string;           // OpenAI API key for evaluations
-    model: string;                   // LLM model to use
-    similarityThreshold: number;     // Similarity threshold for evaluations
-  };
-}
-```
+import { TOTPGenerator } from '../utils/totp-generator';
 
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `XYNE_BASE_URL` | Base URL for Xyne application | `https://xyne.juspay.net` |
-| `XYNE_AUTH_URL` | Authentication URL | `https://xyne.juspay.net/auth` |
-| `TEST_TIMEOUT` | Default test timeout (ms) | `30000` |
-| `HEADLESS` | Run tests in headless mode | `true` |
-| `BROWSER` | Default browser | `chromium` |
-| `OPENAI_API_KEY` | OpenAI API key for LLM evaluations | - |
-| `OPENAI_MODEL` | OpenAI model for evaluations | `gpt-4` |
-| `LOG_LEVEL` | Logging level | `info` |
-
-## 📊 Reporting
-
-### Test Reports
-
-The framework generates comprehensive test reports including:
-
-- **Test Results**: Pass/fail status with detailed error information
-- **Performance Metrics**: Response times and performance bottlenecks
-- **Network Analysis**: API call analysis and failure detection
-- **LLM Evaluations**: Response quality scores and feedback
-- **Screenshots**: Visual evidence of test execution
-- **Videos**: Test execution recordings (optional)
-
-### Viewing Reports
-
-```bash
-# Generate HTML report
-npx playwright test --reporter=html
-
-# View report in browser
-npx playwright show-report
-
-# Generate JSON report
-npx playwright test --reporter=json
+test('generate TOTP codes', async ({ page }) => {
+  const totp = new TOTPGenerator(process.env.TOTP_SECRET_KEY!);
+  
+  const code = totp.generateCurrentCode();
+  console.log('Generated TOTP:', code);
+  
+  // Wait for new code if current one expires soon
+  if (totp.isNearExpiration()) {
+    await totp.waitForNewCodeIfNeeded();
+  }
+});
 ```
 
 ## 🔍 Debugging
 
+### Screenshots & Logs
+```typescript
+test('debug example', async ({ page }) => {
+  console.log('🚀 Starting test');
+  
+  const loginPage = new LoginPage(page);
+  await loginPage.navigate();
+  
+  // Take screenshot for debugging
+  await loginPage.takeScreenshot('debug-login.png');
+  
+  console.log('📍 Current URL:', page.url());
+});
+```
+
 ### Debug Mode
+```bash
+# Opens browser with dev tools
+npm run test:debug tests/functional/my-test.spec.ts
+```
+
+### Network Debugging
+```typescript
+test('debug network', async ({ page }) => {
+  page.on('request', req => console.log('📤', req.method(), req.url()));
+  page.on('response', res => console.log('📥', res.status(), res.url()));
+  
+  await page.goto('/');
+});
+```
+
+## 📊 Reports
 
 ```bash
-# Run tests in debug mode
-npm run test:debug
+# View HTML report
+npm run report
 
-# Run specific test in debug mode
-npx playwright test --debug tests/functional/chat-complete.spec.ts
-
-# Run with browser visible
-npx playwright test --headed
+# Reports saved to:
+reports/
+├── screenshots/     # Test screenshots
+├── videos/         # Test recordings (if enabled)
+├── traces/         # Playwright traces
+└── html-report/    # Detailed HTML report
 ```
 
-### Logging
+## 🎯 Best Practices
 
-The framework provides structured logging:
+1. **Use Page Objects** - Never write Playwright code directly in tests
+2. **Descriptive Names** - `test('should login with valid credentials')` not `test('test1')`
+3. **Proper Waits** - Use `waitForElement()` not `waitForTimeout()`
+4. **Console Logs** - Add logs for debugging: `console.log('✅ Login successful')`
+5. **Screenshots** - Take screenshots for complex debugging scenarios
 
-```typescript
-import { logger } from '../src/framework/core/logger';
+## 🆘 Common Issues & Solutions
 
-logger.info('Test started', { testName: 'login-validation' });
-logger.warn('Slow response detected', { responseTime: 3000 });
-logger.error('Test failed', { error: error.message });
+### Setup Problems
+```bash
+# Node.js too old
+nvm install 18 && nvm use 18
+
+# Browsers not installed
+npx playwright install
+
+# Dependencies issues
+rm -rf node_modules && npm install
 ```
+
+### Test Failures
+```bash
+# Timeout issues - increase in config/local.yaml
+timeout:
+  navigation: 60000
+
+# Element not found - add proper waits
+await page.waitForElement('selector');
+```
+
+### Authentication Issues
+```bash
+# TOTP problems - sync system time
+sudo sntp -sS time.apple.com  # macOS
+
+# Credentials - verify .env file
+GOOGLE_EMAIL=correct_email@gmail.com
+```
+
+## 📚 Documentation
+
+This README contains everything you need to get started and use the framework effectively. All essential information is included above:
+
+- **Quick Start** - 2-minute setup guide
+- **Writing Tests** - Complete examples and patterns
+- **Framework Classes** - All key components with code examples
+- **Configuration** - Environment and test settings
+- **Advanced Features** - LLM testing, network monitoring, authentication
+- **Debugging** - Tools and techniques for troubleshooting
+- **Best Practices** - Coding standards and recommendations
+
+## 🔧 Framework Features
+
+### Core Capabilities
+- **Cross-browser Testing** - Chromium, Firefox, WebKit
+- **Page Object Model** - Structured, maintainable test code
+- **Configuration Management** - Environment-specific settings
+- **Global Setup/Teardown** - Automated test environment management
+
+### Advanced Testing
+- **LLM Response Evaluation** - AI-powered response quality assessment
+- **Network Monitoring** - Real-time API call analysis and performance metrics
+- **TOTP Authentication** - Time-based two-factor authentication support
+- **Performance Testing** - Built-in response time and error rate monitoring
+
+### Developer Experience
+- **TypeScript Support** - Full type safety and IntelliSense
+- **Comprehensive Reporting** - HTML reports with screenshots and traces
+- **Debug Mode** - Browser debugging with developer tools
+- **Screenshot Capture** - Automatic failure screenshots and manual capture
 
 ## 🤝 Contributing
 
-### Development Setup
+1. Follow the Page Object Model pattern
+2. Add tests for new functionality
+3. Update documentation for new features
+4. Use TypeScript for all code
+5. Follow existing code style and naming conventions
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+---
 
-### Code Style
-
-- Use TypeScript for all new code
-- Follow the existing code style and patterns
-- Add JSDoc comments for public methods
-- Include unit tests for utility functions
-
-## 📚 API Reference
-
-### Core Classes
-
-#### `BasePage`
-Base class for all page objects with common functionality.
-
-#### `NetworkAnalyzer`
-Monitors and analyzes network traffic during test execution.
-
-#### `LLMEvaluator`
-Evaluates LLM responses using multiple criteria.
-
-#### `ConfigManager`
-Manages test configuration and environment variables.
-
-### Utility Functions
-
-#### Network Analysis
-- `getAPICalls()`: Get all captured API calls
-- `getFailedAPICalls()`: Get failed API calls
-- `getPerformanceMetrics()`: Get performance statistics
-
-#### LLM Evaluation
-- `evaluateResponse()`: Comprehensive response evaluation
-- `evaluateSemanticSimilarity()`: Keyword and relevance analysis
-- `evaluateFactualAccuracy()`: Fact-checking using LLM-as-judge
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **TypeScript compilation errors**
-   - Ensure all dependencies are installed: `npm install`
-   - Check TypeScript configuration in `tsconfig.json`
-
-2. **Playwright browser issues**
-   - Install browsers: `npx playwright install`
-   - Update Playwright: `npm update @playwright/test`
-
-3. **Network connectivity issues**
-   - Check firewall settings
-   - Verify proxy configuration
-   - Ensure Xyne application is accessible
-
-4. **Environment configuration**
-   - Verify `.env` file exists and is properly configured
-   - Check environment variable values
-   - Ensure API keys are valid
-
-### Getting Help
-
-- Check the test logs in `reports/` directory
-- Run tests with `--debug` flag for verbose output
-- Review the Playwright documentation
-- Check the framework's GitHub issues
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [Playwright](https://playwright.dev/)
-- TypeScript support
-- OpenAI API for LLM evaluations
-- Inspired by modern test automation best practices
+**Ready to start testing?** Run `npm run setup:complete` and then `npm run test:smoke` to verify everything works!

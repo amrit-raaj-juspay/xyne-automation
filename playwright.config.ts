@@ -49,7 +49,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     
     /* Viewport size */
-    viewport: { width: 1920, height: 1080 },
+   // viewport: { width: 1280, height: 720 },
     
     /* User agent */
     userAgent: 'Xyne-Automation-Framework/1.0.0 (Playwright)',
