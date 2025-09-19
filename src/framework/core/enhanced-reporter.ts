@@ -6,12 +6,14 @@
 import { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/reporter';
 import { dependencyManager } from './dependency-manager';
 import { PriorityExecutionStats, TestPriority, TestMetadata } from '@/types';
+import { slackNotifier, SlackNotificationData } from '../utils/slack-notifier';
+import { configManager } from './config-manager';
 import fs from 'fs';
 import path from 'path';
 
 export default class EnhancedReporter implements Reporter {
   private stats: PriorityExecutionStats | null = null;
-  private testResults = new Map<string, { result: TestResult; metadata?: TestMetadata }>();
+  private testResults = new Map<string, { result: TestResult; metadata?: TestMetadata; testCase: TestCase }>();
 
   onBegin() {
     console.log('📊 Enhanced Reporter: Starting test execution with priority and dependency tracking');
@@ -22,7 +24,7 @@ export default class EnhancedReporter implements Reporter {
     const metadata = dependencyManager.getTestMetadata(testName);
     
     // Store the actual Playwright test result
-    this.testResults.set(testName, { result, metadata });
+    this.testResults.set(testName, { result, metadata, testCase: test });
     
     if (metadata) {
       // Add priority and dependency info to test annotations
@@ -69,7 +71,7 @@ export default class EnhancedReporter implements Reporter {
     }
   }
 
-  onEnd(result: FullResult) {
+  async onEnd(result: FullResult) {
     // Get stats from dependency manager
     this.stats = dependencyManager.getExecutionStats();
     
@@ -89,6 +91,9 @@ export default class EnhancedReporter implements Reporter {
     console.log(`   Low Priority: ${this.stats.low.total} tests (${this.stats.low.passed} passed, ${this.stats.low.failed} failed, ${this.stats.low.skipped} skipped)`);
     console.log(`   Total Dependency Skips: ${this.stats.totalDependencySkips}`);
     console.log(`   Tests with Dependencies: ${this.stats.dependencyChains}`);
+
+    // Send Slack notification
+    await this.sendSlackNotification();
   }
 
   private buildStatsFromPlaywrightResults(result: FullResult): PriorityExecutionStats {
@@ -244,6 +249,116 @@ export default class EnhancedReporter implements Reporter {
       dependencyChains: this.stats.dependencyChains,
       passRate: totalTests > 0 ? Math.round((totalPassed / totalTests) * 100) : 0
     };
+  }
+
+  /**
+   * Send Slack notification with test execution results
+   */
+  private async sendSlackNotification(): Promise<void> {
+    if (!this.stats) return;
+
+    try {
+      const config = configManager.getConfig();
+      const summary = this.generateSummary();
+      
+      // Determine module name from test file paths or environment
+      const moduleName = this.determineModuleName();
+      
+      // Get Playwright HTML report path
+      const playwrightHtmlReportPath = path.join('reports', 'html-report', 'index.html');
+      
+      const slackData: SlackNotificationData = {
+        totalTests: summary.totalTests || 0,
+        totalPassed: summary.totalPassed || 0,
+        totalFailed: summary.totalFailed || 0,
+        totalSkipped: summary.totalSkipped || 0,
+        executionTime: new Date().toISOString(),
+        testEnvUrl: config.baseUrl || 'https://xyne.juspay.net',
+        scriptRunBy: process.env.SCRIPT_RUN_BY || process.env.USER || process.env.USERNAME || 'Unknown User',
+        moduleName: moduleName,
+        htmlReportPath: fs.existsSync(playwrightHtmlReportPath) ? playwrightHtmlReportPath : undefined,
+        priorityStats: {
+          highest: this.stats.highest,
+          high: this.stats.high,
+          medium: this.stats.medium,
+          low: this.stats.low
+        }
+      };
+
+      await slackNotifier.sendTestCompletionNotification(slackData);
+    } catch (error) {
+      console.error('❌ Error sending Slack notification:', error);
+    }
+  }
+
+  /**
+   * Determine module name from test results or environment
+   */
+  private determineModuleName(): string {
+    // Check environment variable first
+    const envModuleName = process.env.MODULE_NAME;
+    if (envModuleName) {
+      return envModuleName;
+    }
+
+    // Extract module name from test file paths
+    // For a file like "tests/functional/agent-module.spec.ts", return "agent-module"
+    for (const [testName, testData] of this.testResults) {
+      const testCase = testData.testCase;
+      
+      // Get the test file path from the test case location
+      if (testCase.location?.file) {
+        const moduleName = this.extractModuleNameFromPath(testCase.location.file);
+        if (moduleName) {
+          return moduleName;
+        }
+      }
+      
+      // Fallback: try to get file path from test result attachments
+      const testResult = testData.result;
+      if (testResult.attachments && testResult.attachments.length > 0) {
+        for (const attachment of testResult.attachments) {
+          if (attachment.path) {
+            const moduleName = this.extractModuleNameFromPath(attachment.path);
+            if (moduleName) {
+              return moduleName;
+            }
+          }
+        }
+      }
+    }
+
+    // If we can't extract from file paths, try to get from process.argv
+    // Playwright often passes the test file as an argument
+    const testFileArg = process.argv.find(arg => arg.includes('.spec.ts') || arg.includes('.test.ts'));
+    if (testFileArg) {
+      const moduleName = this.extractModuleNameFromPath(testFileArg);
+      if (moduleName) {
+        return moduleName;
+      }
+    }
+
+    // Default fallback
+    return 'Xyne';
+  }
+
+  /**
+   * Extract module name from file path
+   * For "tests/functional/agent-module.spec.ts" returns "agent-module"
+   */
+  private extractModuleNameFromPath(filePath: string): string | null {
+    if (!filePath) return null;
+    
+    // Get the filename from the path
+    const fileName = path.basename(filePath);
+    
+    // Remove .spec.ts, .test.ts, .spec.js, .test.js extensions
+    const moduleNameMatch = fileName.match(/^(.+)\.(?:spec|test)\.[jt]s$/);
+    if (moduleNameMatch) {
+      return moduleNameMatch[1];
+    }
+    
+    return null;
   }
 
   private generateHtmlSummary(reportData: any) {

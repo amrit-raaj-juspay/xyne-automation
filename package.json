@@ -23,9 +23,8 @@
     "test:parallel:all": "playwright test --headed",
     "test:fast": "playwright test",
     "test:google-login": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium --headed",
-    "test:chat-module":"playwright test tests/functional/chat-module.spec.ts --workers=1 --project=chromium --headed",
-    "test:agent-module":"playwright test tests/functional/agent-module.spec.ts --workers=1 --project=chromium --headed",
-
+    "test:chat-module": "playwright test tests/functional/chat-module.spec.ts --workers=1 --project=chromium --headed",
+    "test:agent-module": "playwright test tests/functional/agent-module.spec.ts --workers=1 --project=chromium --headed",
     "test:google-login:headless": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium",
     "test:login:safe": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium --headed",
     "test:login:safe:headless": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium",
@@ -64,6 +63,7 @@
     "typescript": "^5.2.0"
   },
   "dependencies": {
+    "@slack/web-api": "^7.10.0",
     "axios": "^1.5.0",
     "compromise": "^14.10.0",
     "dotenv": "^16.3.0",

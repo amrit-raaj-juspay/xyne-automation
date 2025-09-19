@@ -273,8 +273,23 @@ export { expect };
 interface PublicSharedBrowserManager {
   setCurrentFile(fileId: string): void;
   setCurrentSuite(suiteId: string): void;
-  getSharedPage(browser: any, scope?: SharedScope, options?: any): Promise<any>;
-  createNewSharedPage(browser: any, scope?: SharedScope, options?: any): Promise<any>;
+  getSharedPage(
+    browser: Browser,
+    scope?: SharedScope,
+    options?: {
+      fileId?: string;
+      suiteId?: string;
+      forceNew?: boolean;
+    }
+  ): Promise<Page>;
+  createNewSharedPage(
+    browser: Browser,
+    scope?: SharedScope,
+    options?: {
+      fileId?: string;
+      suiteId?: string;
+    }
+  ): Promise<Page>;
   cleanupInstance(instanceKey: string): Promise<void>;
   cleanupByScope(scope: SharedScope, fileId?: string, suiteId?: string): Promise<void>;
   cleanupAll(): Promise<void>;
@@ -312,7 +327,7 @@ export const testUtils = {
   /**
    * Get shared browser manager instance for advanced usage
    */
-  getSharedBrowserManager: (): PublicSharedBrowserManager => sharedBrowserManager,
+  getSharedBrowserManager: (): PublicSharedBrowserManager => sharedBrowserManager as PublicSharedBrowserManager,
 
   /**
    * Cleanup shared instances (useful for test teardown)
