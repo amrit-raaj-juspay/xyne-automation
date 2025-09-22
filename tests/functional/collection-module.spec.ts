@@ -448,6 +448,82 @@ test.describe('Collection Module Tests', () => {
     await sharedPage.waitForTimeout(3000);
     console.log('Document viewer fully loaded and verified');
     
+    // Find and click on the chat input area
+    const chatInputArea = sharedPage.locator('div[contenteditable="true"][data-at-mention="true"].flex-grow.resize-none.bg-transparent.outline-none');
+    await expect(chatInputArea).toBeVisible({ timeout: 10000 });
+    console.log('Chat input area found');
+    
+    // Click on the chat input area to focus it
+    await chatInputArea.click();
+    console.log('Clicked on chat input area');
+    
+    // Wait for input area to be focused
+    await sharedPage.waitForTimeout(1000);
+    
+    // Type a message in the chat input
+    const testMessage = 'What are the two main services I need to integrate with?';
+    await chatInputArea.fill(testMessage);
+    console.log(`Typed message in chat: "${testMessage}"`);
+    
+    // Find and click the send button
+    const sendButton = sharedPage.locator('button.flex.mr-6.bg-\\[\\#464B53\\].dark\\:bg-slate-700:has(svg.lucide-arrow-right)');
+    await expect(sendButton).toBeVisible({ timeout: 5000 });
+    console.log('Send button found');
+    
+    // Click the send button to send the message
+    await sendButton.click();
+    console.log('Send button clicked - message sent');
+    
+    // Wait for response to appear
+    await sharedPage.waitForTimeout(10000);
+    console.log('Waited for chat response');
+    
+    // Look for the chat response containing the expected services
+    const chatResponse = sharedPage.locator('div').filter({ hasText: /Bank Edge Service|Central DPIP Service/ });
+    
+    // Wait for response with either service name to appear
+    await expect(chatResponse.first()).toBeVisible({ timeout: 30000 });
+    console.log('Chat response found');
+    
+    // Get the response text to validate both services are mentioned
+    const responseText = await sharedPage.textContent('body');
+    
+    // Validate that both required services are mentioned in the response
+    const hasBankEdgeService = responseText?.includes('Bank Edge Service');
+    const hasCentralDPIPService = responseText?.includes('Central DPIP Service');
+    
+    if (hasBankEdgeService && hasCentralDPIPService) {
+      console.log('✓ Chat response validation successful: Both "Bank Edge Service" and "Central DPIP Service" found in response');
+    } else {
+      console.log('✗ Chat response validation failed:');
+      console.log(`  - Bank Edge Service found: ${hasBankEdgeService}`);
+      console.log(`  - Central DPIP Service found: ${hasCentralDPIPService}`);
+    }
+    
+    // Assert that both services are mentioned
+    expect(hasBankEdgeService).toBe(true);
+    expect(hasCentralDPIPService).toBe(true);
+    
+    console.log('Chat interaction and validation completed');
+    
+    // Find and click the back arrow button to return to collections page
+    const backArrowButton = sharedPage.locator('button.justify-center.whitespace-nowrap.font-medium:has(svg.lucide-arrow-left)');
+    await expect(backArrowButton).toBeVisible({ timeout: 10000 });
+    console.log('Back arrow button found');
+    
+    // Click the back arrow button
+    await backArrowButton.click();
+    console.log('Back arrow button clicked - returning to collections page');
+    
+    // Wait for navigation back to collections page
+    await sharedPage.waitForTimeout(3000);
+    console.log('Waited for navigation back to collections page');
+    
+    // Verify we're back on the collections page
+    const currentUrl = sharedPage.url();
+    expect(currentUrl).toContain('knowledgeManagement');
+    console.log('Confirmed back on collections page');
+    
     console.log('File click test completed');
   });
 
