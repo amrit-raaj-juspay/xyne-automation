@@ -22,6 +22,7 @@ export interface SlackNotificationData {
   scriptRunBy: string;
   moduleName?: string;
   htmlReportPath?: string;
+  apiCallsPath?: string;
   priorityStats?: {
     highest: { total: number; passed: number; failed: number; skipped: number };
     high: { total: number; passed: number; failed: number; skipped: number };
@@ -79,6 +80,14 @@ export class SlackNotifier {
         // Upload HTML report as thread reply if available
         if (data.htmlReportPath && result.ts) {
           await this.uploadHtmlReportFile(result.ts, data.htmlReportPath);
+        }
+        
+        // Upload API calls JSON file if available
+        if (data.apiCallsPath && result.ts) {
+          await this.uploadAPICallsFile(result.ts, data.apiCallsPath);
+        } else if (result.ts) {
+          // Auto-discover and upload API calls files
+          await this.uploadLatestAPICallsFiles(result.ts);
         }
       } else {
         console.error('❌ Failed to send Slack notification:', result.error);
@@ -209,85 +218,98 @@ export class SlackNotifier {
   }
 
   /**
-   * Send priority breakdown as thread reply
+   * Upload API calls files to Slack as thread reply
    */
-  private async sendPriorityBreakdownThread(threadTs: string, data: SlackNotificationData): Promise<void> {
-    if (!this.client || !data.priorityStats) return;
-
-    try {
-      const colors = this.getStatusColors();
-      const hasPriorityFailures = data.priorityStats.highest.failed > 0 || 
-                                 data.priorityStats.high.failed > 0 || 
-                                 data.priorityStats.medium.failed > 0 || 
-                                 data.priorityStats.low.failed > 0;
-
-      const overallColor = hasPriorityFailures ? colors.failed : colors.passed;
-      
-      const threadMessage = {
-        text: `\n\`Please Download the .html file and Open in Chrome Browser. All the reports are shared over email also, Kindly Please check Your Email for detailed Analysis of Testing Reports\`\n\n`,
-        attachments: [
-          {
-            fallback: `Priority Test Breakdown`,
-            color: overallColor,
-            pretext: hasPriorityFailures ? `Module Owner: Please Check The Report For The Failed Test Cases.` : '',
-            fields: [
-              {
-                title: `*Highest Priority Failed*`,
-                value: `${data.priorityStats.highest.failed}`,
-                short: true
-              },
-              {
-                title: `*High Priority Failed*`,
-                value: `${data.priorityStats.high.failed}`,
-                short: true
-              },
-              {
-                title: `*Medium Priority Failed*`,
-                value: `${data.priorityStats.medium.failed}`,
-                short: true
-              },
-              {
-                title: `*Low Priority Failed*`,
-                value: `${data.priorityStats.low.failed}`,
-                short: true
-              }
-            ]
-          }
-        ]
-      };
-
-      await this.client.chat.postMessage({
-        channel: this.channelId,
-        text: threadMessage.text,
-        attachments: threadMessage.attachments,
-        thread_ts: threadTs,
-        mrkdwn: true
-      });
-
-      console.log('✅ Priority breakdown thread sent successfully');
-    } catch (error) {
-      console.error('❌ Error sending priority breakdown thread:', error);
+  private async uploadAPICallsFiles(threadTs?: string): Promise<void> {
+    const apiCallsDir = path.join(process.cwd(), 'reports', 'api-calls');
+    
+    if (!fs.existsSync(apiCallsDir)) {
+      console.log('📊 No API calls directory found');
+      return;
     }
-  }
 
-  /**
-   * Format date and time in the required format: DD-MM-YYYY - HH:MM:SS AM/PM
-   */
-  private formatDateTime(date: Date): string {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+    // Check if there's a marker file indicating API monitoring was used in this test run
+    const apiMarkerFile = path.join(apiCallsDir, '.api-monitoring-active');
     
-    let hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
+    if (!fs.existsSync(apiMarkerFile)) {
+      console.log('📊 No API monitoring marker found - test suite does not use API monitoring');
+      return;
+    }
+
+    // Get all API call files (no time filtering - rely on marker file)
+    const apiCallsFiles = fs.readdirSync(apiCallsDir)
+      .filter(file => file.endsWith('.json') && !file.startsWith('consolidated-') && file !== '.api-monitoring-active')
+      .sort();
+
+    if (apiCallsFiles.length === 0) {
+      console.log('📊 No API calls JSON files found');
+      return;
+    }
+
+    console.log(`📊 Found ${apiCallsFiles.length} API calls files, consolidating and uploading...`);
+
+    // Consolidate all API calls into a single object
+    const consolidatedAPICalls: Record<string, any> = {};
+    let totalCalls = 0;
+    let successfulCalls = 0;
+    let failedCalls = 0;
+
+    for (const file of apiCallsFiles) {
+      console.log(`📄 Processing: ${file}`);
+      const filePath = path.join(apiCallsDir, file);
+      
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const apiCalls = JSON.parse(fileContent);
+        
+        // Merge API calls (later files will overwrite earlier ones for same URLs)
+        Object.assign(consolidatedAPICalls, apiCalls);
+        
+      } catch (error) {
+        console.error(`❌ Error processing ${file}: ${error}`);
+      }
+    }
+
+    // Count totals from consolidated data
+    for (const [url, callData] of Object.entries(consolidatedAPICalls)) {
+      totalCalls++;
+      const statusCode = (callData as any)['Status-Code'];
+      if (statusCode >= 200 && statusCode < 400) {
+        successfulCalls++;
+      } else {
+        failedCalls++;
+      }
+    }
+
+    console.log(`📊 Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
+
+    // Save consolidated file with consistent naming (will overwrite previous)
+    const consolidatedFileName = `consolidated-api-calls-latest.json`;
+    const consolidatedFilePath = path.join(apiCallsDir, consolidatedFileName);
     
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // 0 should be 12
-    const formattedHours = hours.toString().padStart(2, '0');
-    
-    return `${day}-${month}-${year} - ${formattedHours}:${minutes}:${seconds} ${ampm}`;
+    try {
+      fs.writeFileSync(consolidatedFilePath, JSON.stringify(consolidatedAPICalls, null, 2));
+      
+      // Upload the consolidated file as thread reply
+      await this.uploadFile(
+        consolidatedFilePath,
+        consolidatedFileName,
+        `📊 API Calls Summary: ${totalCalls} total calls (${successfulCalls} successful, ${failedCalls} failed)`,
+        threadTs
+      );
+      
+      console.log(`✅ Consolidated ${apiCallsFiles.length} API calls files into single upload`);
+      
+      // Clean up marker file after successful upload
+      try {
+        fs.unlinkSync(apiMarkerFile);
+      } catch (error) {
+        console.warn('⚠️ Could not remove API monitoring marker file:', error);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error creating consolidated file: ${error}`);
+    }
   }
 
   /**
@@ -313,6 +335,252 @@ export class SlackNotifier {
     } catch (error) {
       console.error('❌ Error testing Slack connection:', error);
       return false;
+    }
+  }
+
+  /**
+   * Upload API calls JSON file as a thread reply
+   */
+  private async uploadAPICallsFile(threadTs: string, apiCallsPath: string): Promise<void> {
+    if (!this.client) return;
+
+    try {
+      // Check if file exists
+      if (!fs.existsSync(apiCallsPath)) {
+        console.warn(`⚠️ API calls file not found: ${apiCallsPath}`);
+        return;
+      }
+
+      const fileName = path.basename(apiCallsPath);
+      const fileTitle = `API Calls Report - ${fileName}`;
+      
+      const result = await this.client.files.uploadV2({
+        channels: this.channelId,
+        file: fs.createReadStream(apiCallsPath),
+        filename: fileName,
+        title: fileTitle,
+        thread_ts: threadTs,
+        initial_comment: '*📊 API Calls Report*\n\nThis JSON file contains:\n• All API calls made during test execution\n• Request/Response details with status codes\n• Headers and response payloads\n• Timestamps and performance metrics\n\n*Usage:* Download and open in a JSON viewer or text editor for detailed analysis.'
+      });
+
+      if (result.ok) {
+        console.log('✅ API calls file uploaded successfully');
+      } else {
+        console.error('❌ Failed to upload API calls file:', result.error);
+      }
+    } catch (error) {
+      console.error('❌ Error uploading API calls file:', error);
+    }
+  }
+
+  /**
+   * Auto-discover and upload consolidated API calls
+   */
+  private async uploadLatestAPICallsFiles(threadTs: string): Promise<void> {
+    if (!this.client) return;
+
+    try {
+      // Use the new uploadAPICallsFiles method which has proper filtering
+      await this.uploadAPICallsFiles(threadTs);
+
+    } catch (error) {
+      console.error('❌ Error consolidating and uploading API calls files:', error);
+    }
+  }
+
+  /**
+   * Consolidate multiple API calls files into a single object
+   */
+  private async consolidateAPICallsFiles(files: Array<{name: string, path: string, stats: any}>): Promise<any> {
+    const consolidatedData: any = {};
+    let totalCalls = 0;
+    let successfulCalls = 0;
+    let failedCalls = 0;
+
+    for (const file of files) {
+      try {
+        const fileContent = fs.readFileSync(file.path, 'utf-8');
+        const apiData = JSON.parse(fileContent);
+        
+        console.log(`📄 Processing: ${file.name}`);
+        
+        // Merge API calls (avoid duplicates by using URL as key)
+        for (const [url, callData] of Object.entries(apiData)) {
+          // Create a unique key to handle potential duplicates
+          let uniqueKey = url;
+          let counter = 1;
+          
+          while (consolidatedData[uniqueKey]) {
+            uniqueKey = `${url}#${counter}`;
+            counter++;
+          }
+          
+          consolidatedData[uniqueKey] = callData;
+          totalCalls++;
+          
+          // Count success/failure
+          const statusCode = (callData as any)['Status-Code'];
+          if (statusCode >= 200 && statusCode < 400) {
+            successfulCalls++;
+          } else {
+            failedCalls++;
+          }
+        }
+        
+      } catch (error) {
+        console.warn(`⚠️ Failed to process file ${file.path}: ${error}`);
+      }
+    }
+
+    console.log(`📊 Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
+    
+    return consolidatedData;
+  }
+
+  /**
+   * Clean up old API call files, keeping only files from the current test run
+   */
+  private async cleanupOldAPICallFiles(apiCallsDir: string): Promise<void> {
+    try {
+      const currentTime = Date.now();
+      const maxAge = 10 * 60 * 1000; // 10 minutes in milliseconds (increased from 5)
+      
+      const files = fs.readdirSync(apiCallsDir)
+        .filter(file => file.endsWith('.json'))
+        .map(file => ({
+          name: file,
+          path: path.join(apiCallsDir, file),
+          stats: fs.statSync(path.join(apiCallsDir, file))
+        }));
+
+      let deletedCount = 0;
+      
+      for (const file of files) {
+        const fileAge = currentTime - file.stats.mtime.getTime();
+        
+        // Delete files older than 10 minutes (from previous test runs)
+        // Skip consolidated files as they are created during upload process
+        if (fileAge > maxAge && !file.name.startsWith('consolidated-')) {
+          try {
+            fs.unlinkSync(file.path);
+            deletedCount++;
+            console.log(`🗑️  Deleted old API call file: ${file.name}`);
+          } catch (error) {
+            console.warn(`⚠️ Failed to delete old file ${file.name}: ${error}`);
+          }
+        }
+      }
+      
+      if (deletedCount > 0) {
+        console.log(`🧹 Cleaned up ${deletedCount} old API call files`);
+      }
+      
+    } catch (error) {
+      console.warn(`⚠️ Error during API calls cleanup: ${error}`);
+    }
+  }
+
+  /**
+   * Send priority breakdown as a thread reply
+   */
+  private async sendPriorityBreakdownThread(threadTs: string, data: SlackNotificationData): Promise<void> {
+    if (!this.client || !data.priorityStats) return;
+
+    try {
+      const priorityMessage = this.formatPriorityBreakdown(data.priorityStats);
+      
+      const result = await this.client.chat.postMessage({
+        channel: this.channelId,
+        thread_ts: threadTs,
+        text: priorityMessage,
+        mrkdwn: true
+      });
+
+      if (result.ok) {
+        console.log('✅ Priority breakdown thread sent successfully');
+      } else {
+        console.error('❌ Failed to send priority breakdown thread:', result.error);
+      }
+    } catch (error) {
+      console.error('❌ Error sending priority breakdown thread:', error);
+    }
+  }
+
+  /**
+   * Format priority breakdown message
+   */
+  private formatPriorityBreakdown(priorityStats: any): string {
+    const formatPriorityLine = (priority: string, stats: any) => {
+      const total = stats.total;
+      const passed = stats.passed;
+      const failed = stats.failed;
+      const skipped = stats.skipped;
+      
+      if (total === 0) return null;
+      
+      const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+      const emoji = failed > 0 ? '🔴' : (skipped > 0 ? '🟡' : '🟢');
+      
+      return `${emoji} *${priority.toUpperCase()}*: ${passed}/${total} passed (${passRate}%) | Failed: ${failed} | Skipped: ${skipped}`;
+    };
+
+    const lines = [
+      '📊 *Test Priority Breakdown*',
+      '',
+      formatPriorityLine('highest', priorityStats.highest),
+      formatPriorityLine('high', priorityStats.high),
+      formatPriorityLine('medium', priorityStats.medium),
+      formatPriorityLine('low', priorityStats.low)
+    ].filter(line => line !== null);
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Format date and time for display
+   */
+  private formatDateTime(date: Date): string {
+    return date.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    });
+  }
+
+  /**
+   * Upload a file to Slack
+   */
+  private async uploadFile(filePath: string, fileName: string, comment: string, threadTs?: string): Promise<void> {
+    if (!this.client) return;
+
+    try {
+      const uploadOptions: any = {
+        channels: this.channelId,
+        file: fs.createReadStream(filePath),
+        filename: fileName,
+        title: fileName,
+        initial_comment: comment
+      };
+
+      // Add thread_ts if provided
+      if (threadTs) {
+        uploadOptions.thread_ts = threadTs;
+      }
+
+      const result = await this.client.files.uploadV2(uploadOptions);
+
+      if (result.ok) {
+        console.log(`✅ ${fileName} uploaded successfully`);
+      } else {
+        console.error(`❌ Failed to upload ${fileName}:`, result.error);
+      }
+    } catch (error) {
+      console.error(`❌ Error uploading ${fileName}:`, error);
     }
   }
 

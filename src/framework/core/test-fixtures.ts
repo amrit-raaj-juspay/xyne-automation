@@ -8,13 +8,15 @@ import { test as base, expect, Page, Browser } from '@playwright/test';
 import { sharedBrowserManager, SharedScope } from './shared-browser-manager';
 import { dependencyManager } from './dependency-manager';
 import { TestMetadata, TestExecutionResult } from '@/types';
+import { APIMonitor } from '../utils/api-monitor';
 import path from 'path';
 
 // Define custom fixture types
 type CustomFixtures = {
-  sharedPage: Page;
+  sharedPage: { page: Page; apiMonitor?: APIMonitor };
   newSharedPage: Page;
   sharedPageWithScope: (scope: SharedScope) => Promise<Page>;
+  pageWithAPIMonitor: { page: Page; apiMonitor: APIMonitor };
 };
 
 // Extract file and suite information from test info
@@ -32,9 +34,44 @@ function getTestContext(testInfo: any) {
 // Create enhanced test with custom fixtures
 export const test = base.extend<CustomFixtures>({
   /**
-   * Shared page fixture - provides a shared page instance based on file scope
+   * Override the default page fixture to automatically include API monitoring
+   * This ensures all tests get API monitoring without requiring code changes
+   */
+  page: async ({ browser }, use, testInfo) => {
+    const testName = testInfo.title;
+    const { fileId } = getTestContext(testInfo);
+    
+    // Create a new context and page
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    
+    // Initialize API monitor automatically (TEMPORARILY DISABLED)
+    const apiMonitor = new APIMonitor(page, `${fileId}-${testName}`);
+    await apiMonitor.startMonitoring(`${fileId}-${testName}`);
+    
+    console.log(`� Using regular page for test: ${testName}`);
+    
+    try {
+      await use(page);
+    } finally {
+      // Save API monitoring results
+      try {
+        // const filePath = await apiMonitor.stopMonitoring();
+        // console.log(`📁 API calls auto-saved to: ${filePath}`);
+      } catch (error) {
+        console.error(`❌ Failed to save API calls: ${error}`);
+      }
+      
+      // Cleanup
+      await page.close();
+      await context.close();
+    }
+  },
+
+  /**
+   * Shared page fixture - provides a shared page instance with optional API monitoring
    * Automatically enables sequential execution for tests using this fixture
-   * Enhanced with dependency checking and priority support
+   * Enhanced with dependency checking, priority support, and automatic API monitoring
    */
   sharedPage: async ({ browser }, use, testInfo) => {
     const testName = testInfo.title;
@@ -77,6 +114,7 @@ export const test = base.extend<CustomFixtures>({
 
     let testResult: TestExecutionResult | undefined;
     let page: Page | undefined;
+    let apiMonitor: APIMonitor | undefined;
     let shouldCleanupPage = false;
 
     try {
@@ -99,9 +137,13 @@ export const test = base.extend<CustomFixtures>({
         shouldCleanupPage = false;
       }
 
+      // Initialize API monitor (TEMPORARILY DISABLED)
+      // apiMonitor = new APIMonitor(page, testName);
+      // await apiMonitor.startMonitoring(testName);
+
       console.log(`🔗 Using shared page for test: ${testName}`);
 
-      await use(page);
+      await use({ page, apiMonitor });
 
       // Test passed
       const duration = Date.now() - startTime;
@@ -137,6 +179,16 @@ export const test = base.extend<CustomFixtures>({
       throw error;
 
     } finally {
+      // Stop API monitoring and save results
+      if (apiMonitor) {
+        try {
+          const filePath = await apiMonitor.stopMonitoring();
+          console.log(`📁 API calls saved to: ${filePath}`);
+        } catch (error) {
+          console.error(`❌ Failed to save API calls: ${error}`);
+        }
+      }
+
       // Record test result for dependency tracking (if not already recorded in catch block)
       if (testResult && testResult.status !== 'failed') {
         dependencyManager.recordTestResult(testResult);
@@ -202,6 +254,39 @@ export const test = base.extend<CustomFixtures>({
 
     await use(getSharedPageWithScope);
   },
+
+  /**
+   * Page with API Monitor fixture - provides a regular page with API monitoring enabled
+   * Automatically captures all API calls and saves them to JSON file after test completion
+   */
+  pageWithAPIMonitor: async ({ browser }, use, testInfo) => {
+    const testName = testInfo.title;
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    
+    // Initialize API monitor
+    const apiMonitor = new APIMonitor(page, testName);
+    await apiMonitor.startMonitoring(testName);
+
+    console.log(`📊 API monitoring enabled for test: ${testName}`);
+
+    try {
+      await use({ page, apiMonitor });
+    } finally {
+      // Stop monitoring and save results
+      try {
+        const filePath = await apiMonitor.stopMonitoring();
+        console.log(`📁 API calls saved to: ${filePath}`);
+      } catch (error) {
+        console.error(`❌ Failed to save API calls: ${error}`);
+      }
+
+      // Cleanup
+      await page.close();
+      await context.close();
+    }
+  },
+
 });
 
 // Enhanced test function with metadata support
