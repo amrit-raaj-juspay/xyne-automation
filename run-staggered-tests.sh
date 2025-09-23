@@ -18,7 +18,7 @@ for file in $TEST_FILES; do
   
   # Command to be executed in the new terminal tab
   # This changes to the project directory, then runs a single test file with Playwright
-  COMMAND_TO_RUN="cd /Users/amrit.raj/Desktop/xyne-automation && npx playwright test $file --project=chromium ; exit"
+  COMMAND_TO_RUN="cd $PWD && npx playwright test $file --project=chromium --headed; exit"
   
   # AppleScript to open a new tab and run the command
   osascript -e "tell application \"Terminal\" to do script \"$COMMAND_TO_RUN\""
