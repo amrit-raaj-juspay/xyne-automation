@@ -248,11 +248,22 @@ export class LoginHelper {
     try {
       const currentUrl = page.url();
       
-      // Check if we're not on auth/login pages
+      // Check if we're on auth/login pages
       if (currentUrl.includes('/auth') || 
           currentUrl.includes('/login') || 
           currentUrl.includes('accounts.google.com')) {
         return false;
+      }
+  
+      // More reliable check: look for a key element on the main post-login page
+      try {
+        const askButtonVisible = await page.isVisible('button:has-text("Ask")', { timeout: 3000 });
+        if (askButtonVisible) {
+          console.log('✅ LoginHelper: Already logged in (found "Ask" button)');
+          return true;
+        }
+      } catch {
+        // "Ask" button not found, continue with other checks
       }
 
       // Check for common logged-in indicators
@@ -274,15 +285,6 @@ export class LoginHelper {
         } catch {
           // Continue checking other indicators
         }
-      }
-
-      // If we're on a protected page (not auth), assume logged in
-      const config = configManager.getConfig();
-      if (currentUrl.startsWith(config.baseUrl) && 
-          !currentUrl.includes('/auth') && 
-          !currentUrl.includes('/login')) {
-        console.log('✅ LoginHelper: Already logged in (on protected page)');
-        return true;
       }
 
       return false;

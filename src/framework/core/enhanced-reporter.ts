@@ -7,6 +7,7 @@ import { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/rep
 import { dependencyManager } from './dependency-manager';
 import { PriorityExecutionStats, TestPriority, TestMetadata } from '@/types';
 import { slackNotifier, SlackNotificationData } from '../utils/slack-notifier';
+import { createZipArchive } from '../utils/zip-utils';
 import { configManager } from './config-manager';
 import fs from 'fs';
 import path from 'path';
@@ -266,6 +267,26 @@ export default class EnhancedReporter implements Reporter {
       
       // Get Playwright HTML report path
       const playwrightHtmlReportPath = path.join('reports', 'html-report', 'index.html');
+      let finalHtmlReportPath: string | undefined;
+      
+      // Create a zip archive of the HTML report directory
+      if (fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
+        try {
+          const zipReportPath = path.join('reports', 'html-report.zip');
+          console.log('📦 Creating zip archive of the HTML report...');
+          await createZipArchive({
+            sourceDir: path.dirname(playwrightHtmlReportPath),
+            outputFile: zipReportPath,
+            verbose: true
+          });
+          finalHtmlReportPath = zipReportPath;
+          console.log('✅ HTML report archive created successfully');
+        } catch (zipError) {
+          console.error('❌ Error creating HTML report archive:', zipError);
+          // Fallback to the non-archived report path
+          finalHtmlReportPath = playwrightHtmlReportPath;
+        }
+      }
       
       const slackData: SlackNotificationData = {
         totalTests: summary.totalTests || 0,
@@ -276,7 +297,7 @@ export default class EnhancedReporter implements Reporter {
         testEnvUrl: config.baseUrl || 'https://xyne.juspay.net',
         scriptRunBy: process.env.SCRIPT_RUN_BY || process.env.USER || process.env.USERNAME || 'Unknown User',
         moduleName: moduleName,
-        htmlReportPath: fs.existsSync(playwrightHtmlReportPath) ? playwrightHtmlReportPath : undefined,
+        htmlReportPath: finalHtmlReportPath,
         priorityStats: {
           highest: this.stats.highest,
           high: this.stats.high,
@@ -299,6 +320,16 @@ export default class EnhancedReporter implements Reporter {
     const envModuleName = process.env.MODULE_NAME;
     if (envModuleName) {
       return envModuleName;
+    }
+
+    // If we can't extract from file paths, try to get from process.argv
+    // Playwright often passes the test file as an argument
+    const testFileArg = process.argv.find(arg => arg.includes('.spec.ts') || arg.includes('.test.ts'));
+    if (testFileArg) {
+      const moduleName = this.extractModuleNameFromPath(testFileArg);
+      if (moduleName) {
+        return moduleName;
+      }
     }
 
     // Extract module name from test file paths
@@ -325,16 +356,6 @@ export default class EnhancedReporter implements Reporter {
             }
           }
         }
-      }
-    }
-
-    // If we can't extract from file paths, try to get from process.argv
-    // Playwright often passes the test file as an argument
-    const testFileArg = process.argv.find(arg => arg.includes('.spec.ts') || arg.includes('.test.ts'));
-    if (testFileArg) {
-      const moduleName = this.extractModuleNameFromPath(testFileArg);
-      if (moduleName) {
-        return moduleName;
       }
     }
 

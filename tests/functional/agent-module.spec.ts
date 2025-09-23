@@ -73,7 +73,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@button'],
     description: 'Verify CREATE button functionality on agent page'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.verifyAndClickAgentCreateButton();
   });
 
@@ -82,7 +82,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@form'],
     description: 'Verify create agent form elements after CREATE button click'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.verifyCreateAgentFormElements();
   });
 
@@ -91,7 +91,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@form-fill'],
     description: 'Fill and submit create agent form'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.createAgentWithFormData();
   });
 
@@ -100,7 +100,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@popup'],
     description: 'Verify success popup appears after agent creation'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.verifySuccessPopupAfterAgentCreation();
   });
 
@@ -109,7 +109,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@verification'],
     description: 'Verify created agent appears in agent list tabs'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.verifyCreatedAgentAppearsInTabs();
   });
 
@@ -118,7 +118,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@edit'],
     description: 'Edit the created agent and verify success popup'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.editCreatedAgentAndVerifySuccess();
   });
 
@@ -127,7 +127,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@verification'],
     description: 'Verify edited agent appears with updated details in MADE-BY-ME and ALL tabs'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.verifyEditedAgentDetailsInTabs();
   });
 
@@ -136,7 +136,7 @@ test.describe('Agent Module Tests', () => {
     tags: ['@core', '@agent', '@delete'],
     description: 'Delete the created agent and verify it is removed'
   }, async ({ sharedPage }) => {
-    const agentPage = new AgentModulePage(sharedPage);
+    const agentPage = new AgentModulePage(sharedPage.page)
     await agentPage.deleteAgentAndVerifyRemoval();
   });
 
