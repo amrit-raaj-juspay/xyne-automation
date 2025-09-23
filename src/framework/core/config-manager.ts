@@ -184,7 +184,10 @@ export class ConfigManager {
     }
 
     // Validate browser
-    if (!['chromium', 'firefox', 'webkit'].includes(this.config.browser)) {
+    const browserType = typeof this.config.browser === 'string' 
+      ? this.config.browser 
+      : this.config.browser.type;
+    if (!['chromium', 'firefox', 'webkit'].includes(browserType)) {
       errors.push('Invalid browser type');
     }
 

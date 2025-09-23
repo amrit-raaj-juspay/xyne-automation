@@ -140,7 +140,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
     
     // Wait for email field and enter email
     await this.waitForElement(this.googleSelectors.emailField, 15000);
-    await this.fillElement(this.googleSelectors.emailField, email);
+    await this.fill(this.googleSelectors.emailField, email);
     
     // Click Next button
     await this.waitForElement(this.googleSelectors.emailNextButton, 5000);
@@ -162,7 +162,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
     
     // Wait for password field and enter password
     await this.waitForElement(this.googleSelectors.passwordField, 15000);
-    await this.fillElement(this.googleSelectors.passwordField, password);
+    await this.fill(this.googleSelectors.passwordField, password);
     
     // Click Next button
     await this.waitForElement(this.googleSelectors.passwordNextButton, 5000);
@@ -277,7 +277,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
     const totpCode = await this.totpGenerator.generateCodeWithTiming(3);
     
     // Enter TOTP code
-    await this.fillElement(this.googleSelectors.otpField, totpCode);
+    await this.fill(this.googleSelectors.otpField, totpCode);
     await this.page.waitForTimeout(1000);
     
     // Click Next button

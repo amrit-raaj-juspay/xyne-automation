@@ -83,13 +83,23 @@ export abstract class BasePage {
   }
 
   /**
-   * Fill an input element
+   * Fill an input element. If the selector suggests it's a password field,
+   * it uses direct DOM manipulation to set the value, preventing it from being logged.
    */
-  async fillElement(selector: string, text: string, options?: { timeout?: number }): Promise<void> {
+  async fill(selector: string, text: string, options?: { timeout?: number }): Promise<void> {
     const element = this.page.locator(selector);
-    await element.fill(text, {
-      timeout: options?.timeout || this.config.timeout.action
-    });
+    const isPassword = selector.toLowerCase().includes('password');
+
+    if (isPassword) {
+      console.log(`Securely setting value for sensitive field: ${selector}`);
+      // Use evaluate to set the value directly on the DOM element.
+      // This is the most secure method as it bypasses Playwright's action logging entirely.
+      await element.evaluate((el, value) => (el as HTMLInputElement).value = value, text);
+    } else {
+      await element.fill(text, {
+        timeout: options?.timeout || this.config.timeout.action
+      });
+    }
   }
 
   /**

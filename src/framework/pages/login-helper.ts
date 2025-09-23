@@ -74,7 +74,7 @@ export class LoginHelper {
       password: options.password || process.env.GOOGLE_PASSWORD || '',
       totpSecret: options.totpSecret || process.env.TOTP_SECRET_KEY || '',
       timeout: options.timeout || 60000,
-      retries: options.retries || 2,
+      retries: options.retries ?? 2,
       screenshotOnFailure: options.screenshotOnFailure ?? true,
       loginUrl: options.loginUrl || configManager.getLoginUrl()
     };
@@ -110,10 +110,11 @@ export class LoginHelper {
     // Attempt login with retries
     let lastError: string = '';
     let screenshotPath: string | undefined;
+    const maxAttempts = opts.retries + 1;
 
-    for (let attempt = 1; attempt <= opts.retries + 1; attempt++) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        console.log(`🔄 LoginHelper: Attempt ${attempt}/${opts.retries + 1}`);
+        console.log(`🔄 LoginHelper: Attempt ${attempt}/${maxAttempts}`);
         
         const loginPage = new GoogleOAuthLoginPage(page);
         
@@ -165,7 +166,7 @@ export class LoginHelper {
         }
 
         // Take screenshot on failure (except for last attempt, handled below)
-        if (opts.screenshotOnFailure && attempt < opts.retries + 1) {
+        if (opts.screenshotOnFailure && attempt < maxAttempts) {
           try {
             screenshotPath = await loginPage.takeLoginScreenshot(`login_failure_attempt_${attempt}`);
             console.log(`📸 LoginHelper: Screenshot saved: ${screenshotPath}`);
@@ -175,7 +176,7 @@ export class LoginHelper {
         }
 
         // Wait before retry (except for last attempt)
-        if (attempt < opts.retries + 1) {
+        if (attempt < maxAttempts) {
           console.log(`⏳ LoginHelper: Waiting 3 seconds before retry...`);
           await page.waitForTimeout(3000);
         }
@@ -201,7 +202,7 @@ export class LoginHelper {
         }
 
         // Wait before retry (except for last attempt)
-        if (attempt < opts.retries + 1) {
+        if (attempt < maxAttempts) {
           console.log(`⏳ LoginHelper: Waiting 5 seconds before retry after error...`);
           await page.waitForTimeout(5000);
         }
@@ -247,11 +248,22 @@ export class LoginHelper {
     try {
       const currentUrl = page.url();
       
-      // Check if we're not on auth/login pages
+      // Check if we're on auth/login pages
       if (currentUrl.includes('/auth') || 
           currentUrl.includes('/login') || 
           currentUrl.includes('accounts.google.com')) {
         return false;
+      }
+  
+      // More reliable check: look for a key element on the main post-login page
+      try {
+        const askButtonVisible = await page.isVisible('button:has-text("Ask")', { timeout: 3000 });
+        if (askButtonVisible) {
+          console.log('✅ LoginHelper: Already logged in (found "Ask" button)');
+          return true;
+        }
+      } catch {
+        // "Ask" button not found, continue with other checks
       }
 
       // Check for common logged-in indicators
@@ -273,15 +285,6 @@ export class LoginHelper {
         } catch {
           // Continue checking other indicators
         }
-      }
-
-      // If we're on a protected page (not auth), assume logged in
-      const config = configManager.getConfig();
-      if (currentUrl.startsWith(config.baseUrl) && 
-          !currentUrl.includes('/auth') && 
-          !currentUrl.includes('/login')) {
-        console.log('✅ LoginHelper: Already logged in (on protected page)');
-        return true;
       }
 
       return false;

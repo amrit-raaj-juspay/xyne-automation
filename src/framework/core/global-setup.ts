@@ -29,7 +29,8 @@ async function globalSetup(config: FullConfig) {
     'reports/traces',
     'reports/network',
     'reports/html-report',
-    'reports/test-artifacts'
+    'reports/test-artifacts',
+    'reports/api-calls'
   ];
   
   directories.forEach(dir => {
