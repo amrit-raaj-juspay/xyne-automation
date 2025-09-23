@@ -160,7 +160,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
     
     const { password } = this.getCredentials();
     
-    // Wait for password field and enter password
+    // Wait for password field and enter password securely
     await this.waitForElement(this.googleSelectors.passwordField, 15000);
     await this.fillElement(this.googleSelectors.passwordField, password);
     

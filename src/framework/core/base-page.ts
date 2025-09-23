@@ -85,12 +85,33 @@ export abstract class BasePage {
   /**
    * Fill an input element
    */
-  async fillElement(selector: string, text: string, options?: { timeout?: number }): Promise<void> {
+  async fillElement(selector: string, text: string, options?: { timeout?: number; maskInReports?: boolean }): Promise<void> {
     const element = this.page.locator(selector);
-    await element.fill(text, {
-      timeout: options?.timeout || this.config.timeout.action
-    });
+    
+    // Check if this is a password field or if masking is explicitly requested
+    const isPasswordField = selector.includes('password') || selector.includes('[type="password"]') || options?.maskInReports;
+    
+    if (isPasswordField) {
+      // For password fields, use secure JavaScript execution to avoid logging
+      await element.click();
+      await element.fill('');  // Clear first
+      
+      // Use JavaScript execution to set value directly without logging
+      await element.evaluate((el: HTMLInputElement, value: string) => {
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, text);
+      
+      // Small delay to ensure the value is set
+      await this.page.waitForTimeout(100);
+    } else {
+      await element.fill(text, {
+        timeout: options?.timeout || this.config.timeout.action
+      });
+    }
   }
+
 
   /**
    * Get text content of an element
