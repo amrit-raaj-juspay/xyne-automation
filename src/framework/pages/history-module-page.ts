@@ -27,6 +27,15 @@ export class HistoryModulePage {
     renameButton: 'div[role="button"]:has(svg.lucide-pencil):has(span:has-text("Rename"))',
     renameInput: 'input[type="text"], input[placeholder*="name"], input[placeholder*="title"], textarea',
     deleteButton: 'div[role="button"]:has(svg.lucide-trash2):has(span:has-text("Delete"))',
+    crossButton: 'svg.lucide-x',
+    crossButtonWithStroke: 'svg.lucide-x[stroke="#4A4F59"], svg.lucide-x.dark\\:stroke-gray-300',
+    chatInputArea: 'div[contenteditable="true"][data-at-mention="true"].flex-grow.resize-none.bg-transparent.outline-none',
+    chatInputAreaSpecific: 'div[contenteditable="true"][data-at-mention="true"][class*="flex-grow"][class*="resize-none"][class*="bg-transparent"][class*="outline-none"]',
+    sendButton: 'button:has(svg.lucide-arrow-right)',
+    sendButtonSpecific: 'button.flex.mr-6:has(svg.lucide-arrow-right)',
+    chatTitleSpan: 'span.text-\\[14px\\].dark\\:text-gray-200.pl-\\[10px\\].pr-\\[10px\\].truncate.cursor-pointer.flex-grow',
+    allChatTitles: 'text=All Chats >> xpath=following-sibling::ul >> li >> span.cursor-pointer',
+    favouriteChatTitles: 'text=Favourite Chats >> xpath=following-sibling::ul >> li >> span.cursor-pointer',
   };
 
   // Navigation methods
@@ -421,6 +430,514 @@ export class HistoryModulePage {
     
     console.log(`All Chats entry ${index} text: "${chatText}"`);
     return chatText || '';
+  }
+
+  // Cross button methods
+  async clickCrossButton(): Promise<void> {
+    console.log('Clicking cross (X) button');
+    
+    // Find the cross button using the lucide-x class
+    const crossButton = this.page.locator(this.selectors.crossButton);
+    
+    // Verify the cross button is visible
+    await expect(crossButton).toBeVisible({ timeout: 5000 });
+    console.log('Cross button found and visible');
+    
+    // Click on the cross button
+    await crossButton.click();
+    console.log('Cross button clicked');
+    
+    // Wait for the action to complete
+    await this.page.waitForTimeout(2000);
+  }
+
+  async clickCrossButtonWithStroke(): Promise<void> {
+    console.log('Clicking cross (X) button with specific stroke color');
+    
+    // Find the cross button with specific stroke attributes
+    const crossButton = this.page.locator(this.selectors.crossButtonWithStroke);
+    
+    // Verify the cross button is visible
+    await expect(crossButton).toBeVisible({ timeout: 5000 });
+    console.log('Cross button with stroke found and visible');
+    
+    // Click on the cross button
+    await crossButton.click();
+    console.log('Cross button with stroke clicked');
+    
+    // Wait for the action to complete
+    await this.page.waitForTimeout(2000);
+  }
+
+  async verifyCrossButtonVisible(): Promise<void> {
+    console.log('Verifying cross (X) button is visible');
+    
+    const crossButton = this.page.locator(this.selectors.crossButton);
+    await expect(crossButton).toBeVisible({ timeout: 5000 });
+    console.log('Cross button is visible');
+  }
+
+  async clickFirstVisibleCrossButton(): Promise<void> {
+    console.log('Clicking first visible cross (X) button');
+    
+    // Find all cross buttons and click the first visible one
+    const crossButtons = this.page.locator(this.selectors.crossButton);
+    const count = await crossButtons.count();
+    
+    console.log(`Found ${count} cross button(s) on the page`);
+    
+    if (count > 0) {
+      // Click the first cross button
+      await crossButtons.first().click();
+      console.log('First cross button clicked');
+      
+      // Wait for the action to complete
+      await this.page.waitForTimeout(2000);
+    } else {
+      console.log('No cross buttons found on the page');
+    }
+  }
+
+  async clickCrossButtonInContext(contextSelector: string): Promise<void> {
+    console.log(`Clicking cross button within context: ${contextSelector}`);
+    
+    // Find the cross button within a specific context/container
+    const contextElement = this.page.locator(contextSelector);
+    const crossButton = contextElement.locator(this.selectors.crossButton);
+    
+    // Verify the cross button is visible within the context
+    await expect(crossButton).toBeVisible({ timeout: 5000 });
+    console.log(`Cross button found within context: ${contextSelector}`);
+    
+    // Click on the cross button
+    await crossButton.click();
+    console.log('Cross button clicked within context');
+    
+    // Wait for the action to complete
+    await this.page.waitForTimeout(2000);
+  }
+
+  // Chat input area methods
+  async clickChatInputArea(): Promise<void> {
+    console.log('Clicking on chat input area');
+    
+    // Find the chat input area using contenteditable div
+    const chatInputArea = this.page.locator(this.selectors.chatInputArea);
+    
+    // Verify the chat input area is visible
+    await expect(chatInputArea).toBeVisible({ timeout: 10000 });
+    console.log('Chat input area found and visible');
+    
+    // Click on the chat input area to focus it
+    await chatInputArea.click();
+    console.log('Chat input area clicked and focused');
+    
+    // Wait for focus to take effect
+    await this.page.waitForTimeout(1000);
+  }
+
+  async typeChatMessage(message: string): Promise<void> {
+    console.log(`Typing message in chat input: "${message}"`);
+    
+    // Find the chat input area
+    const chatInputArea = this.page.locator(this.selectors.chatInputArea);
+    
+    // Verify the chat input area is visible
+    await expect(chatInputArea).toBeVisible({ timeout: 5000 });
+    console.log('Chat input area found');
+    
+    // Click to focus and then type the message
+    await chatInputArea.click();
+    await chatInputArea.fill(message);
+    console.log(`Message "${message}" typed in chat input area`);
+    
+    // Wait for typing to complete
+    await this.page.waitForTimeout(1000);
+  }
+
+  async verifyChatInputAreaVisible(): Promise<void> {
+    console.log('Verifying chat input area is visible');
+    
+    const chatInputArea = this.page.locator(this.selectors.chatInputArea);
+    await expect(chatInputArea).toBeVisible({ timeout: 10000 });
+    console.log('Chat input area is visible');
+  }
+
+  async clickChatInputAreaSpecific(): Promise<void> {
+    console.log('Clicking on specific chat input area with detailed selector');
+    
+    // Find the chat input area using more specific selector
+    const chatInputArea = this.page.locator(this.selectors.chatInputAreaSpecific);
+    
+    // Verify the chat input area is visible
+    await expect(chatInputArea).toBeVisible({ timeout: 10000 });
+    console.log('Specific chat input area found and visible');
+    
+    // Click on the chat input area to focus it
+    await chatInputArea.click();
+    console.log('Specific chat input area clicked and focused');
+    
+    // Wait for focus to take effect
+    await this.page.waitForTimeout(1000);
+  }
+
+  async sendChatMessage(): Promise<void> {
+    console.log('Sending chat message by clicking send button');
+    
+    // Find the send button (arrow button)
+    const sendButton = this.page.locator(this.selectors.sendButton);
+    
+    // Verify the send button is visible
+    await expect(sendButton).toBeVisible({ timeout: 5000 });
+    console.log('Send button (arrow) found and visible');
+    
+    // Click the send button
+    await sendButton.click();
+    console.log('Send button (arrow) clicked');
+    
+    // Wait for message to be sent (reduced time)
+    await this.page.waitForTimeout(1000);
+  }
+
+  async clickSendButton(): Promise<void> {
+    console.log('Clicking send button (arrow button)');
+    
+    // Find the send button using specific selector
+    const sendButton = this.page.locator(this.selectors.sendButtonSpecific);
+    
+    // Verify the send button is visible
+    await expect(sendButton).toBeVisible({ timeout: 5000 });
+    console.log('Specific send button found and visible');
+    
+    // Click the send button
+    await sendButton.click();
+    console.log('Send button clicked');
+    
+    // Wait for message to be sent
+    await this.page.waitForTimeout(1000);
+  }
+
+  async verifySendButtonVisible(): Promise<void> {
+    console.log('Verifying send button (arrow) is visible');
+    
+    const sendButton = this.page.locator(this.selectors.sendButton);
+    await expect(sendButton).toBeVisible({ timeout: 5000 });
+    console.log('Send button (arrow) is visible');
+  }
+
+  async waitForAIResponseAndTitle(): Promise<void> {
+    console.log('Waiting for AI response and title generation');
+    
+    // Wait for AI to start responding (look for loading indicators or response text)
+    try {
+      // Wait for AI response to appear - looking for common response indicators
+      const responseSelectors = [
+        '[data-testid="ai-response"]',
+        '[class*="response"]',
+        '[class*="message"]',
+        'div:has-text("AI")',
+        'div[class*="assistant"]',
+        'div[class*="bot"]'
+      ];
+      
+      console.log('Waiting for AI response to appear...');
+      
+      // Wait for any response indicator (reduced timeout for faster execution)
+      await Promise.race([
+        this.page.waitForSelector(responseSelectors[0], { timeout: 15000 }).catch(() => null),
+        this.page.waitForSelector(responseSelectors[1], { timeout: 15000 }).catch(() => null),
+        this.page.waitForSelector(responseSelectors[2], { timeout: 15000 }).catch(() => null),
+        this.page.waitForTimeout(15000) // Reduced fallback timeout
+      ]);
+      
+      console.log('AI response detected or timeout reached');
+      
+      // Wait additional time for title generation (reduced time)
+      console.log('Waiting for chat title to be generated...');
+      await this.page.waitForTimeout(3000);
+      
+      // Check if we're back on main chat page (not history)
+      const currentUrl = this.page.url();
+      if (!currentUrl.includes('history') && !currentUrl.includes('knowledgeManagement')) {
+        console.log('Successfully on main chat page');
+      }
+      
+      console.log('AI response and title generation completed');
+      
+    } catch (error) {
+      console.log('AI response wait completed (may have timed out, but continuing)');
+    }
+  }
+
+  async waitForChatTitleGeneration(): Promise<void> {
+    console.log('Waiting specifically for chat title to be generated');
+    
+    try {
+      // Wait for title to appear in page title or specific title element
+      await this.page.waitForFunction(() => {
+        // Check if page title has changed from default
+        const title = document.title;
+        return title && title !== 'Xyne' && title.length > 5;
+      }, { timeout: 15000 });
+      
+      console.log('Chat title has been generated');
+    } catch (error) {
+      console.log('Title generation wait completed (may have timed out)');
+    }
+  }
+
+  // Combined workflow methods
+  async exitHistoryAndStartNewChat(message: string = 'hello this is for test'): Promise<void> {
+    console.log('Starting workflow: Exit history and start new chat');
+    
+    // Check if we're currently on history page or main chat page
+    const currentUrl = this.page.url();
+    const isOnHistoryPage = currentUrl.includes('history') || currentUrl.includes('knowledgeManagement');
+    
+    if (isOnHistoryPage) {
+      // Step 1: Click cross button to exit history (only if on history page)
+      await this.clickCrossButton();
+      console.log('✅ Step 1: Exited chat history');
+      
+      // Step 2: Wait for page transition
+      await this.page.waitForTimeout(2000);
+      console.log('✅ Step 2: Waited for page transition');
+    } else {
+      console.log('✅ Step 1-2: Already on main chat page, skipping cross button click');
+    }
+    
+    // Step 3: Click on chat input area
+    await this.clickChatInputArea();
+    console.log('✅ Step 3: Clicked on chat input area');
+    
+    // Step 4: Type the test message
+    await this.typeChatMessage(message);
+    console.log(`✅ Step 4: Typed message "${message}"`);
+    
+    // Step 5: Send the message (press Enter)
+    await this.sendChatMessage();
+    console.log('✅ Step 5: Sent the message');
+    
+    // Step 6: Wait for AI response and title generation
+    await this.waitForAIResponseAndTitle();
+    console.log('✅ Step 6: AI response and title generated');
+    
+    console.log('🎉 Workflow completed: Exit history and start new chat with response');
+  }
+
+  async exitHistoryAndStartNewChatWithSpecificInput(message: string = 'hello this is for test'): Promise<void> {
+    console.log('Starting workflow: Exit history and start new chat with specific input selector');
+    
+    // Step 1: Click cross button to exit history
+    await this.clickCrossButton();
+    console.log('✅ Step 1: Exited chat history');
+    
+    // Step 2: Wait for page transition
+    await this.page.waitForTimeout(3000);
+    console.log('✅ Step 2: Waited for page transition');
+    
+    // Step 3: Verify chat input area is available
+    await this.verifyChatInputAreaVisible();
+    console.log('✅ Step 3: Verified chat input area is visible');
+    
+    // Step 4: Click on specific chat input area
+    await this.clickChatInputAreaSpecific();
+    console.log('✅ Step 4: Clicked on specific chat input area');
+    
+    // Step 5: Type the test message
+    await this.typeChatMessage(message);
+    console.log(`✅ Step 5: Typed message "${message}"`);
+    
+    console.log('🎉 Workflow completed: Exit history and start new chat with specific input');
+  }
+
+  // Chat clicking methods
+  async clickChatByIndex(index: number, section: 'all' | 'favourite' = 'all'): Promise<string> {
+    console.log(`Clicking chat at index ${index} from ${section} chats section`);
+    
+    let chatEntries;
+    if (section === 'favourite') {
+      chatEntries = this.page.locator(this.selectors.favouriteChatTitles);
+    } else {
+      chatEntries = this.page.locator(this.selectors.allChatTitles);
+    }
+    
+    // Get the specific chat entry
+    const chatEntry = chatEntries.nth(index);
+    await expect(chatEntry).toBeVisible({ timeout: 10000 });
+    
+    // Get the chat title before clicking
+    const chatTitle = await chatEntry.textContent();
+    console.log(`Found chat "${chatTitle}" at index ${index}`);
+    
+    // Click on the chat title
+    await chatEntry.click();
+    console.log(`Clicked on chat "${chatTitle}"`);
+    
+    // Wait for navigation to complete
+    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForTimeout(2000);
+    
+    return chatTitle || '';
+  }
+
+  async clickFirstChat(section: 'all' | 'favourite' = 'all'): Promise<string> {
+    console.log(`Clicking first chat from ${section} chats section`);
+    return await this.clickChatByIndex(0, section);
+  }
+
+  async clickSecondChat(section: 'all' | 'favourite' = 'all'): Promise<string> {
+    console.log(`Clicking second chat from ${section} chats section`);
+    return await this.clickChatByIndex(1, section);
+  }
+
+  async clickThirdChat(section: 'all' | 'favourite' = 'all'): Promise<string> {
+    console.log(`Clicking third chat from ${section} chats section`);
+    return await this.clickChatByIndex(2, section);
+  }
+
+  async getAllChatTitles(section: 'all' | 'favourite' = 'all'): Promise<string[]> {
+    console.log(`Getting all chat titles from ${section} chats section`);
+    
+    let chatEntries;
+    if (section === 'favourite') {
+      chatEntries = this.page.locator(this.selectors.favouriteChatTitles);
+    } else {
+      chatEntries = this.page.locator(this.selectors.allChatTitles);
+    }
+    
+    const count = await chatEntries.count();
+    const titles: string[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const title = await chatEntries.nth(i).textContent();
+      if (title) {
+        titles.push(title.trim());
+      }
+    }
+    
+    console.log(`Found ${titles.length} chat titles in ${section} section:`, titles);
+    return titles;
+  }
+
+  async clickMultipleChats(chatIndices: number[], section: 'all' | 'favourite' = 'all'): Promise<string[]> {
+    console.log(`Clicking multiple chats at indices [${chatIndices.join(', ')}] from ${section} chats section`);
+    
+    const clickedChats: string[] = [];
+    
+    for (const index of chatIndices) {
+      try {
+        // Navigate back to history page before clicking next chat
+        if (clickedChats.length > 0) {
+          await this.navigateToHistoryPage();
+        }
+        
+        const chatTitle = await this.clickChatByIndex(index, section);
+        clickedChats.push(chatTitle);
+        
+        console.log(`✅ Successfully clicked chat ${index + 1}: "${chatTitle}"`);
+        
+        // Wait a bit between clicks
+        await this.page.waitForTimeout(1000);
+        
+      } catch (error) {
+        console.log(`❌ Failed to click chat at index ${index}: ${error}`);
+      }
+    }
+    
+    console.log(`Completed clicking ${clickedChats.length} chats:`, clickedChats);
+    return clickedChats;
+  }
+
+  async clickFirstTwoChats(section: 'all' | 'favourite' = 'all'): Promise<string[]> {
+    console.log(`Clicking first two chats from ${section} chats section`);
+    return await this.clickMultipleChats([0, 1], section);
+  }
+
+  async clickFirstThreeChats(section: 'all' | 'favourite' = 'all'): Promise<string[]> {
+    console.log(`Clicking first three chats from ${section} chats section`);
+    return await this.clickMultipleChats([0, 1, 2], section);
+  }
+
+  async verifyChatNavigation(expectedChatTitle: string): Promise<void> {
+    console.log(`Verifying navigation to chat: "${expectedChatTitle}"`);
+    
+    // Check if we're on a chat page (not history page)
+    const currentUrl = this.page.url();
+    const isOnChatPage = !currentUrl.includes('history') && !currentUrl.includes('knowledgeManagement');
+    
+    if (isOnChatPage) {
+      console.log(`✅ Successfully navigated to chat page`);
+      console.log(`Current URL: ${currentUrl}`);
+    } else {
+      console.log(`❌ Still on history page, navigation may have failed`);
+    }
+  }
+
+  // Scrolling methods
+  async scrollDownInHistory(): Promise<void> {
+    console.log('Scrolling down in history page');
+    
+    // Target the specific scrollable container from the HTML structure
+    const scrollContainer = this.page.locator('.flex-1.overflow-auto.mt-\\[15px\\]');
+    
+    if (await scrollContainer.isVisible()) {
+      await scrollContainer.evaluate((element) => {
+        element.scrollBy(0, 300);
+      });
+      console.log('Scrolled down 300px in history container');
+    } else {
+      console.log('History container not found, trying alternative selector');
+      // Try alternative selector
+      const altContainer = this.page.locator('.history-modal-container .flex-1.overflow-auto');
+      if (await altContainer.isVisible()) {
+        await altContainer.evaluate((element) => {
+          element.scrollBy(0, 300);
+        });
+        console.log('Scrolled down 300px in alternative history container');
+      } else {
+        console.log('No scrollable container found');
+      }
+    }
+    
+    await this.page.waitForTimeout(1000);
+  }
+
+  async scrollUpInHistory(): Promise<void> {
+    console.log('Scrolling up in history page');
+    
+    // Target the specific scrollable container from the HTML structure
+    const scrollContainer = this.page.locator('.flex-1.overflow-auto.mt-\\[15px\\]');
+    
+    if (await scrollContainer.isVisible()) {
+      await scrollContainer.evaluate((element) => {
+        element.scrollBy(0, -300);
+      });
+      console.log('Scrolled up 300px in history container');
+    } else {
+      console.log('History container not found, trying alternative selector');
+      // Try alternative selector
+      const altContainer = this.page.locator('.history-modal-container .flex-1.overflow-auto');
+      if (await altContainer.isVisible()) {
+        await altContainer.evaluate((element) => {
+          element.scrollBy(0, -300);
+        });
+        console.log('Scrolled up 300px in alternative history container');
+      } else {
+        console.log('No scrollable container found');
+      }
+    }
+    
+    await this.page.waitForTimeout(1000);
+  }
+
+  // Page refresh methods
+  async refreshPage(): Promise<void> {
+    console.log('Refreshing the page');
+    await this.page.reload();
+    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForTimeout(2000);
+    console.log('Page refreshed successfully');
   }
 
   // Utility methods

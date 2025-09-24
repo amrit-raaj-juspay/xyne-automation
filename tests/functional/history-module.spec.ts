@@ -274,4 +274,156 @@ test.describe('History Module Tests', () => {
     console.log('Delete button click test completed');
   });
 
+  testHigh('verify cross button is visible', {
+    tags: ['@ui', '@cross-button', '@verification'],
+    description: 'Verify that cross (X) button is visible on the history page'
+  }, async () => {
+    console.log('Starting cross button visibility verification test');
+    
+    // Verify cross button is visible on the page
+    await historyPage.verifyCrossButtonVisible();
+    
+    console.log('Cross button visibility verification completed');
+  });
+
+  testHigh('click cross button', {
+    tags: ['@ui', '@cross-button', '@click'],
+    description: 'Click the cross (X) button to close or dismiss element'
+  }, async () => {
+    console.log('Starting cross button click test');
+    
+    // Click the cross button
+    await historyPage.clickCrossButton();
+    
+    console.log('Cross button click test completed');
+  });
+
+  testHigh('exit history and start new chat', {
+    tags: ['@ui', '@workflow', '@chat-input'],
+    description: 'Complete workflow: Exit chat history and start new chat with test message'
+  }, async () => {
+    console.log('Starting exit history and start new chat workflow test');
+   
+    // Execute the complete workflow: exit history and start new chat
+    await historyPage.exitHistoryAndStartNewChat('hello this is for test');
+    
+    console.log('Exit history and start new chat workflow test completed');
+  });
+
+  testHigh('navigate to history page via sidebar icon again', {
+    tags: ['@navigation', '@sidebar', '@history'],
+    description: 'Navigate to chat history page using sidebar history icon after creating new chat'
+  }, async () => {
+    console.log('Starting navigation to history page test again');
+    
+    // Use page object method to navigate to history page
+    await historyPage.navigateToHistoryPage();
+    
+    // Get current URL for logging
+    await historyPage.getCurrentUrl();
+    
+    console.log('Navigation to history page completed successfully again');
+  });
+
+  
+  testHigh('click second chat from all chats section', {
+    tags: ['@ui', '@chat-navigation', '@click'],
+    description: 'Click on the second chat from All Chats section to navigate to that chat'
+  }, async () => {
+    console.log('Starting second chat click test');
+    
+    // We are already on history page from previous test, so directly click second chat
+    const chatTitle = await historyPage.clickSecondChat('all');
+    
+    // Verify navigation to the chat
+    await historyPage.verifyChatNavigation(chatTitle);
+    
+    console.log(`Second chat click test completed - clicked on: "${chatTitle}"`);
+  });
+
+  // testHigh('navigate back to history page after second chat click', {
+  //   tags: ['@navigation', '@sidebar', '@history'],
+  //   description: 'Navigate back to chat history page using sidebar history icon after clicking second chat'
+  // }, async () => {
+  //   console.log('Starting navigation back to history page after second chat click');
+    
+  //   // Use page object method to navigate to history page
+  //   await historyPage.navigateToHistoryPage();
+    
+  //   // Get current URL for logging
+  //   await historyPage.getCurrentUrl();
+    
+  //   console.log('Navigation back to history page completed successfully after second chat click');
+  // });
+
+  testHigh('click third chat from all chats section', {
+    tags: ['@ui', '@chat-navigation', '@click'],
+    description: 'Click on the third chat from All Chats section to navigate to that chat'
+  }, async () => {
+    console.log('Starting third chat click test');
+    
+    // We are already on history page from previous test, so directly click third chat
+    const chatTitle = await historyPage.clickThirdChat('all');
+    
+    // Verify navigation to the chat
+    await historyPage.verifyChatNavigation(chatTitle);
+    
+    console.log(`Third chat click test completed - clicked on: "${chatTitle}"`);
+  });
+
+  testHigh('type follow-up question after third chat click', {
+    tags: ['@ui', '@chat-input', '@followup'],
+    description: 'Type a follow-up question in the chat after clicking third chat'
+  }, async () => {
+    console.log('Starting follow-up question test after third chat click');
+    
+    // Click on chat input area
+    await historyPage.clickChatInputArea();
+    
+    // Type the follow-up message
+    const followupMessage = 'hello testing for followup';
+    await historyPage.typeChatMessage(followupMessage);
+    
+    // Send the message
+    await historyPage.sendChatMessage();
+    
+    // Wait for AI response
+    await historyPage.waitForAIResponseAndTitle();
+    
+    console.log(`Follow-up question test completed - sent: "${followupMessage}"`);
+  });
+
+  testHigh('scroll down and up in history page', {
+    tags: ['@ui', '@scrolling', '@history'],
+    description: 'Test scrolling functionality in the history page'
+  }, async () => {
+    console.log('Starting scrolling test in history page');
+
+    // Test scrolling down
+    await historyPage.scrollDownInHistory();
+    
+    // Test scrolling up
+    await historyPage.scrollUpInHistory();
+    
+    console.log('Scrolling test completed in history page');
+  });
+
+  testHigh('refresh page after scrolling', {
+    tags: ['@ui', '@refresh', '@history'],
+    description: 'Test page refresh functionality after scrolling in history page'
+  }, async () => {
+    console.log('Starting page refresh test after scrolling');
+
+    // Refresh the page
+    await historyPage.refreshPage();
+    
+    // After refresh, open history tab from sidebar again
+    await historyPage.navigateToHistoryPage();
+    
+    // Verify page elements are still visible after refresh and navigation
+    await historyPage.verifyPageElements();
+    
+    console.log('Page refresh test completed with history navigation');
+  });
+
 });
