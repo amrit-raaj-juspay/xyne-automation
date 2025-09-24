@@ -356,7 +356,7 @@ export class HistoryModulePage {
     console.log('Rename input field found');
     
     // Clear existing text and type new title
-    await renameInput.click({ clickCount: 3 }); // Triple click to select all text
+    //await renameInput.click({ clickCount: 3 }); // Triple click to select all text
     await renameInput.fill(newTitle);
     console.log(`New title "${newTitle}" entered in input field`);
     
