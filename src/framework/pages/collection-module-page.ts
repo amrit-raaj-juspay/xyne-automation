@@ -27,6 +27,12 @@ export class CollectionModulePage extends BasePage {
     editOption: 'div[role="menuitem"]:has(svg.lucide-square-pen):has(span:has-text("Edit"))',
     deleteOption: 'div[role="menuitem"]:has(svg.lucide-trash2):has(span:has-text("Delete"))',
     
+    // Plus button (separate from NEW COLLECTION button)
+    plusButton: 'svg.lucide-plus.cursor-pointer',
+    
+    // Cross/X button
+    crossButton: 'svg.lucide-x.h-5.w-5.text-gray-400',
+    
     // Edit dialog
     editDialogTitle: 'h2.font-mono:has-text("EDIT COLLECTION NAME")',
     editCollectionTitleInput: 'input#editCollectionName[placeholder="Enter collection title"]',
@@ -272,6 +278,57 @@ export class CollectionModulePage extends BasePage {
     }
     
     console.log('File selection and upload completed');
+  }
+
+  async selectScreeningFeedbackFileAndUpload(): Promise<void> {
+    console.log('Selecting Screening & Feedback file and uploading');
+    
+    // Step 1: Click on drag & drop area to open file selection dialog
+    const dragDropArea = this.page.locator(this.selectors.dragDropArea);
+    await expect(dragDropArea).toBeVisible({ timeout: 5000 });
+    console.log('Drag & drop area found');
+    
+    // Set up file chooser event listener before clicking
+    const fileChooserPromise = this.page.waitForEvent('filechooser');
+    
+    // Click on the drag & drop area to open file selection dialog
+    await dragDropArea.click();
+    console.log('Clicked on drag & drop area - file selection dialog should open');
+    
+    // Step 2: File selection dialog opens and select the file
+    const fileChooser = await fileChooserPromise;
+    console.log('File selection dialog opened');
+    
+    await fileChooser.setFiles('documents/Screening & Feedback.docx');
+    console.log('File selected: documents/Screening & Feedback.docx');
+    
+    // Step 3: Wait for file to be added to the interface
+    await this.page.waitForTimeout(3000);
+    console.log('Waited for file to be added to the interface');
+    
+    // Step 4: Find and click the upload button
+    const uploadButton = this.page.locator(this.selectors.uploadButton);
+    await expect(uploadButton).toBeVisible({ timeout: 5000 });
+    console.log('Upload button found');
+    
+    // Check if upload button is now enabled after file selection
+    const isDisabled = await uploadButton.getAttribute('disabled');
+    if (isDisabled === null) {
+      console.log('Upload button is enabled after file selection');
+      
+      // Click the upload button to start upload process
+      await uploadButton.click();
+      console.log('Upload button clicked - starting upload process');
+      
+      // Wait for upload process to complete
+      await this.page.waitForTimeout(10000);
+      console.log('Waited for upload process to complete');
+      
+    } else {
+      console.log('Upload button is still disabled after file selection');
+    }
+    
+    console.log('Screening & Feedback file selection and upload completed');
   }
 
   async refreshPageAndVerifyCollection(): Promise<void> {
@@ -559,6 +616,68 @@ export class CollectionModulePage extends BasePage {
     const currentUrl = this.page.url();
     expect(currentUrl).toContain('knowledgeManagement');
     console.log('Confirmed back on collections page');
+  }
+
+  // Plus button methods
+  async clickPlusButton(): Promise<void> {
+    console.log('Clicking + button');
+    
+    // Find the + button using the specific selector
+    const plusButton = this.page.locator(this.selectors.plusButton);
+    
+    // Check if the + button is visible
+    const buttonCount = await plusButton.count();
+    console.log(`Found ${buttonCount} + button(s) on the page`);
+    
+    if (buttonCount > 0) {
+      // Verify the + button is visible
+      await expect(plusButton.first()).toBeVisible({ timeout: 10000 });
+      console.log('+ button found and visible');
+      
+      // Click the + button
+      await plusButton.first().click();
+      console.log('+ button clicked');
+      
+      // Wait for any action to complete
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for + button action to complete');
+      
+    } else {
+      console.log('No + button found on the page');
+    }
+    
+    console.log('+ button click completed');
+  }
+
+  // Cross button methods
+  async clickCrossButton(): Promise<void> {
+    console.log('Clicking X (cross) button');
+    
+    // Find the cross button using the specific selector
+    const crossButton = this.page.locator(this.selectors.crossButton);
+    
+    // Check if the cross button is visible
+    const buttonCount = await crossButton.count();
+    console.log(`Found ${buttonCount} X (cross) button(s) on the page`);
+    
+    if (buttonCount > 0) {
+      // Verify the cross button is visible
+      await expect(crossButton.first()).toBeVisible({ timeout: 10000 });
+      console.log('X (cross) button found and visible');
+      
+      // Click the cross button
+      await crossButton.first().click();
+      console.log('X (cross) button clicked');
+      
+      // Wait for any action to complete
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for X (cross) button action to complete');
+      
+    } else {
+      console.log('No X (cross) button found on the page');
+    }
+    
+    console.log('X (cross) button click completed');
   }
 
   // Delete methods
