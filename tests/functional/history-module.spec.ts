@@ -246,6 +246,9 @@ test.describe('History Module Tests', () => {
   }, async () => {
     console.log('Starting post-rename ellipsis menu click test');
     
+    // Navigate back to history page after rename operation
+    await historyPage.navigateToHistoryPage();
+    
     // Hover over the first chat entry to make ellipsis visible
     await historyPage.hoverOverFirstChatEntry();
     
@@ -281,6 +284,7 @@ test.describe('History Module Tests', () => {
     console.log('Starting cross button visibility verification test');
     
     // Verify cross button is visible on the page
+    await historyPage.navigateToHistoryPage();
     await historyPage.verifyCrossButtonVisible();
     
     console.log('Cross button visibility verification completed');
