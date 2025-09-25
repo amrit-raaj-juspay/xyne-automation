@@ -10,9 +10,11 @@ import { LoginPageElements } from '../../types/index';
 export class LoginPage extends BasePage {
   private selectors = {
     pageTitle: 'h1, h2, [data-testid="login-title"]',
-    loginHeading: 'text=Login',
-    subtitle: 'text=Login with your workspace google account',
-    googleLoginButton: 'text=Login with Google',
+    loginHeading: 'text=Welcome Back',
+    subtitle: 'text=Please click on the button to sign in',
+    enterpriseHeading: 'h1.text-\\[32px\\]', // Targeting the h1 tag for the enterprise heading
+    enterpriseSubtitle: 'p.text-base.font-normal', // Targeting the p tag for the enterprise subtitle
+    googleLoginButton: 'text=Continue with google',
     loginContainer: '[class*="login"], [class*="auth"], .card, [data-testid="login-container"]',
     errorMessage: '[class*="error"], [data-testid="error-message"]',
     loadingIndicator: '[class*="loading"], [data-testid="loading"]'
@@ -81,6 +83,30 @@ export class LoginPage extends BasePage {
       return await this.getElementText(this.selectors.subtitle);
     } catch (error) {
       console.error('Error getting subtitle text:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get the enterprise heading text
+   */
+  async getEnterpriseHeadingText(): Promise<string | null> {
+    try {
+      return await this.getElementText(this.selectors.enterpriseHeading);
+    } catch (error) {
+      console.error('Error getting enterprise heading text:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get the enterprise subtitle text
+   */
+  async getEnterpriseSubtitleText(): Promise<string | null> {
+    try {
+      return await this.getElementText(this.selectors.enterpriseSubtitle);
+    } catch (error) {
+      console.error('Error getting enterprise subtitle text:', error);
       return null;
     }
   }
@@ -159,6 +185,8 @@ export class LoginPage extends BasePage {
       pageTitle: await this.getPageTitle(),
       loginHeading: await this.getLoginHeadingText(),
       subtitle: await this.getSubtitleText(),
+      enterpriseHeading: await this.getEnterpriseHeadingText(),
+      enterpriseSubtitle: await this.getEnterpriseSubtitleText(),
       googleButtonVisible: await this.isGoogleLoginButtonVisible(),
       googleButtonEnabled: await this.isGoogleLoginButtonEnabled(),
       loginContainerVisible: await this.isLoginContainerVisible(),
@@ -210,13 +238,21 @@ export class LoginPage extends BasePage {
   async assertLoginPageValid(): Promise<void> {
     // Core login page assertions
     await this.assertElementVisible(this.selectors.loginHeading, 'Login heading should be visible');
-    await this.assertElementContainsText(this.selectors.loginHeading, 'Login', 'Should contain "Login" text');
+    await this.assertElementHasText(this.selectors.loginHeading, 'Welcome Back', 'Should contain "Welcome Back" text');
     await this.assertElementVisible(this.selectors.subtitle, 'Subtitle should be visible');
-    await this.assertElementContainsText(
-      this.selectors.subtitle, 
-      'Login with your workspace google account', 
+    await this.assertElementHasText(
+      this.selectors.subtitle,
+      'Please click on the button to sign in',
       'Should contain correct subtitle text'
     );
+
+    // Enterprise text validation
+    const expectedEnterpriseHeading = "The Unified AI Platform<br>for your enterprise";
+    await this.assertElementHasHTML(this.selectors.enterpriseHeading, expectedEnterpriseHeading, 'Should contain correct enterprise heading text');
+
+    const expectedEnterpriseSubtitle = "The full-stack AI OS that's open-source,<br>on-prem, and enterprise-grade with determinism &<br>governance built-in by design.";
+    await this.assertElementHasHTML(this.selectors.enterpriseSubtitle, expectedEnterpriseSubtitle, 'Should contain correct enterprise subtitle text');
+
     await this.assertElementVisible(this.selectors.googleLoginButton, 'Google login button should be visible');
     await this.assertUrlContains('/auth', 'Should be on auth page');
   }
