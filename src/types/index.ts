@@ -164,6 +164,8 @@ export interface LoginPageElements {
   pageTitle: string;
   loginHeading: string | null;
   subtitle: string | null;
+  enterpriseHeading: string | null;
+  enterpriseSubtitle: string | null;
   googleButtonVisible: boolean;
   googleButtonEnabled: boolean;
   loginContainerVisible: boolean;

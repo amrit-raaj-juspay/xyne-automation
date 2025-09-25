@@ -121,9 +121,10 @@ export class GoogleOAuthLoginPage extends LoginPage {
     // Navigate to login page
     const loginUrl = this.getLoginUrls().login;
     await this.navigateToLogin(loginUrl);
+    await this.assertLoginPageValid();
     
     // Wait for and click Google login button
-    const googleLoginButton = 'text=Login with Google';
+    const googleLoginButton = 'text=Continue with google';
     await this.waitForElement(googleLoginButton, 10000);
     await this.clickElement(googleLoginButton);
     

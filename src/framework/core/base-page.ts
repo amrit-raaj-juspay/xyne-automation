@@ -258,6 +258,38 @@ export abstract class BasePage {
   }
 
   /**
+   * Assert element has exact text
+   */
+  async assertElementHasText(selector: string, text: string | string[], message?: string): Promise<void> {
+    const element = this.page.locator(selector);
+    await expect(element, message).toHaveText(text as any);
+  }
+
+  /**
+   * Assert element has exact HTML
+   */
+  async assertElementHasHTML(selector: string, html: string, message?: string): Promise<void> {
+    const element = this.page.locator(selector);
+    const actualHTML = await element.innerHTML();
+    
+    // Decode HTML entities for comparison
+    const decodeHtmlEntities = (str: string): string => {
+      return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+    };
+    
+    const decodedActual = decodeHtmlEntities(actualHTML);
+    const decodedExpected = decodeHtmlEntities(html);
+    
+    expect(decodedActual, message).toBe(decodedExpected);
+  }
+
+  /**
    * Assert element has attribute
    */
   async assertElementHasAttribute(selector: string, attribute: string, value: string, message?: string): Promise<void> {
