@@ -25,7 +25,7 @@ export class HistoryModulePage {
     favouriteChatEllipsisMenu: 'svg.lucide-ellipsis.invisible.group-hover\\:visible',
     removeButton: 'div[role="button"]:has(svg.lucide-bookmark):has(span:has-text("Remove"))',
     renameButton: 'div[role="button"]:has(svg.lucide-pencil):has(span:has-text("Rename"))',
-    renameInput: 'input[type="text"], input[placeholder*="name"], input[placeholder*="title"], textarea',
+    renameInput: 'input[type="text"].max-w-\\[250px\\]',
     deleteButton: 'div[role="button"]:has(svg.lucide-trash2):has(span:has-text("Delete"))',
     crossButton: 'svg.lucide-x',
     crossButtonWithStroke: 'svg.lucide-x[stroke="#4A4F59"], svg.lucide-x.dark\\:stroke-gray-300',
@@ -45,7 +45,16 @@ export class HistoryModulePage {
     // Wait for page to be fully loaded
     await this.page.waitForLoadState('networkidle');
     
-    // Find and click history icon
+    // Check if we're already on the history page by looking for "Chat History" title
+    const chatHistoryTitle = this.page.locator(this.selectors.chatHistoryTitle);
+    const isOnHistoryPage = await chatHistoryTitle.isVisible({ timeout: 2000 });
+    
+    if (isOnHistoryPage) {
+      console.log('Already on history page, skipping navigation');
+      return;
+    }
+    
+    // Find and click history icon only if not already on history page
     const historyIcon = this.page.locator(this.selectors.historyIcon);
     await expect(historyIcon).toBeVisible({ timeout: 10000 });
     console.log('History icon found in sidebar');
@@ -350,13 +359,13 @@ export class HistoryModulePage {
   async updateChatTitle(newTitle: string): Promise<void> {
     console.log(`Updating chat title to: "${newTitle}"`);
     
-    // Wait for rename input field to appear after clicking rename button
+    // Use a specific locator for the rename input to avoid ambiguity.
     const renameInput = this.page.locator(this.selectors.renameInput);
+    
     await expect(renameInput).toBeVisible({ timeout: 5000 });
     console.log('Rename input field found');
     
     // Clear existing text and type new title
-    await renameInput.click({ clickCount: 3 }); // Triple click to select all text
     await renameInput.fill(newTitle);
     console.log(`New title "${newTitle}" entered in input field`);
     
@@ -371,7 +380,9 @@ export class HistoryModulePage {
   async verifyRenameInputVisible(): Promise<void> {
     console.log('Verifying rename input field is visible');
     
+    // Use a specific locator for the rename input to ensure it is unique.
     const renameInput = this.page.locator(this.selectors.renameInput);
+
     await expect(renameInput).toBeVisible({ timeout: 5000 });
     console.log('Rename input field is visible');
   }
@@ -950,5 +961,5 @@ export class HistoryModulePage {
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('networkidle');
     await this.page.waitForTimeout(3000);
-  }
+  } 
 }
