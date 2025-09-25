@@ -140,6 +140,50 @@ test.describe('Collection Module Tests', () => {
     console.log('File click test completed');
   });
 
+  testHigh('click + button', {
+    tags: ['@ui', '@button', '@plus'],
+    description: 'Click the + (plus) button on the page'
+  }, async () => {
+    console.log('Starting + button click test');
+    
+    await collectionPage.clickPlusButton();
+    
+    console.log('+ button click test completed');
+  });
+
+  testHigh('click X (cross) button', {
+    tags: ['@ui', '@button', '@cross'],
+    description: 'Click the X (cross) button on the page'
+  }, async () => {
+    console.log('Starting X (cross) button click test');
+    
+    await collectionPage.clickCrossButton();
+    
+    console.log('X (cross) button click test completed');
+  });
+
+  testHigh('click + button again', {
+    tags: ['@ui', '@button', '@plus'],
+    description: 'Click the + (plus) button again after clicking cross button'
+  }, async () => {
+    console.log('Starting + button click test (second time)');
+    
+    await collectionPage.clickPlusButton();
+    
+    console.log('+ button click test (second time) completed');
+  });
+
+  testHigh('select Screening & Feedback file and upload', {
+    tags: ['@ui', '@upload', '@file'],
+    description: 'Select Screening & Feedback.docx file and upload it to the collection'
+  }, async () => {
+    console.log('Starting Screening & Feedback file selection and upload test');
+    
+    await collectionPage.selectScreeningFeedbackFileAndUpload();
+    
+    console.log('Screening & Feedback file selection and upload test completed');
+  });
+
   testHigh('click 3-dot menu and select Delete option', {
     tags: ['@ui', '@menu', '@delete'],
     description: 'Click 3-dot menu and select Delete option to remove collection'
