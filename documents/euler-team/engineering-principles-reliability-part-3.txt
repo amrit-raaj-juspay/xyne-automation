@@ -1,0 +1,71 @@
+Overview - Reliability: Fault, Capacity, and Change as Causes
+
+The provided text explores the three primary causes of reliability issues: faults, capacity limitations, and changes within a system. Faults refer to component failures, for which failover strategies offer seamless transitions and fallback strategies provide reduced functionality. Capacity issues arise from expected or unexpected user traffic and system bottlenecks, advocating for scalable systems and resource optimization. Lastly, changes are a significant source of problems, with staggered rollouts and automated rollback mechanisms being crucial for mitigating risks. The text emphasizes identifying and fortifying critical paths within systems to enhance overall reliability against these causes.
+
+
+
+Transcript 
+
+[00:00:00] Well, there is another way to look at it. These 10 principles, we were finding to be very interesting, but then right now I'm communicating the 10 principles. It could be like, oh, too much is there, uh, there was another way to look at it, which made it a bit simpler, where you start asking why does reliability issue happen?
+
+[00:00:17] What are the causes?
+
+[00:00:23] So when the number of principles are lesser, it's easier, right? So this is like just three causes are there. It's like, like principle of three points. Reliability issue happens because of faults, because of capacity running out. It can happen because of change. In fact, we touched upon these in, in our 10 principles too, right?
+
+[00:00:41] Um, so fault is something like, uh, a part just breaks and. Yeah, sometimes we don't even know why it happened. You can't even open it and see why it happened. Uh, it's assumed that, you know, some of the things will fail and, uh, there is typically these measures like MTTR, how many days will something run. I also took an example of, uh, some, something could fail once in a thousand days, so we should know the reliability of our parts design.
+
+[00:01:17] Enough redundancy around it so that when fault of that part happens, there is a failover. What is failover? Failover? The terminology failover is about, you have the same part, a symmetric, same part, which is isolated. Failover is the best to have because when something fails, you are able to switch to another as if no failure happened.
+
+[00:01:39] So a customer might not even notice that a failure happened. Uh, there is also another strategy. Against false, which is a bit of a, not as good as a failover strategy. It's called a fallback strategy. Fallback is uh, a part A failed, but you are replacing that with Part B, but it's not as capable as part A.
+
+[00:02:02] So that will be reduced functionality by failing over two B. But sometimes you also need to have this plan bs. The first is like plan A. Plan A. It's like just. The plan itself just works. It has redundancy. It's like the same thing, but here it is, like, you know, you have compromised a bit, but still it is better than the whole thing going down.
+
+[00:02:24] Sometimes it's also important to understand which parts are critical in the system, which are, uh, less critical in the systems because, uh, sometimes the plan B could be, um, compromising on the less critical parts. So the critical part should never. Go down the critical part of your functionality of your system.
+
+[00:02:43] So that is also something to remember. Um, so the second point in the cost for reliability issues, capacity, capacity issues can happen because of just genuine user traffic. Uh, ideally such traffic should be always honored and typically we can predict such kind of capacity up and down seasonal changes happen and.
+
+[00:03:09] In a system like us where other companies use our system, uh, they predict the capacity, uh, needs for their user because sometimes they also might do, uh, an event because of which a huge amount of traffic is going to come in. And, uh, they would want to allocate capacity. I. They would want some, some customer might want, uh, at this time, uh, I need a thousand transactions per second capacity, so we should have this ability to scale up and scale down the system, which we talked about last time.
+
+[00:03:38] Um, so that all has to be automated and we have to, uh, keep understanding automatically how much of each part of the system should be scaled up to how much to support, uh, a particular capacity. Uh. Load need or traffic need. Uh, another thing to remember in capacity is there could be bottlenecks in the system.
+
+[00:04:00] So we should look for bottlenecks. Um, that should not be bottlenecks in the system, right? So if you balance, if you keep the whole system, you know, well allocated in the right way, that won't be bottle X. That could also be unexpected traffic, which is not expected. Uh, it could be a. Bug or somebody just is, uh, trying to attack the system because of that capacity could get exhausted.
+
+[00:04:27] And because of few people doing that, uh, everybody could get affected. So limiting capacity, isolating and limiting, allocating capacity, uh, by user is also a strategy. To guard against capacity related issues. This is also related to how we talked about reducing the blast radius, a second principle in the previous way.
+
+[00:04:53] So ways to isolate are, uh, you can rate limit, uh, you can keep timeouts, you can, uh, sometimes even for certain use cases, you can completely separate that part of the system and allocate a particular capacity so that it's not mixed with the critical part of the system. Okay, here again, the critical parts of the system should be given more buffer capacity and the non-critical should be isolated.
+
+[00:05:18] Sometimes some issue happening in non-critical, it could blow up and take away the capacity of the critical parts of the system. So that has to be, uh, understood and designed for. Another thing about capacity is since we are. Running systems which are using abundant resource, like, you know, digital systems have abundant resource, which is like, uh, your processors run at gigahertz, right?
+
+[00:05:46] Uh, a lot of, a lot of our time are, uh, default systems might not be well optimized. Uh, so the critical parts of the system should ideally take a lot of surprising load also. So if you can run an API. At a hundred requests per second per core versus let's say 10 requests per second, you can, uh, support much, much more.
+
+[00:06:11] It is 10 times more traffic you can support at the same cost, right? And interestingly, if you really focus and build expertise and optimization, uh, it could be a fun word to optimize your system, and it also increases reliability. You can see how performance optimization lets you give, have more buffer capacity because our cost metrics will still be healthy and you can still be able to take any kind of unexpected, uh, traffic also.
+
+[00:06:41] Right? So your performance optimization of critical path is also, uh, related to the capacity related reliability, uh, solution. The third cost for reliability issues change. Um. In fact, this is going to be one of the major areas for innovation. And uh, you can see when the CrowdStrike issue, which happened last month, is also a change.
+
+[00:07:07] And there has been the central point, which was able to change so many different millions of systems and everything went down. That is unacceptable, right? So the solution to change as far as we know right now is staggering. So you all, all changes have to be staggered. And when you are staggering again, you need to have very good way to identify that issue is happening.
+
+[00:07:31] You need to have very solid, uh, health metrics. And also innovation, which is statistical, uh, systems like AB testing, et cetera, uh, are helping, uh, really well in identifying, uh, bugs automatically. So you can stagger the system. Uh, let's say you. Make a change to maybe 0.1% of the traffic and it'll auto rollback.
+
+[00:07:58] Your system should auto rollback if some issue happens. So no major issue should get into the system. It's almost like, it's like how our body can't eat certain things. It'll just not let it get in. Uh, that's how even our bodies even designed sometimes for all these, all these we can learn from nature also.
+
+[00:08:16] Um. So your system should just reject bad changes. Second is, you know, maybe it's not that big a problem, maybe 1% traffic. It finds out something. It might find at 5% traffic, something it might find at 10. And maybe after that any issue happens. It could be small. So if no issues are that 25, 50, a hundred, you can just, uh, ramp up the traffic and completely deploy your system.
+
+[00:08:43] Um, so staggering. It's reasonably figured out for software changes for us. Uh, sometimes, uh, some challenges are in very low traffic dimensions. Uh, some small customer has some small, uh, particular configuration, customization, and uh, we don't have enough. Data to find that they have an issue. So the, the detection mechanism has to keep getting better.
+
+[00:09:10] So your metrics, uh, like success rate, et cetera, should, could look okay. Uh, but yeah. Yes, still for a particular customer it might be pretty bad and you could detect it. Uh, but what if for a particular customer, for a particular use case, for a particular phone model, some issues happening? So we should keep getting better at identifying which errors are not acceptable.
+
+[00:09:34] Again, in a reasonably generic and automatable way. Uh, and that will help our AB system to get better. So those are areas where innovation is still pending. I think also in staggering if your critical parts of the system is able to sense issues that. We made a change. And with production traffic, some asserts are there in the system which actually detect tissues and fail fast.
+
+[00:09:59] Uh, I think that is also good. That is an area for further innovation. Um, we might have done it in our system, but I don't know actively, we have not theorized about it. Uh, mostly it has been staggering. But I, I feel even your critical parts or your framework code, uh, can sense something is wrong in the system and might not be total high level business errors, but it could, uh, because these critical parts are, have a full view and it has a generic view.
+
+[00:10:27] Uh, I think even there some innovation is possible, I think. Okay. So this is another way of looking at reliability, uh, through causes of reliability, fault, capacity, and change. Uh. And in these three categories, whatever we discuss itself, there is more work to be done and we could discover more ways in which we can, uh, tackle these three causes.
+
+[00:10:51] What is the critical path and. Is there any pattern anywhere identifying critical path be something is a critical path, but we might not be able to make it the next better, then what's the point? We are always after unlocking abundance for reliability. Right? We should not just say it's scarce and we won't fix the critical path.
+
+[00:11:07] So critical path looks like places of control routing. Your workflow system also can be unified in a way such that any kind of workflows there, it has to end within a time. If you have to configure a hundred alert in the system, the 101 alert, you have missed it. The critical path is the one which does the routing.
+
+[00:11:24] So it is the one which can test the waters. Why did the critical path not catch this issue? I think that question should be asked. So the whole point of RCAs is not only to fix the current problem, right? So how to do these many things in a simple ways, again, uh, innovation to be done. Critical path also gives me a lot of, uh, understanding on what we should not, what we don't need to bother.
+
+[00:11:45] Otherwise, if we are bothered, we'll bother about everything.
+
+

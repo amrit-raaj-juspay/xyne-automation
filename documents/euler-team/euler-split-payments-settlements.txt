@@ -1,0 +1,198 @@
+Split Payments and Settlements Guide
+
+Split Settlement: Explains how marketplace transactions divide order amounts between multiple vendors (e.g., Big Basket sourcing from different suppliers), where settlement details specify how much each vendor receives from the total transaction amount.
+Split Payments: Covers transactions using multiple payment methods like gift cards combined with other payment options, where the system processes sequential transactions to handle remaining balances after partial payments.
+Pre-authorization & Capture: Details the booking flow where money is debited but held until confirmation (like train tickets or cab rides), using capture APIs to settle funds to merchants or void APIs to refund customers based on booking outcomes.
+
+
+
+Let's start it. It doesn't Sorry. Sorry. So yesterday I asked you guys to check for office, right? How you guys check that one?
+Nobody was able to check.
+I asked I asked you to Guys, you have to do your assignment otherwise this doesn't make sense again
+because I we'll explain one day you'll guys will don't get enough time like I do at least one thing.
+So we were not having on top of that we were having this to write that understand these are these are some extra sessions right this is I wanted to do this off the working hours but due to availability issues I am doing the working this is something extra from the regular work because morning 2 hours we spent with automation we had session and we were not having also and for getting in because deployments on Monday you will have two assignments today and yesterday's Monday I mean all the assignments from everyone on Monday
+what is split settlement so suppose you're going for big basket or some big merchant right you'll be providing multiple products with him if you see in big basket portal you can see both groceries will be there like meat and other type of groceries not available those things are separate product ids and merchant is getting that from different different vendors okay so if you're passing uh you want to see merchant want to don't want to maintain like uh giving different different like he don't want to directly pay the individual merchant individual wonder what is the amount he has to pay so he'll send the details to us directly he'll send product ID and the split wise settlement there he'll send that in order create request if you look at our splits Settlements or credit request in that we'll pass with settlement details in that product ID will be there amount will be only
+yeah because
+in order send a split details it is a JSON format it will contain the split setment amount and when detail. So suppose you are buying you want to buy some groceries right uh like if you want to buy some punjal and tomato means this will be served by two different uh vendors basket will source from two different vendor okay so you'll send the product ID and vendor detail and you'll pass those in the transaction flow uh like in order create request you'll send those details you'll use those details and pass that in transaction go to PG. PG will do the transaction from customer to merchants vendor details. So here we get splitted between vendor one and vendor two. This is how split settlement works. I could show this. My screen is visible right? You can see You can see like metadata split set metadata split settlement details in this marketplace will be contained amount vendor name and amount. So here you are getting what is the vendor details you need to pass and what is the on each window. They're getting You can see here marketplace amount is one vendor here it is split between amount one and amount two vendors are there vendor one and vendor two subm vendor two and sub mid vendor one urgent commission is there and amount is there out of total order amount how How much will be each vendor getting there? Those details is passed in March this week. Understood?
+No. Uh for the vendor amount is one is one. So the total will be two
+actually three uh marketplace also has amount. So you're creating
+so you're doing three rupees order. For example, you're doing three rupees order. Vendor one receive one rupee. Vendor two receive one rupee and the merchant who is hosting the website, right? He'll receive one rupee. So like that it is prettier.
+Yeah, you can put commission also everything also there. So next is your internet issue. I cannot that is previously used this now we are not any field I'm not sure about this values use case actually this is very old implementation simultaneously when you create split transition right how you want to do split refund Yeah, you need to pass print details also there. What are these spit uh values you are getting? I'll show you the split refund. Um it's not loading. Any other that's it split is not that big of a concept for PTM also we have
+they will do SP there we are not taking anything we're just passing the details merchant will pass some details we'll fetch it and we'll send it to PTM will do there he is acting as both merchant and
+normal order amount
+yeah we'll send order normal order amount because he's acting as both merchant and gateway right he can hand Tell it from there.
+You'll get the details in. Yesterday she has done one. Siman, can you share your screen? Yesterday you have done one settlement transaction, right? You get the speed details in order status also. Which vendor getting how much of this details you'll get in order status? response.
+So is it possible?
+No, no, it is not possible. You're doing refund on whole amount, right? You need to take it from which vendor you have given, right?
+It's not like cash this one preflow where one is successful. It's not like partial capture, right? It's complete capture. In partial capture, you're just capturing off the amount. Here you capt in complete amount. So you need to do complete refund also
+both.
+Yeah.
+In such case like uh there is two product he's buying. One is only problems he is returning it
+but still both will be refunded. Both will be refunded then he can place single item again order.
+So when you are crossing a refund so you just keep the order ready and it gets refunded for both the split. It has split variation also in that uh I'll show but mine this is not getting there is a way like we'll define the split amount what should be fetch from for refund also there similarly how we send in order create right
+like amount we just send for order we tx transaction we just send the order amount that's whatever the amount for the transaction done so for split uh as you mentioned right market value would be one uh split vendor one one and spend to one rupee. So total of three rupees. So while doing a refund is it like you just keep the order amount as three or
+you need to send the speed details there and refund also you need to send speed details.
+So if I'm not sending one
+it doesn't accept
+yeah it won't accept or log our end logic f because we are passing it in uh order right we'll search for that specific spread detail are we fetching like inund are we getting those details No from the refund request. If there is no such detail, it will fail there. Refund won't proceed. We'll give 400 bad request.
+But if we pass refund amount as zero,
+it won't take still. It will match the refund amount with big detail amount. She's doing howctional rupees will be the market have placed here. I have one
+marketplace value.
+It's dependent upon merchant, right? Merchant is taking commission like he's just providing the if you see big basket other things he's just providing a platform for vendors to sell it but he's also want to make money right on that. So it will be different there. Yes. So in order to create we need to pass the settlement details and the transaction everything will be same uh transaction call also.
+Do we have any validation between that value whatever we are sending in the test? split payment details and the order.
+Yeah, we have validation of marketplace it is matching.
+No, but I see here I given order amount as 5 rupees but here I given marketplace amount as 1 rupee only
+but it it got successful.
+That merchant commission are we considering it with a vendor or even it is a addition. Sorry. when you're doing a transaction like one card right like that will be considered as payment or it's like settlement say if you're doing UK plus card trans transaction
+payment for settlement
+for that settlement how it would be
+that is different
+settlements is different payments are different
+settlement is different payment is different
+but there will this settlement concept it won't
+you doing two transactions with same order here you just one transaction saying this is the amount I'm allocating for each and this that's it here you don't create multiple orders against one order multiple transaction. In split payment we take one transaction.
+Yeah, I think it's not val see I given order amount as 5 rupees but market amount I given one rupee only got success split up. So usually marketplace amount will be order amount minus this twoendal market.
+So vendor one commission amount plus vendor two commission amount is should be equals to amount they can pass or not.
+Can you tell how can I do this refund? Refund refund first.
+What is this vendor amount? Vendor one amount. That's what it will take some
+normal refund also working
+normal working
+without passing that script settlement uh can check in order to I rupees only showing as effective to do for CCM for less than two days different and our first different project. That's the issue. So this is the transmission. specific support. Maybe the grids are not passing this metadata in order to do it. Is there any pass like you're saying and you're doing like set up payment you are not doing settlement settlement you're just allocating for
+same is a market I'm a farmer I'm selling Someone who's using als Land flat session.
+It's Kat session.
+K session deployments that year. I I'm rise staging to master.
+Why did you not
+because that I checked with this is not important.
+We cannot do any deployments all next week. It's frozen.
+So that is that are Payment is divided amounted. What do you mean?
+Two payment methods are there.
+Multiple payment methods are some gift cards, some payment method. It's a combination. Even you can do the work and
+okay give me 10 minutes.
+No, you can do after 10 minutes.
+No. So uh currently we support only one gateway gateway which one is a gift card transaction the other one is whatever we have we will give it pass it in metadata. Okay. So in case of how the transaction the basic thing is One is the gateway decider right gateway has to be decided two times one is for the gift card that might be silver also and the other one payments because if you don't pass merchant ideally won't pass
+so gateway has to be prepared for two so is like that So that is like the gift card transaction right let's say you have booked something for 5,000 rupees okay in the gift card amount you have only something like 3,000 then 2,000 addition amount should be paid right that should be of any other payment method you can choose UPI wallet or anything card or anything so the second payment it's a different transactions order is same but it's a kind of different transaction cost for us. So the second transaction will get initiated that is bas uh based on the decider decid select something and then we will process that transaction through some gateway. Okay, that is the second payment how that happens.
+So how the second we'll go to the second transaction basically ideally I should know right the first transaction should be successful then I can go for the second transaction.
+We have these things right pay response will come back I'll uh call uh close the first transaction and the second transaction call will happen and second transaction normal thing the way we are processing it is same way but ideally we will internally call the second transaction you you are not hitting the payments again / txns API again you're not creating the transactions again it will internally create a transaction but this is the basic thing of split set so mostly the split set sorry payments split payments mostly. Now we have that for you know the insurance merchant also use it not only for gift card transactions that they will uh uh do a normal transaction let's say you are pay taking an insurance of some 13,000 of premium that is like uh you have to quarters you will pay right some three three months or 1 month or anything so at that point of time I'll first transaction will be a normal uh mandate registered trans transaction and second uh one is like 1 rupee that is a first one is a normal transaction and second one is one rupee transaction which is a enash transaction okay en is also e- mandate have anyone done en e- mandate you're done right e- mandate can you tell me the flow flow of the mandate So like
+correct
+correct. So it's like one rupee they will take take that amount as a uh mandate. So ideally for mainly for net banking they'll use it. These insurance merchant are like they will mainly relied on NB transactions. Okay. So then that two piece will you will it is kind of a registration that registration amount will get back uh refund it back or if they have settlement they will add it to the amount which they have debited back.
+Uhhuh. That is a regation transaction that's all. It is like you are registering for this month of recurring transactions and this is the amount and now the second transaction whatever the second payment will be there right the subsequent payment will be through manage it's a recurring payment actually that is how it works okay these split payments one is the gift cards quick silver currently they are using it and insurance master debit plus
+okay
+transaction we will pass the second transaction input
+additional input payment info.
+First one you'll pass the gift card details that is a normal inside that you will pass a second JSON additional payment info. That way you will pass the second transaction information that is also same thing. How you pass card ID sorry card number, expiry year, expiry month, all these things.
+Ah that is a quick sale payment that I uh silver and uh the gift card uh number and then the additional payment in you'll pass let's say card details
+payment in so we'll pass yeah that will be in the txns
+which application I'm doing a payment that's
+no the second transaction tx in txn request you will pass it right additional payment in you'll pass something called card or anything so is handled front end. How it will be handled is like if that is a quick normally if you see right uh speakig and all they can avail offer for something or else uh and then the normal transaction will happen in Amazon. Amazon you can see gift card transaction plus the uh remaining amount which you want to pay that you can pay with anything in the merchant side. If you select the gift card transaction plus this some other payment method Merchant has handled the integration same way that they'll pass this additional payment info in the /txns request and then in our codebase also flow we have say said that if that additional payment info comes this is split payment we have the workflow written for the to identifying the split payments. So once that is come we will decide the split payments okay then whatever the details which they have passed in the request okay the first gift card transaction that calcul ation will happen then the gift card amount will debited and the second transaction for the normal card or whatever the payment method which you have been passed
+so internally if you're going to calculate what amount needs to be paid by the customer after giving the gift card
+huh that is the order amount right the amount I'm having 500 so gift card value I'm having so I'm just entering the gift card number here I know I'm not giving anything details but intern gift card something GPA is calling and value is deducting Then whatever the remaining amount is there that is passing in the next transaction sorry next payment method from which we have given.
+Huh.
+So what if the gift card one is failing? So will the second one initiate?
+If the second payment uh let's say it went to second payment and the transaction completes also it'll get auto return because the uh whatever The amount we got in the response whatever amount which we are having that is different.
+It depends.
+See
+any one of the transaction f let's say if the first transaction f most you don't even go for the second transaction. If the first transaction successful second transaction pays at that point of time that 2,000 rupees whatever the gift card amount was Right? That will be refund auto refunded because that uh we will check the amount whatever the amount will be paid and going to be that actually. So that will be mismatching right.
+Both the payments go simultaneously
+one after the other one after the other.
+So ideally the first transaction will be the gift card transaction and the second transaction will be the whatever the payment method which you can tell. that that will be handled in the front end, right? That doesn't come uh to the back end. That will be handled in the front end. Merchant is saying like for this particular he'll be having 2,000 rupees and then he'll ask you to select the other payment method. Correct? So that will be handed at the merchant. Merchant let's say that gift related to some merchant, right? So he only knows he only calculate you only have the amount. So once that is done, okay, he'll ask you to select this 5,000 rupees order. You can select some other payment method.
+So we hand it
+no first one also we will only process it but the amount calculation everything done and that will be sent by the merchant. Okay. I'll just whatever the transaction come for me I'll take it as order amount. My order amount is 5,000. Correct. The merchant has created order with 5,000 rupees. For me that 5,000 rupees only matter. Okay. So then that guy will this is split that that's a 5,000 what is the amount to be deducted from the gift card? What is the balance in the gift card before coming to the check out page that will be handled by the merchant that what just pay is not handling the gift card amount and all you will handle only the those sort of balance will from the gateway for wallet basically and cards right. Okay, for those things we handle the balance. I mean like we'll give the balance to the customers end user
+huh like the second one pays I'll be auto I like the second one first one will be auto anyone auto both will get success the amount will be matched ideally no transaction will get successful with the amount because we have this integrity set amount with the amount is successful then only I'm going to update the transaction to tell you whatever it is in my system
+sorry it will auto pay uh the two transaction details you will see if the two both are success you'll see that uh two transaction details for the first one gift card transaction how much you have paid for the gift card and the whatever the amount which you have paid through the card or whatever the payment method for the second payment method type
+two you can add but ideally uh how the split payment work works is like uh it'll take the priority whatever thing first transaction completed the second transaction whatever it was it will deduct the remaining from that it's not like that you can pass three or four so the second one if you have the option of deduction it will be there but in case of offers there are editive offers let's say combin offers you Whatever the offer you can get get the best offer combinations two or three offers four offers that is a particularly best combination the maximum offer can a customer can in that case that will be that
+so if either of the transaction is fed and what can we see in the order status it will be pending or authorization
+auto right one of the
+status will be auto
+one transaction I'll directly auto refund that Uh this guy also If you have that gift card
+but don't even allow it customer one to Amazon. If I'm receiving paying initially I'm paying 4,000
+Ideally that is Amazon pay wallet only it is getting consumed. You can add 10 gift cards but if you buy 10 gift cards, you're adding it to the Amazon pay uh wallet and then you are consuming that, right? It is not like you're passing the gift card uh to the to us. You're not passing that passing that you are ideally consuming your payment method is wallet only.
+No, actually what what my scenario is so we have taken sharing friends who are taking one gift card. We went to one of there we have taken one gift card and other people also took one gift card and we both He has consumed it first.
+Huh. See the thing is like
+he cannot directly consume it. So Amazon pay and all whatever the gift card right that gift card number you need to add. Once you add it, it'll automatically calculate the amount of the gift card 2,000 or 3,000 whatever it is. That 3,000 balance will be added to your Amazon pay balance. Amazon pay wallet. You can do that three all the three added uh thing like that 10,000 rupees your uh free gift card value. So your Amazon pay balance is 10,000 it's like that whatever you can take that is your that is getting deducted through Amazon wallet
+but in case of offers that you can passing to
+can anyone Tell me what are the status of this. What are the status we
+want created pending new pending authorizing authentication field authorization If from authorizing charged
+actually searching what is the point of asking I just
+like these are transaction
+then we I will check we will check before printing we will mark something
+before
+you might have seen right
+and then the status will be something else it's not in uh pending it's not in uh new also created It's after
+before but after creating
+start. So every time when you do a transaction check the what are the status how it is going how the transition is happening. Okay. Okay. What are the status of uh pre Whatever it can
+you should be sure this is the tested these many and you asking this the status or not huh I haven't done
+you haven't done but uh did you try to test that simply the flow how to
+yes
+get to know
+what is the first status after creating a transaction after trans what is the status we want I was like initiated.
+What is the status? If the capture is successful capture initiated when we do that is when the capture market booking any details. So, so initially the payment request went to gateway.
+So once from the merchant he has fulfilled our requirement that is booking of seeds. If he has alerted he going to send that uh request to gateway that I have fulfilled his requirements booking of seeds then we mark it as a captured So if that is confirmed then only right
+I want we get the caption leave let's say the user has fulfilled the request also for me I need to get something right to mark it as capture initiated come response from the So I'll get
+from where I'll get the response.
+I'll receive that successful.
+So whenever you initiate a capture call, initiate a v call whatever you do right. So it's like gateway can directly make make it as captured then we will consume it other way we'll keep it in. of a queue at their end. Okay. So at that point on time he will send some response. Okay. Based on our mapping that will mark capture initiated or capture is successful then mark to charge. Okay. So void also is the same you are trying to void initiated uh done right. If that is done then uh the initiated that we got some response from the gateway it will mark Get the avoidance fail. Do we auto fail? Anyone think what what is basically whatever amount we have blocked I mean uh yeah we we have blocked that amount we will refund it. Suppose in the booking whatever We auto is there. Let's say void in there is there is there void fail like void fo that asking whe Hello.
+So let's say void failed if that is uh either that void failed status if we mark it also the amount will get refunded the customer
+status we don't market a lot of status will be out But the amount will not settle to the merchant. It'll go back to the uh end user. Yeah. Or who was going.
+So when we going to receive that
+that is depends on the gateway
+from the gateway system is down that particular API available will be down on these things that they might have the queue for these uh pre transactions basically at that sort of time or may very less chances of getting paid but it can go
+currently there's a booking that
+I think that confirmation will happen after some uh can use this loop.
+It's not a instant confirmation delay confirmation in case of something merchant using main merchants using this are one is Ola Ola caps the other one is product 5 you booking plane ticket flight tickets all these things they'll use it this and Ola caps if you have seen right whenever you uh boarded the cab then you will in your uh mobile Ola app you can see that uh payment options so if you are trying to pay at that point of time let's say uh after you board it that amount whatever the amount is there that will get captured okay Then uh once the you came into your destination and add that up right the driver will get some correct it might be the same as the whatever the amount we showed in the starting while you're booking the cap but it might deposit it when go up it can come down right at that point of time we call the partial caps how do we do partial How do we trans
+I told right is that like uh
+only three flow
+three flow let's say if the amount gets uh more than the amount which is shown while booking the cap then I have to pay the extra money whatever the extra money is that this amount will get go to capture capture. But if the amount gets deducted, let's say it was showing 100 rupees, but while you are in your destination, it is showing for them it is 90 rupees. Are you ready to pay 100 more in case we so initially whenever it is shown uh when we reach our test It might go up. It never went down.
+It will go for
+okay it will never go but one some example it bend up let's say how do you initiate a passive
+so for example if I go to capital and my valid contains 50 and I have to get total of 100 amount so uh while I'm booking a cap I'll generate a payment method through my Ola. So there 50 will be automatically paid and the remaining amount if I did not pay like I have to pay through Z pay or something else that will be partially captured because you can tell how the let's say how the part will come to authorization that you are capturing the whole amount at once. Let's say if you have the cabish or like app is shown has shown 100 rupees your first whole 100 rupees get debited from your account okay it's not 90 rupees get up at your from your account so while you're unloading the car that I mean like reach your destination that that is shown for the driver let's say 90 how do you in API how do we simulate passenger have this. All right. You have to think this scenario. This is the main test case for if you miss this test case. There is a chance that we are merchant can not a merchant the end user can lo end user like who the customer is paying. Ultimately there is a band with the merchant and the merchant will come back to us.
+Sorry.
+Clear.
+Can you say briefly about
+No, we said I said the same thing, right?
+Yeah, I mean exactly how from start.
+Okay.
+So, uh let's say this gap thing you have a train ticket you're looking at ticket in Zkal right went to IRCDC you looked a ticket for that car but that is not confirmed right you have a waiting list let's say high five waiting list your waiting list number is five but when you book it the ultimately you have to pay the amount let's say uh 100 rupees or 500 rupees whatever it's you'll pay that amount okay so that amount is not settled to the merchant immediately. Okay, it's like uh pre-roduct. Let's say this is end user. Your money is here and this is a uh merchants bank account. Okay, this is debited. This merchants bank account or not the gateway we have right gateways they will have the
+some gateways handle the money they have the thing with the banks. So this money is stuck in between. It is not ideally sent to the merchant also. It is not with you also. Actually the money is debited from your account that 500 rupees whatever it is. Correct. This state whatever the money gets debited from your account that is authorized state. That means your transaction has been successful. You have booked your ticket but the ticket is not yet confirmed. Okay, this is an example example. You can think that way in the flow. Okay, so now once the money is deputed, I'll mark it as authorized state. Okay. Uh this is a normal/dx only redirecting you are making the transaction successful. Either if you are doing from wallet, it's like direct debit you need to do that amount will get debited from your wallet. Now let's say after tomorrow or uh let's say waiting you got your ticket confirmed okay you got your C then ideally the money should go to the merchant trade from the from the app whichever you book okay that will be a capture call
+once merchant
+yes so at that point of time okay this merant app also will get some call backs right saying you got your confirmation saying uh that the trade is confirmed. So I need my money back. I need my money right. So merchant will initiate a capture call. We have two APIs namely one is void API and the capture API. The capture AP used for making the transaction settling the money to the merchants account. Okay. In the capture API we have a partial capture and capture. Okay. So now we complete amount whatever we have done that is going to the settled to the merchant account. Now let's say you did not get your seat. You're waiting this was five only something you did not get the seat. So ideally you should get the money back right. So at that point the merchant will again initiate a void call. This is another API. Absolutely.
+So it is ah it is middle. Okay. So if you get the seat I'll call a capture call. If you don't get the seat then the merchant will call the v API call. I'll okay this is a vi I'll process it and then uh you will get the money back okay the these these two
+so will there be any scenario like money has been debited from our account and not received by merchant
+not received by merchant
+it was struck like it it was struck money is actually uh not in our account and not was received by watching. So it can arbitr
+until and unless you get a capture merchant initiates a capture call then only I do otherwise I won't because if the task it has to be ted then I have to merge has to initiate capture call
+so that this might be the case I mean initially I have put this one so merchant even called capture call so later on before so I might get cancel so I'll get only half of the right is that is that the chance right the already you have booked you got your certificate that uh huh that is like capture call went I'm capturing the complete amount I'm not calling the pass cancel.
+No, what if we cancel our booking by
+you cancel your ticket then I'll do a transaction once one scenario it didn't get let's say you didn't and if you got the ticket and if you directly let's say you got the ticket okay you got your ticket I mean like see it also confirmed your secret so then if you do a cancellation then it will be a refund for okay it is not a word call or anything. If the status isn't authorized then the ticket gets cancelled or the have the option of cancelling then the ticket is not yet confirmed but amount is debited the order is in authorized state then if you do a cancellation and whatever the call that happens subsequently is okay but I want Who?
+Think what merchant needs to be passed while initiating a tap call if the amount is lesser than the amount showed at the initial How do we initiate a passive capture? I'm asking like you have to capture some amount that is lesser than the amount which is authorized. How do the how do I know that I have to capture this this much? in the capture call whatever the amount if you want to capture it that you passing in the body that much amount only I'll capture okay
+so remaining
+remaining amount will be refunded I mean like it is a call that is why I'm saying like a partial capture you don't need to call the word call for that entically gets back to you but partial cap How much amount which I'm capturing right that will be passed as in the capture pay as a parameter amount
+how this will happen when we book the caps and our prices are dropped so how how the user will get
+okay the user will get after the right gets entered right in the driver it will show 90 then app only will handle person only will handle we'll do a S2S call okay for this particular You might have seen right wherever whenever you book a roller cab or something there will be if you go to the you are right section there will be some order order some number with hash or something will be written right that is order ID for a mer okay that order ID is with me also just pay also okay so he will call the void or whatever the amount has to be debited now the uh driver got Correct. For this order for merchant and it is only 90 rupees.
+Okay.
+Creation happened for 100 rupees but merchant said like okay not 100 90 rupees only for this order.
+The same order.
+Same order.
+He has that margin will you don't need to do anything. Okay. Because transaction also gets created. Right.
+Transaction also get got created. He he has created transaction also. That transaction was of 100. rupees only correct I'll pass the txn uid for me the tx and u ID is the identifier he'll consume my tx and uh API response whatever the params you want he'll consume it okay so next time when he calls the uh capture API call he will pass whatever the amount shown at the driver's t correct margin I will be calling huh one at the start when and
+one at the start for the creation of the order. The second one the in the capture API call you will place the order I what he has created it will show 100 rupees but in the end of the call like before the capture it you can think that end of your ride is also a initiation for capture call at the merchant center you can think like that okay so that is an initiation trigger for the capture call okay that In that trigger he has got only 90 rupees. Now what he will do he will deduct the sum initial order amount minus this amount. So whatever the balance this amount whatever the amount which he got in the driver's side right that he will pass in the capture API call capture API call is Ola they call SS they call IPM okay API request body they will pass it as some 10 rupees sorry 90 or whatever the amount which is s that they'll pass it then when when it comes to me I have my calculations just so whatever the initial transaction amount I'll check it whether this is greater than or less than check it okay then I'll do the those calculations and if that is matches uh lesser than the order amount transaction creation amount then I'll pass it to the it is for uh no this is only for 90 rupees not 100 rupees so that 90 rupees get cash You haven't tested it already.
+What do you think?
+I'm sorry.
+How you saying?
+Because we are not redirecting to redirecting to some other page for him.
+Correct. So it's like uh express AP calls happen as because you are not doing anything. You are not redirecting anywhere from our server. We are calling the AP directly uh via okay this or this whenever you initiate capture there's something happened in some table you have to find that in the next session I'll ask you.
+Sure. Monday. There is some link between something and created at the first and the second easy only very easy
+when we when partial capture has initiated we need to check
+in some tables
+main tables I'm not saying second I think the main tables there is some syn will get created or inserted this also Some tables, some values will be created before this special uh partial capture uh thing that we have table of Yeah,
+everyone need action. So as to get it I mean what create API calling the SQL query. So all
+you know now whenever the tables get updated
+whatever transactions you do what whichever the table you need to check for the uh status or verification after Any notice payments? Yeah, the problem statement and share it with Simbank afterwards. I'm just saying the initiated program ideally payments the refund process doesn't but if you're uh doing a refund that the both the transaction transactions are successful and you can ideally that ensure all amount will get refunded to the customer after some time let's say that is one day 24 hours or 20 hours or something that is depends on the other thing is like the first normal debit transaction Okay, that amount you can do a refund. That is a normal gift.
+That depends
+if you cancel the order.
+It depends. Some merchants don't allow to refund the gift card and they don't allow it. It depends on the merchant actually. For me, it's a validation. I don't know if he's asking for some Uh I'm doing a number that is depend but most of the thing if you are using a gift card ID they won't allow you to do a refund that whatever the product you have bought that will not be returned. will be there that is nothing to handle. You are not that they will they have some terms and conditions everything payment. This uh student is also So successful successful that is uh that status doesn't come very often that is when the transaction is not redirected but it hasn't moved to the end state ter that
+it's like between the pending and authorizing Authorizing window authorizing when you get the pending response from the gateway before
+authorizing you don't get status status in I haven't seen
+you don't even get that I think we can remove that status Any other questions?
+Show them can conclude the meeting.
+Thank you.
+Thank you.

@@ -1,0 +1,169 @@
+Overview -
+
+ Principles of System Optimization and Reliability
+
+The provided text discusses system optimization and reliability, particularly focusing on three core principles: N (reducing the number of steps), C (reducing the cost per step), and P/U (parallelization/utilization). The speaker argues that these principles are universally applicable across various scales, from microchips to organizational logistics, and emphasizes the importance of direct understanding over blind trust for problem-solving. Practical examples, such as the IRCTC ticket booking system and physical packing of boxes, illustrate how applying these principles—through sorting, caching, and batching—can lead to significant performance improvements and cost reductions, ultimately enhancing reliability and user experience. The speaker concludes by suggesting that a deep understanding of these principles can help teams achieve substantial optimizations in large, complex systems.
+
+
+Transcript 
+
+[00:00:00] Why I, why should I talk about this? Why should I understand this? You folks will also be questioning all that, right? You are questioning that. Why should I know these things, right? When I'm saying that yes, these problems are, uh, not properly solved, and, uh, if it was solved by just the engineers alone, then no problem, it's done.
+
+[00:00:21] But this, these reliability and these problems look like never ending problems. Some, uh, new thing we will do and like some new reliability issue will come up. And, uh, the bar also keeps increasing. And in our principles, I have these 10 principles for reliability. The last principle is about everybody's responsible for it, like including designers, right?
+
+[00:00:46] There are two kinds of navigating through the world, right? One is through chain of trust or somebody else is doing it. I'm going to take. I'm going to believe and do it. Another is like to understanding, direct understanding. Direct understanding. You get what I'm saying? It's like, because I'm telling you're believing or you got it.
+
+[00:01:06] Direct understanding. Right. So all of us work in both modes and there could be a. Some people could be good at one or the other, also possible. See, and another thing is that one thing, when you go deeper, right? You might find things which are actually common across the more deeper you go, you'll see it's not going deep in some other way.
+
+[00:01:29] It's probably going through, going to some, maybe you are digging deeper, deeper, deeper. Maybe it's going like a triangle to the same place, maybe something like that. It's, uh, that you'll start finding commonality, the depth, uh, some of the, the principles are also coming from that. Um, when I'm looking at reliability principles, performance principles, it looks like, uh, these performance principles are working at a level of a chip, a processor.
+
+[00:01:54] It's working at a level of an application. It's working at a level of a distributed system. It's working at the level of some logistics and moving people. In AYA three, it is working at the level of, you know, teams having high performance teams, same principles are seeming top play to everywhere. So, uh, but I really understood these things while working on I-R-C-T-C, Al booking, how to optimize our software to handle those spikes in a cost effective way.
+
+[00:02:24] Just not throwing lot of machines like we are because we are in POC stage, we are in POC for a long time. We are just giving them, giving it to them. We are not charging them. And uh, that is one another is also the fun of, uh. So it's extremely abundant. Atom is so small that scale is at a different level.
+
+[00:02:45] And this, uh, four nanometer chip and all of that is going near atomic scale. So this chips and the transistor and all, which is getting manufactured, right, and it doesn't get manufactured. You don't, some arms, robotic arms and all, it's, it's a totally different process. Some kind of, you know, photographic kind of a thing.
+
+[00:03:02] You just take that and it's done. So it's a different kind of a process. It manufactures these chips and these chips are working at that scale. And if it is doing some work at that scale, it should take less energy, less material, unless we really use it in a inefficient way, right? So to, it's all physical.
+
+[00:03:25] Finally, all this, what is going on in all these machines is also physical only, but at a very micro scale, actually, micro nano scale. Yeah. Micro means me. They call it milli means thousandth. Micro means millionth. Nano means billionth. So it's like at billionth level of smallness it is working. Right. So when something works at that level, how can our software run in, you know, per per CPU core R-T-X-N-S is running at 10 requests per second.
+
+[00:03:56] In one second it is able to do 10 requests. That means per. Uh, per request. It is taking now the science way of thinking. I will see if that is understandable. Like per request, it is taking one 10th of a second. A hundred milliseconds, a hundred milliseconds. It's taking right in one second, 10 requests came into that one thing called A CPU and went out, right?
+
+[00:04:19] That means one of them took a hundred milliseconds right? But a hundred milliseconds. A hundred milliseconds from a, and the processor runs a clock. It runs a clock, which runs at nanoseconds. It runs, um, 10 power nine times in a second, 10 power nine times in a second. Okay? Which means 10 power eight times it, it has taken 10 power eight loops.
+
+[00:04:47] It has to do 10 power eight times something to get one transaction. Then what is it? Doing something is like we have not done right. Because software is written in a way such that you know, somebody has done something on top of that, we build something else, something else, something else, something else somewhere.
+
+[00:05:02] Some inefficiency might be there and we might be running that in a loop. See, another concept is when you write, you can't write that much lines of code to, you won't write 10 power eight lines of code. So some code you have written, which is running in a loop. So you can narrow down a problem reason out like that, right?
+
+[00:05:25] So where, because our people, thousand people can't write that much code. It's not like they wrote so many instructions for one transaction. It went and did so many instruction, and that's why it's taking a hundred milliseconds, a hundred milliseconds itself is big. VR saying, seeing, because a hundred milliseconds is 10 power.
+
+[00:05:43] Eight nanoseconds. Uh, what is taking 10 power? Eight nanoseconds. Right? Then our people should have done some code, which is like we have, we have just said, Hey, just do this a million times. Somewhere innocently, some code is there somewhere, right? Which could be some string again and again, we are doing something or we are doing something inefficiently, like something which is innocent looking.
+
+[00:06:06] One line could be one step, or one line could be a million steps. So we have to find. These kind of hotspots and uh, so this is like reducing end. Our performance principle one is you have to reduce the number of steps if you have to make something performant. If we do too many steps, yes, that is a problem.
+
+[00:06:32] Second thing is, uh, you can reduce the cost of a step. Let's say I'm doing a million steps, I. But million steps of 10 units each, 10 nanoseconds each, something like that. Oh, can I make each step one nanosecond, right? You can reduce the cost. Either you do less work or you do more work, but what work you're doing, you make it efficient, right?
+
+[00:06:57] That is a second principle, and these are common principles across the across use cases. They either reduce N or you reduce C, the cost of a step. And interestingly. At, at least in the processors and all of that. I think even in the broader level, right? This is related to distance. See, always reduce to distance.
+
+[00:07:18] See something like, you know, you have one, one component, one um, one engine, one hard disk or something. I'm doing one operation. I say, Hey, store it. And that storage itself could do many steps inside, right? It's a black box. I don't know how many times what it's doing inside. I am doing one only, but it may do a hundred things, right?
+
+[00:07:41] It could do a hundred things off some cost. So I am having the top level NN two C. My whole program is n things I'm doing with C cost. What is the math of that? NN two C and times. I'm doing something of c. C cost right now, I want to say. Okay. And I tried to reduce. But I'm not able to reduce. I want to do all this work.
+
+[00:08:04] Yeah, it's user wants it. So now I'm trying to reduce C. Now I unpack C. It actually becomes a N one C one because you see the next layer and it is actually doing some other N number of steps, N one number of steps, of course, C one. Then, okay, I, I try to reduce N one, right? Okay. Fine. N one also this much, I, you can't reduce beyond the point.
+
+[00:08:27] Let's say it's some storage device in which you have to store in two places. You can't say, I will store in one place. Reliability will go for a toss, right? So now I have to, anyway, do n one steps, but now I am trying to say, can I reduce C one? Oh, yeah. Unpack C one again, like that, it keeps going. The la the, the lowest CS start becoming like.
+
+[00:08:50] Now I have to go from here to there and come back. I have to go from here to there and come back. Most of the things are actually moving around. Was anything that you do, even addition, subtraction, anything that you do, right? You are working out like how human works out. Computer is also doing that. Now, is it like, uh, I am working, my paper is there, my pen is there.
+
+[00:09:08] I have to go take the pen and write the number. Come back here. This distance only starts mattering, right? So even for us. Okay, this is like finally, sea comes to distance was my one revelation. Oh, it's all about distance. And we have to understand. So now you need to, whatever you do, more number of times, N number of times, right?
+
+[00:09:33] The sea has to be less. Either you reduce and there are various ways to reduce N. And the way of reducing sea is about keeping things close. And this is a very simple concept and this is what is occurring everywhere. It is to keep things close. But the problem is you have only this much space around you.
+
+[00:09:51] You can't keep everything close, right? So you have to then, uh, at different times, you can keep different things close. That is, this is where it's called caching. In computer science, you call it caching what you need often, you keep it close by what you need. Often you keep it in your desk. That is your, your desk space, right?
+
+[00:10:08] Your, that is called your cash, your table, working table. But let's say I want to do carpentry, I also want to do. Uh, engineering coding. I can't put that many tables. I have to swap out what if I can do a little bit of carpentry, little bit of engineering, then this only swap and swap out, swap and swap, these kind of things, and all will happen inside our systems.
+
+[00:10:28] That's why it is a hundred milliseconds, right? So how do you organize your work in such a way that you can reduce C, right? So you have to take related work and batch it and do it. Right. So batching becomes such an important concept, which is like, you know, batching is a boring concept. Otherwise it looks like right everywhere this batching is there.
+
+[00:10:50] Why are we thinking about nama shuttle batching? And the idea is coming from here only, right? So you, it, it becomes very clear. Well, everybody, you used two wheeler, no, you have to batch. Will auto or cab only work? You know, one driver, one person, two person, three person. It's like one to 10, one to 20. You can do.
+
+[00:11:09] But when you batch, again, flexibility reduces. That's how world has trade offs when you batch and do so. So the thing is this something which is convenient and useful and good at the same time. Efficient is not a straightforward problem. So if you batch too much, something will become slower. People want, I want immediate response.
+
+[00:11:28] You know, why are you batching and doing it? Immediately? Send me. But then if you don't batch, then your cost increases. Cost of an operation, you need more machines. Right. So all these trade offs are there and to find the right trade offs, still there are principles. So the CEC is the second principle, right?
+
+[00:11:46] N is the first one. N is typically, uh, in more general terms you can say you have to sort things like we, long before I saw physically we were trying to do offline payments. And, uh, after Bmap, we were thinking we will do this patrol pump payments. So we are trying to create a kit, like a onboarding kit. We created boxes, 3000 boxes.
+
+[00:12:13] We thought, see, we do millions of transactions and a hundred million and all right, 3000 looks like a small number. We had a, we have this hacker rows again in Hacker Row. We said, okay, get us all the cardboard and all of that. It was full of room, full of, you know, cardboards full, right? You know, 3000 was such a big number physically, right.
+
+[00:12:31] Then our people started putting things in the car. They, okay, print QR code, create that, scan, qr, this, that, all that, right? And to pack 3000 boxes. It was such a big deal. That's when we saw people didn't sort things, okay. Like, okay, this is this, this patrol pump. Okay, this is the box. You know, where is the qr?
+
+[00:12:52] Where to get it? Some printing has happened separately. Right? It's so, so, so inefficient. So if you are able to take like. Take this, take this, take this, take this, put it. Or if I wrote a batch and like take a bunch of things and throw it and it works right, and repeat things. You are, you are keeping it nearby.
+
+[00:13:10] You are caching. So physically we were able to see all of this caching is there, then this, uh, batching is there, right? Uh, these all. Okay. Batching also kind of reduces end sometimes. Let's say, uh, it's something like saying, I have a bus with one engine for many people, right? So you also do common work.
+
+[00:13:31] When you batch, you'll find common work to be done, okay? Many people are there. I have to create chai. I can, uh, boil the milk in one big pot. I don't need to do it that many number of times so you can make common work. So n also reduces because of batching. Um, C reduces because of caching. Okay. End reduces because of sorting.
+
+[00:13:52] It's typically in computer science, it's called algorithms. Um, when you have to find a needle in a haystack, will you find all the haze and find the needle? Or you can directly go to, oh, needle is there, it's glow. It just glows, means you can directly go there. Right? So one is like, you know, going through the entire thing versus exactly going to it, right?
+
+[00:14:13] That it's like, uh, you call it a tree search. Typically in computer science it's either like, you know, there is one leaf in the tree somewhere, which is a, which is what you have to find out. Uh, will you go through all the leaves and say, is it this, is it this, is it this, it's too much. Right? Whereas you start from the bark and every branch is telling you where it is, it is actually exponentially less, exponentially less means.
+
+[00:14:38] Um, if there are like, you know, a million leaves in the tree, if there are a million leaves in the tree, seeing a leaf one by one by one, it is like a million million operations you have to do. Right? Uh, no, we are just talking about, uh, physically also, we had this experience of, you know, packing boxes, 3000 boxes.
+
+[00:14:57] It was very, very large. We had to sort things like one box, one QR code for offline payments. We were doing it when it was not sorted. It was so difficult. We were able to physically feel it. Other in computer science and all. We know this very, uh, like algorithms, we, there is this concept called algorithms.
+
+[00:15:14] You would've heard, they call it certain, um, like you have a. Like a big database in which you are searching and immediately it's going to that place, right? It is not going and searching everything. It's already sorted and kept Sorting is a simple concept, but super useful. And you also keep improving your technology to keep things closer, which is like, you know, uh, better.
+
+[00:15:39] Uh, hardware. Hardware is like this. Electronics we are saying it works at atomic scale and all. So more and more you build technology where you're able to create miniaturized machines. It is able to reduce C right? One is like you have to miniaturize itself. Like one processor is a, a old processor, which actually old, old technologies, uh, it's not very small size machines.
+
+[00:16:05] So the biggest trend in the world is about creating machines which are smaller in size. Like, like the, when electrical machines were there in the old, uh, radios handle would be there, right? They used to call it four transistor, six transistor radios. Now we are talking about billion transistors. In a small chip there are billion transistors, right?
+
+[00:16:24] So there is technology which is evolving to uh, create it smaller and smaller. But actually we have almost reached the limit of how small you can get. Maybe some quantum and all of that will come in other ways. So you have kind of one limit you have reached. But, but the thing is you have not spread it out.
+
+[00:16:43] Your chip is still like a point. It's a small point. We have not found technology to, uh, create such a machine, which actually can be like a floor size. Maybe there is no chip, which can be a floor, but they say even something of the size of a laptop can have the complexity of all the brains in the world.
+
+[00:17:01] They say like, you have not covered the, you're still. Uh, taken only the, uh, it's almost like a needle, which is poked to some place or some small area. So that kind of chip technology only is there. You have not found, that's a multi-core architecture. A GPU is, um, 3000 cores they say, right? Still a concept called core is created now many.
+
+[00:17:25] Um, so this comes to this third, uh, principle called utilization. So you have, uh, reduced and fine. Still N is high. Certain algorithms, you can't reduce it. You can't, uh, narrow down, uh, to from million to million times you have to do. It'll be like that. Okay? You also reduce C to a level, uh, but you want to do, you know, trillions of times something so, and is also there.
+
+[00:17:52] And C, you can't go beyond a point. And C, you've done your best to reduce C. Right? Now you can say that, you know, I have, and also I, uh, it's also costly, but actually a lot of resources are there in the world. And I don't know how to use it like so much sunlight is coming in, but you're not able to take it either.
+
+[00:18:10] We can say, no, no, don't consume energy. Then you can say no. Uh, use better machines who will consume less energy. Even if you want, you can say, don't, uh, this, this applies, this NC you applies to anything. Like you can either say people should all not travel because you're consuming fossil fuels, right? You can reduce end like that or you can say no travel, but somehow.
+
+[00:18:34] Travel in a cheap way, but there is a base cost to it. You still have to take yourself that much energy has to be used, right? Maybe travel in a batched mode, travel in some ship, which consumes, like airplane for example, takes more energy because even to keep it up the sky, it needs energy, but ship doesn't need energy to just keep it afloat.
+
+[00:18:56] These kind of things, basic limits will be there. The ship will, um. In general, take less energy. And if you go by the current, it'll take less and all that you can keep reducing to a level, right? Um, so the, the third is, so you can say, okay, fine, anyway, C also beyond this, I can't go, so C is at this level or this is the best C you can get.
+
+[00:19:20] But then everybody in the world wants to travel, then, um, you have to unlock something. Okay, maybe oceans have some current, anyway, it's going, let's just go with it. So you are not you anyway. It's so much energy, so much things are there. You just don't know how to smartly unlock it like that already. Uh, so much silicon and all of that is that sand only silicon.
+
+[00:19:44] You don't know how to convert that into this kind of a parallel machine. See, because you have made it small enough, now you need to, at least in computer science, you need to, right now most of the work, Nvidia and all, is so big because they have found out a way to use more silicon. A way to parallel is computation, so that's why we call it NC PP slash U.
+
+[00:20:08] It's parallel and utilization. Parallel and utilization go hand in hand. I am, I am talking from the code perspectives because you write code sequentially, right? Do this, do this, do this, do this. So here I'm saying, let's say add, add, multiply, multiply, add, add, add, add, add. Let's say I'm saying like that, right?
+
+[00:20:23] It has to, you'll execute it in sequential order. That's how your program, many things will be dependent because the output of one will be used in the other. That's how you write code. Like even something that we do, one certain things will be, can happen in parallel, but certain things. Like I'm talking, I have to say something firsthand then only next.
+
+[00:20:42] But let's say that, uh, I have to talk about some other stuff. Let's say some open source hyper switch in Silicon Valley, what to do that can maybe, if I have a clone, it can happen in parallel. It's not like certain things has to be sequenced. Certain things can happen in parallel, right? So, but the way we write code sometimes would be such that, no, I would do complete dis only and do that.
+
+[00:21:05] So the parallel becomes a bottleneck. Even in our current processor, sometimes there will be many, many like rooms are there. There'll be many add units, some multiply units, but I'm saying add, add two, add units will be used. But now it is doing multiply and uh, it assumes that, or it'll do add first multi.
+
+[00:21:29] See the, the, uh, the most naive way is like, you know, all these are there, but one meeting only can happen at a time. You have this room with many things. But like, you know, you, because you don't know whether the output of that meeting is going to be used for the next meeting. But if you processor and all will be done in such a way that it'll see these dependencies and it'll say like, oh yeah, these are independent, just send it.
+
+[00:21:52] But, uh, sometimes it can't see it also. So you can reorder, you can reorder instruction, you can see this kind of dependencies and you can parallelize. So this, this is also typically, uh, um, things which are not done in general. It's not done in, in our code. It won't be done. Because we don't want to think too many can systems itself find that dependency and parallel.
+
+[00:22:13] So that is the NCP slash u like, like that teams will also be there. Like not, not everybody's like, uh, no at, at their full throttle. If, if needed to be full throttle, I'm doesn't need to be hard work only. Right? Everybody should be excited and, you know, motivated, uh, it, it's not, we are not able to do that.
+
+[00:22:35] Right? So you can all, so many people are there. Take India itself, right? So many college graduates are there. Are they able to get good work? So it's a big U problem, utilization problem. You can either say, oh, I will have a small team only and I will, everybody will be, uh, maybe very productive. So their cost is less.
+
+[00:22:55] You can call it like that. But yes, you have a lot of work or you do the right kind of work such that that one product you do and that becomes a big hit like some WhatsApp. Our, uh, 35 member team. It was WhatsApp and it became big. So you can now expand on each of these and take various examples. Uh, because anything I'm seeing what our people are doing is fitting this because n could be because of starting, you can reduce, we talked about you can also do something like lazy execution in technology.
+
+[00:23:26] We call it lazy evaluation. When you need it, execute. Don't unnecessarily, don't execute it because we would've written some code, do this, do this, do this, do this. But we'll use some only like at point of usage, you can execute it, that kind of stuff. Like in, in businesses they say made to order, right? You order it only, then they'll stitch the address.
+
+[00:23:47] So the, these, that's another, that is a, another way of reducing it, like lazy evaluation or made to order or, uh, it's, uh. On demand. On demand is a way to reduce, and it's not as great as sorting it. It reduces some level. Another thing is like seeing just wastage. Some unnecessary things are happening, we can reduce it, but big ways of reducing N are a lot of times creative ideas.
+
+[00:24:13] These are all some marginal ways of reducing and, but still, it, it helps. It helps when, when it comes to, uh, you know, our payment page for example, they were. Uh, when you need it. Only if UPA transaction then FETs the UPI details, that's lazy, uh, lazy valuation, right? But sometimes if you have reduced c so much that you just take everything, doesn't matter, like load everything, because in general that cost is very less and can be a bit higher.
+
+[00:24:41] So it's, it's a trade off between these things, right? So now people are doing this kind of optimization in different, different language ways. They will, they can. Think about many ideas in one shot. If we keep thinking in these principles, I'm feeling these principles don't cover everything. Because the detail, the next level of the principle would be like a lot of details could be there.
+
+[00:25:03] New, new, um, ideas could come in like how a design system is there. But your real design could be so many, right? You can million designs, you can do maybe on top of that real, real products or designs like that. But it gives an anchor. It be, it makes us efficient. Yeah, because we are needing that level of performance because, um, like our cloud cost is some 3.2 growths per month.
+
+[00:25:30] Theoretically speaking. It could be maybe 30 lacks theoretically if you really squeeze it with these NCP slash but it's very difficult compared to that. We might have to do more work, other work. Right. But people might not think like, you know, can we make from 3.223. They might think like that. No, you can do big things like that.
+
+[00:25:49] Million to 20 you can do in end, right? In certain areas it's so you have to do 10 x improvement. So, uh, your processors are working in atomic scale. It's so small you can really optimize because people think like, you know, that much optimization is not possible. Similarly, you also. Lot of you might be there, like if you, a lot of our stuff is machines will be just running like even, even in look at our office, machines are just running, right?
+
+[00:26:16] Not used like that. Even in our production, things might be here and there, pockets of news things will be there. So when people know that only these three things you have to look for, you'll, you'll look at things with that perspective and that intelligence, right? Otherwise, everything looks like different problem.
+
+[00:26:34] And then it'll look like unsolved, unsolvable problem. Difficult problem when our systems are becoming large, like even at just pay size or government size and all lot of innovations, you will be like, this will be that. It's just because one person comes up with a better idea, it could make such a big difference.
+
+[00:26:51] And just because it's not happening, it's so inefficient. And uh, then how it's already done, people will keep repeating, but that the cost of that is so high. Like, we reduce the cost a lot. Yes. We, it's like, it's always a trade off. Um, but we, because of, again, this optimization that we did for IRCT, C-U-P-I-N all we know that why should it take this much?
+
+[00:27:18] We, we will optimize it further. Like, like just, we used to think like it should work like WhatsApp. Such a simple thing like white software only. Right? Why and why are others then charging, uh, this much commission and. Right. It just, okay, maybe we have to create network effect or not. What if people start using it?
+
+[00:27:37] It, if it creates a network by itself, it'll run. So yeah, and see everywhere this, we want more with less. Is there even that, these principles could help us in getting there, taking big leaps. So that is what we want our team to take big leaps. Uh, really optimized performance. Sometimes, sometimes you call it, call this call.
+
+[00:28:02] This is called sometimes, uh, top line and bottom line, right? Typically reducing cost. People will say it's bottom line. It is to just be, it's like bottom line sometimes feels like being stingy, right? But if you do performance really well, it becomes top line. It'll become like, you know, you have a better, uh, vehicle, which takes less fuel.
+
+[00:28:23] Or something which can go faster because the thing sometimes the same thing only, um, to reduce cost is also something which improves performance. If something is less cost, you can go faster. You can, in fact, you can go sometimes faster. You can improve experience like that. Or you can increase reliability if your software is so efficient, right?
+
+[00:28:43] You can have a lot of buffer capacity. That is actually strength.
+
+
+

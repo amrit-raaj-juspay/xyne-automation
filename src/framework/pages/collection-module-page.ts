@@ -15,12 +15,20 @@ export class CollectionModulePage extends BasePage {
     
     // Modal elements
     modalTitle: 'h2.font-mono:has-text("CREATE NEW COLLECTION")',
-    collectionTitleLabel: 'label[for="collectionName"]:has-text("Collection title")',
-    collectionTitleInput: 'input#collectionName[placeholder="Enter collection title"]',
-    dragDropArea: 'div.border-2.border-dashed.border-gray-200',
+    collectionNameInput: 'input#collectionName[placeholder="Enter collection name"]',
+    addFilesButton: 'button:has-text("ADD FILES")',
+    uploadLargeFolderButton: 'button:has-text("UPLOAD LARGE FOLDER")',
+    dragDropArea: 'div.flex.flex-col.items-center.justify-center.h-full.w-full.text-center',
     dragDropText: 'h3:has-text("Drag & drop files or folders here")',
-    selectFolderButton: 'button:has-text("Select Folder")',
-    uploadButton: 'button.bg-primary.text-primary-foreground:has(svg.lucide-upload.w-4.h-4):has(span:has-text("Upload"))',
+    dragDropSubText: 'p:has-text("or use the buttons above to select files")',
+    modalCloseButton: 'svg.lucide-x.h-5.w-5.text-gray-400',
+    
+    // Upload queue elements (after file selection)
+    uploadQueueTitle: 'h3:has-text("UPLOAD QUEUE")',
+    fileInQueue: 'div.flex.items-center.gap-3.px-4.py-3',
+    uploadItemsButton: 'button:has-text("UPLOAD ITEMS")',
+    clearAllButton: 'button:has-text("Clear All")',
+    fileHoverCrossButton: 'svg.lucide-x.w-4.h-4',
     
     // Three dot menu and actions
     threeDotMenu: 'svg.lucide-ellipsis.cursor-pointer',
@@ -166,38 +174,38 @@ export class CollectionModulePage extends BasePage {
     await expect(modalTitle).toBeVisible({ timeout: 10000 });
     console.log('"CREATE NEW COLLECTION" modal title found');
     
-    // 2. Verify the "Collection title" label
-    const collectionTitleLabel = this.page.locator(this.selectors.collectionTitleLabel);
-    await expect(collectionTitleLabel).toBeVisible({ timeout: 5000 });
-    console.log('"Collection title" label found');
+    // 2. Verify the collection name input field
+    const collectionNameInput = this.page.locator(this.selectors.collectionNameInput);
+    await expect(collectionNameInput).toBeVisible({ timeout: 5000 });
+    console.log('Collection name input field found');
     
-    // 3. Verify the collection title input field
-    const collectionTitleInput = this.page.locator(this.selectors.collectionTitleInput);
-    await expect(collectionTitleInput).toBeVisible({ timeout: 5000 });
-    console.log('Collection title input field found');
-    
-    // 4. Test input field functionality
-    await collectionTitleInput.fill('Test Collection Name');
-    const inputValue = await collectionTitleInput.inputValue();
+    // 3. Test input field functionality
+    await collectionNameInput.fill('Test Collection Name');
+    const inputValue = await collectionNameInput.inputValue();
     expect(inputValue).toBe('Test Collection Name');
-    console.log('Collection title input field is functional');
+    console.log('Collection name input field is functional');
     
     // Clear input
-    await collectionTitleInput.clear();
+    await collectionNameInput.clear();
     
     // Verify drag & drop area
     const dragDropText = this.page.locator(this.selectors.dragDropText);
     await expect(dragDropText).toBeVisible({ timeout: 5000 });
     console.log('Drag & drop area found');
     
-    // Verify action buttons
-    const selectFolderButton = this.page.locator(this.selectors.selectFolderButton);
-    await expect(selectFolderButton).toBeVisible({ timeout: 5000 });
-    console.log('Select Folder button found');
+    // Verify drag & drop sub text
+    const dragDropSubText = this.page.locator(this.selectors.dragDropSubText);
+    await expect(dragDropSubText).toBeVisible({ timeout: 5000 });
+    console.log('Drag & drop sub text found');
     
-    const uploadButton = this.page.locator(this.selectors.uploadButton);
-    await expect(uploadButton).toBeVisible({ timeout: 5000 });
-    console.log('Upload button found');
+    // Verify action buttons
+    const addFilesButton = this.page.locator(this.selectors.addFilesButton);
+    await expect(addFilesButton).toBeVisible({ timeout: 5000 });
+    console.log('ADD FILES button found');
+    
+    const uploadLargeFolderButton = this.page.locator(this.selectors.uploadLargeFolderButton);
+    await expect(uploadLargeFolderButton).toBeVisible({ timeout: 5000 });
+    console.log('UPLOAD LARGE FOLDER button found');
     
     console.log('Modal verification completed');
   }
@@ -205,23 +213,23 @@ export class CollectionModulePage extends BasePage {
   async addCollectionTitle(): Promise<string> {
     console.log('Adding collection title');
     
-    // Verify the collection title input field is available
-    const collectionTitleInput = this.page.locator(this.selectors.collectionTitleInput);
-    await expect(collectionTitleInput).toBeVisible({ timeout: 5000 });
-    console.log('Collection title input field found');
+    // Verify the collection name input field is available
+    const collectionNameInput = this.page.locator(this.selectors.collectionNameInput);
+    await expect(collectionNameInput).toBeVisible({ timeout: 5000 });
+    console.log('Collection name input field found');
     
     // Generate random alphanumeric string
     const randomSuffix = this.generateRandomString(8);
     const testCollectionTitle = `My Test Collection ${randomSuffix}`;
     
-    await collectionTitleInput.fill(testCollectionTitle);
+    await collectionNameInput.fill(testCollectionTitle);
     console.log(`Collection title "${testCollectionTitle}" entered`);
     
     // Wait after adding collection name
     await this.page.waitForTimeout(2000);
     
     // Verify the title was entered correctly
-    const enteredValue = await collectionTitleInput.inputValue();
+    const enteredValue = await collectionNameInput.inputValue();
     expect(enteredValue).toBe(testCollectionTitle);
     console.log('Collection title input verified successfully');
     
@@ -232,17 +240,17 @@ export class CollectionModulePage extends BasePage {
   async selectFileAndUpload(): Promise<void> {
     console.log('Selecting file and uploading');
     
-    // Step 1: Click on drag & drop area to open file selection dialog
-    const dragDropArea = this.page.locator(this.selectors.dragDropArea);
-    await expect(dragDropArea).toBeVisible({ timeout: 5000 });
-    console.log('Drag & drop area found');
+    // Step 1: Click on ADD FILES button to open file selection dialog
+    const addFilesButton = this.page.locator(this.selectors.addFilesButton);
+    await expect(addFilesButton).toBeVisible({ timeout: 5000 });
+    console.log('ADD FILES button found');
     
     // Set up file chooser event listener before clicking
     const fileChooserPromise = this.page.waitForEvent('filechooser');
     
-    // Click on the drag & drop area to open file selection dialog
-    await dragDropArea.click();
-    console.log('Clicked on drag & drop area - file selection dialog should open');
+    // Click on the ADD FILES button to open file selection dialog
+    await addFilesButton.click();
+    console.log('Clicked on ADD FILES button - file selection dialog should open');
     
     // Step 2: File selection dialog opens and select the file
     const fileChooser = await fileChooserPromise;
@@ -255,80 +263,80 @@ export class CollectionModulePage extends BasePage {
     await this.page.waitForTimeout(3000);
     console.log('Waited for file to be added to the interface');
     
-    // Step 4: Find and click the upload button
-    const uploadButton = this.page.locator(this.selectors.uploadButton);
-    await expect(uploadButton).toBeVisible({ timeout: 5000 });
-    console.log('Upload button found');
+    // Step 4: Find and click the upload items button
+    const uploadItemsButton = this.page.locator(this.selectors.uploadItemsButton);
+    await expect(uploadItemsButton).toBeVisible({ timeout: 5000 });
+    console.log('Upload items button found');
     
-    // Check if upload button is now enabled after file selection
-    const isDisabled = await uploadButton.getAttribute('disabled');
+    // Check if upload items button is now enabled after file selection
+    const isDisabled = await uploadItemsButton.getAttribute('disabled');
     if (isDisabled === null) {
-      console.log('Upload button is enabled after file selection');
+      console.log('Upload items button is enabled after file selection');
       
-      // Click the upload button to start upload process
-      await uploadButton.click();
-      console.log('Upload button clicked - starting upload process');
+      // Click the upload items button to start upload process
+      await uploadItemsButton.click();
+      console.log('Upload items button clicked - starting upload process');
       
       // Wait for upload process to complete
       await this.page.waitForTimeout(10000);
       console.log('Waited for upload process to complete');
       
     } else {
-      console.log('Upload button is still disabled after file selection');
+      console.log('Upload items button is still disabled after file selection');
     }
     
     console.log('File selection and upload completed');
   }
 
   async selectScreeningFeedbackFileAndUpload(): Promise<void> {
-    console.log('Selecting Screening & Feedback file and uploading');
+    console.log('Selecting euler-team folder and uploading');
     
-    // Step 1: Click on drag & drop area to open file selection dialog
-    const dragDropArea = this.page.locator(this.selectors.dragDropArea);
-    await expect(dragDropArea).toBeVisible({ timeout: 5000 });
-    console.log('Drag & drop area found');
+    // Step 1: Click on UPLOAD LARGE FOLDER button to open file selection dialog
+    const uploadLargeFolderButton = this.page.locator(this.selectors.uploadLargeFolderButton);
+    await expect(uploadLargeFolderButton).toBeVisible({ timeout: 5000 });
+    console.log('UPLOAD LARGE FOLDER button found');
     
     // Set up file chooser event listener before clicking
     const fileChooserPromise = this.page.waitForEvent('filechooser');
     
-    // Click on the drag & drop area to open file selection dialog
-    await dragDropArea.click();
-    console.log('Clicked on drag & drop area - file selection dialog should open');
+    // Click on the UPLOAD LARGE FOLDER button to open file selection dialog
+    await uploadLargeFolderButton.click();
+    console.log('Clicked on UPLOAD LARGE FOLDER button - folder selection dialog should open');
     
-    // Step 2: File selection dialog opens and select the file
+    // Step 2: Folder selection dialog opens and select the euler-team folder
     const fileChooser = await fileChooserPromise;
-    console.log('File selection dialog opened');
+    console.log('Folder selection dialog opened');
     
-    await fileChooser.setFiles('documents/Screening & Feedback.docx');
-    console.log('File selected: documents/Screening & Feedback.docx');
+    await fileChooser.setFiles('documents/euler-team');
+    console.log('euler-team folder selected: documents/euler-team');
     
-    // Step 3: Wait for file to be added to the interface
+    // Step 3: Wait for folder contents to be added to the interface
     await this.page.waitForTimeout(3000);
-    console.log('Waited for file to be added to the interface');
+    console.log('Waited for euler-team folder contents to be added to the interface');
     
-    // Step 4: Find and click the upload button
-    const uploadButton = this.page.locator(this.selectors.uploadButton);
-    await expect(uploadButton).toBeVisible({ timeout: 5000 });
-    console.log('Upload button found');
+    // Step 4: Find and click the upload items button
+    const uploadItemsButton = this.page.locator(this.selectors.uploadItemsButton);
+    await expect(uploadItemsButton).toBeVisible({ timeout: 5000 });
+    console.log('Upload items button found');
     
-    // Check if upload button is now enabled after file selection
-    const isDisabled = await uploadButton.getAttribute('disabled');
+    // Check if upload items button is now enabled after folder selection
+    const isDisabled = await uploadItemsButton.getAttribute('disabled');
     if (isDisabled === null) {
-      console.log('Upload button is enabled after file selection');
+      console.log('Upload items button is enabled after euler-team folder selection');
       
-      // Click the upload button to start upload process
-      await uploadButton.click();
-      console.log('Upload button clicked - starting upload process');
+      // Click the upload items button to start upload process
+      await uploadItemsButton.click();
+      console.log('Upload items button clicked - starting euler-team folder upload process');
       
       // Wait for upload process to complete
       await this.page.waitForTimeout(10000);
-      console.log('Waited for upload process to complete');
+      console.log('Waited for euler-team folder upload process to complete');
       
     } else {
-      console.log('Upload button is still disabled after file selection');
+      console.log('Upload items button is still disabled after euler-team folder selection');
     }
     
-    console.log('Screening & Feedback file selection and upload completed');
+    console.log('euler-team folder selection and upload completed');
   }
 
   async refreshPageAndVerifyCollection(): Promise<void> {
@@ -565,35 +573,77 @@ export class CollectionModulePage extends BasePage {
   }
 
   async validateChatResponse(): Promise<void> {
-    console.log('Validating chat response');
+    console.log('🔍 Validating chat response - TARGETING SPECIFIC CHAT RESPONSE AREA');
     
-    // Look for the chat response containing the expected services
-    const chatResponse = this.page.locator('div').filter({ hasText: /Bank Edge Service|Central DPIP Service/ });
+    // Wait for any response to appear first
+    await this.page.waitForTimeout(5000);
+    console.log('Waited for chat response to appear');
     
-    // Wait for response with either service name to appear
-    await expect(chatResponse.first()).toBeVisible({ timeout: 30000 });
-    console.log('Chat response found');
+    // Target the specific chat response area based on the HTML structure you provided
+    let responseText = '';
+    let foundChatResponse = false;
     
-    // Get the response text to validate both services are mentioned
-    const responseText = await this.page.textContent('body');
+    // Use the exact selectors from the HTML structure you provided
+    const chatResponseSelectors = [
+      '.wmde-markdown.wmde-markdown-color',  // Main chat response container
+      '.markdown-content .wmde-markdown',    // Alternative path
+      'div[data-color-mode="dark"].wmde-markdown', // Specific dark mode container
+      '.wmde-markdown p',  // Paragraphs inside markdown
+    ];
     
-    // Validate that both required services are mentioned in the response
-    const hasBankEdgeService = responseText?.includes('Bank Edge Service');
-    const hasCentralDPIPService = responseText?.includes('Central DPIP Service');
+    console.log('🔍 Searching for chat response in specific markdown container...');
     
-    if (hasBankEdgeService && hasCentralDPIPService) {
-      console.log('✓ Chat response validation successful: Both "Bank Edge Service" and "Central DPIP Service" found in response');
-    } else {
-      console.log('✗ Chat response validation failed:');
-      console.log(`  - Bank Edge Service found: ${hasBankEdgeService}`);
-      console.log(`  - Central DPIP Service found: ${hasCentralDPIPService}`);
+    for (const selector of chatResponseSelectors) {
+      try {
+        const chatContainer = this.page.locator(selector);
+        const count = await chatContainer.count();
+        console.log(`Checking selector: ${selector}, found ${count} elements`);
+        
+        if (count > 0) {
+          const chatText = await chatContainer.last().textContent();
+          if (chatText && chatText.trim().length > 10) {
+            responseText = chatText.trim();
+            console.log(`✅ Found chat response using selector: ${selector}`);
+            console.log(`✅ Chat response length: ${responseText.length} characters`);
+            foundChatResponse = true;
+            break;
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ Selector ${selector} failed: ${error}`);
+      }
     }
     
-    // Assert that both services are mentioned
-    expect(hasBankEdgeService).toBe(true);
-    expect(hasCentralDPIPService).toBe(true);
+    if (!foundChatResponse) {
+      console.log('❌ Could not find specific chat response area');
+      console.log('❌ FAILING TEST - Cannot validate without chat response');
+      throw new Error('CHAT VALIDATION FAILED: Could not locate chat response area');
+    }
     
-    console.log('Chat interaction and validation completed');
+    console.log(`📝 Full chat response text: "${responseText}"`);
+    
+    // VALIDATE ONLY THE CHAT RESPONSE - NOT THE WHOLE PAGE
+    const hasBankEdgeService = responseText.includes('Bank Edge Service');
+    const hasCentralDPIPService = responseText.includes('Central DPIP Service');
+    
+    console.log('🔍 Chat Response Validation Results (CHAT RESPONSE ONLY):');
+    console.log(`  - Bank Edge Service found: ${hasBankEdgeService}`);
+    console.log(`  - Central DPIP Service found: ${hasCentralDPIPService}`);
+    
+    // DIRECT VALIDATION - NO TRY-CATCH TO INTERFERE
+    if (hasBankEdgeService && hasCentralDPIPService) {
+      console.log('✅ VALIDATION PASSED: Both required services found in chat response');
+    } else {
+      console.log('❌ VALIDATION FAILED: Missing required services in chat response');
+      console.log(`❌ Expected: Both "Bank Edge Service" AND "Central DPIP Service"`);
+      console.log(`❌ Found in chat response: Bank Edge Service=${hasBankEdgeService}, Central DPIP Service=${hasCentralDPIPService}`);
+      console.log('❌ THROWING ERROR TO FAIL THE TEST NOW!');
+      
+      // DIRECT ERROR THROW - NO WRAPPER
+      throw new Error(`CHAT VALIDATION FAILED: Missing required services in chat response. Bank Edge Service: ${hasBankEdgeService}, Central DPIP Service: ${hasCentralDPIPService}`);
+    }
+    
+    console.log('✅ Chat validation completed successfully');
   }
 
   async navigateBackToCollections(): Promise<void> {
@@ -751,13 +801,61 @@ export class CollectionModulePage extends BasePage {
     await okButton.click();
     console.log('OK button clicked - confirming deletion');
     
-    // Wait for deletion to complete
-    await this.page.waitForTimeout(5000);
-    console.log('Waited for deletion to complete');
-    
-    // Additional wait to verify deletion
+    // Wait for toast notification to appear
     await this.page.waitForTimeout(3000);
-    console.log('Additional wait completed - deletion should be complete');
+    console.log('Waited for toast notification to appear');
+    
+    // Wait for toast notification and check its content
+    const toastNotification = this.page.locator('li[role="status"]');
+    
+    try {
+      // Wait for toast to appear
+      await expect(toastNotification).toBeVisible({ timeout: 10000 });
+      console.log('📋 Toast notification appeared');
+      
+      // Check specifically for "Delete Failed" title
+      const deleteFailedTitle = toastNotification.locator('div.text-sm.font-semibold:has-text("Delete Failed")');
+      const isDeleteFailed = await deleteFailedTitle.count() > 0;
+      
+      if (isDeleteFailed) {
+        console.log('❌ DELETE FAILED: Toast shows "Delete Failed"');
+        
+        // Get the specific error message
+        const errorMessage = toastNotification.locator('div.text-sm.opacity-90:has-text("Failed to delete collection. Please try again.")');
+        const errorText = await errorMessage.textContent();
+        
+        console.log(`❌ Error details: "${errorText}"`);
+        throw new Error(`DELETE OPERATION FAILED: ${errorText || 'Failed to delete collection. Please try again.'}`);
+      }
+      
+      // Check for success - "Collection Deleted" title
+      const collectionDeletedTitle = toastNotification.locator('div.text-sm.font-semibold:has-text("Collection Deleted")');
+      const isDeleteSuccess = await collectionDeletedTitle.count() > 0;
+      
+      if (isDeleteSuccess) {
+        console.log('✅ DELETE SUCCESS: Toast shows "Collection Deleted"');
+        
+        // Get the success message
+        const successMessage = toastNotification.locator('div.text-sm.opacity-90:has-text("Successfully deleted collection and all associated files.")');
+        const successText = await successMessage.textContent();
+        
+        console.log(`✅ Success details: "${successText}"`);
+      } else {
+        // Get the actual toast content to see what it says
+        const toastContent = await toastNotification.textContent();
+        console.log(`📋 Toast content: "${toastContent}"`);
+        console.log('⚠️ Could not determine if delete was successful or failed from toast content');
+      }
+      
+    } catch (error) {
+      console.log('⚠️ No toast notification appeared within timeout');
+      console.log('❌ FAILING DELETE TEST - Could not verify delete operation result');
+      throw new Error('DELETE OPERATION FAILED: Could not verify delete operation - no toast notification appeared');
+    }
+    
+    // Wait additional time for any UI updates
+    await this.page.waitForTimeout(2000);
+    console.log('Delete confirmation handling completed');
   }
 
   // Utility methods

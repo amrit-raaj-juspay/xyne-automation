@@ -1,0 +1,639 @@
+﻿* Psql
+  Prerequisites:
+* You need Node version v14.16.0 which you can get from jamf self service or   here, or use nvm [a] (older version 8.x.x)[b]
+* You must have purescript 0.11.7 (npm install -g purescript@0.11.7)
+   * If we get any access issue post install command, run below command and try to install again.
+      * sudo chown -R $USER /usr/local/lib/        [c]
+      * Run whoami or id -un  command to get value for $USER
+* You must have Pulp version 11.0.0 and purs version 0.11.7. (We haven’t migrated to Purescript 12 yet.) (npm install -g pulp@11.0.0)
+* Pulp recommends setting up NPM so that it keeps your global packages in your home directory. Instructions can be found here
+        
+SetUp for euler: 
+* Clone project : git clone https://username@bitbucket.org/juspay/euler-ps.git 
+   * If we face any bitbucket access issue while cloning the repo, please refer below doc.
+      * https://support.atlassian.com/bitbucket-cloud/docs/set-up-an-ssh-key/
+* Checkout for branch “staging” using command git checkout staging[d][e][f]
+* Once cloning is done goto euler-ps/Backend then run npm i[g][h][i] && bower i
+* Run the command to check project building pulp -w build
+mysql db setup
+   * If mysql installed already uninstall it using command [j]
+      * brew uninstall mysql
+      * If brew uninstall doesn't work . Uninstall it manually by 
+      * rm -rf  /usr/local/mysql*
+      * rm -rf  /usr/local/Cellar/mysql*
+      * rm -rf /usr/local/var/mysql*
+      * rm -rf  /usr/bin/mysql*
+   * Install mysql db ( make sure cmake and openssl is installed they are dependencies of mysql)        
+      * brew install mysql
+   * Start mysql service
+      * brew services start mysql
+   * Login as root user using command 
+      * mysql -u root 
+   * Create database 
+      * create database jdb
+   * Select database
+      * use jdb;
+      * exit
+   * Select database
+      * mysql -u root 
+      * Use jdb
+   * Download sql dumCan't initialize batch_readlnep file from link https://drive.google.com/file/d/1kwaEa5olZECOxTgdxDQ_paSEy8FbiJNx/view?usp=sharing (don’t copy it to Euler folder, keep it in local disk)[k]
+   * To  take the dump Use the below command
+   * Run command -- to Dump the downloaded File[l][m]        
+      * source “path of dump file”; (Remove the quotes for the path)
+   * (New sql dump)(dump command : mysqldump -u jdb > filename.sql) -- execute only to get the dump. Not required for initial setup 
+   * Create a user ‘cloud’ with password ‘scape’ using          
+      * CREATE USER 'cloud'@'localhost' IDENTIFIED BY 'scape';
+      * Grant all permission to the user using command 
+      * GRANT ALL PRIVILEGES ON jdb . * TO 'cloud'@'localhost';
+* If you are facing issue as auth method not supported use commands : (For Error: SequelizeConnectionError: Client does not support authentication protocol requested by server; consider upgrading MySQL client, in the logs after running the project)[n]
+   * mysql -u root
+   * update mysql.user set authentication_string = "*DFC4515F062F9045F27C59FCCDFC80334F8A5B6B",plugin="mysql_native_password" where User = "cloud" and Host = "localhost";
+   * flush privileges;
+
+
+* Psql db setup
+   * Install psql version 9.6 using command 
+      * brew install postgresql
+   * Export the path for postgres :[o]
+      * export PATH="/usr/local/opt/postgresql/bin:$PATH"
+      * echo 'export PATH="/usr/local/opt/postgresql/bin:$PATH"' >> ~/.zshrc
+      * echo 'export PATH="/usr/local/opt/mysql@5.6/bin:$PATH"' >> ~/.zshrc.pre-oh-my-zsh
+      * export LDFLAGS="-L{/usr/local/opt/postgresql/lib"
+      * export CPPFLAGS="-I/usr/local/opt/postgresql/include"
+   * Start psql server 
+      * brew services start postgresql
+   * Login as admin user 
+         * psql -d postgres -U postgres;
+      * If getting error as postgres does not exists run commands
+         * unset PGUSER
+         * createuser -s postgres
+         * psql -d postgres -U postgres;
+   * Create a database using command 
+      * create database hpcldb;
+   * Create a user in psql using command 
+      * create user cloud with password 'scape';
+   * Grant Permission to db for user “cloud”
+      * grant all on DATABASE hpcldb to cloud;
+      * “grant all on DATABASE hpcldb to cloud;” with “p”
+   * Create and set schema using command 
+      * create schema jp_hpcl;
+   * Give permission to cloud user 
+      * grant all on SCHEMA jp_hpcl to cloud;        
+   * Logout from psql using command 
+      * \q
+   * Login with cloud user using command 
+         * psql -d hpcldb -U cloud
+         *    * Create and Set schema 
+      * create schema jp_hpcl;
+      * set schema 'jp_hpcl';[p]
+   * Create table “ProcessTracker” if not present [q][r]
+      *  CREATE TABLE IF NOT EXISTS "ProcessTracker" ("id" VARCHAR(255) NOT NULL ,"name" VARCHAR(255) NULL , "tag" TEXT[] NOT NULL, "runner" VARCHAR(255), "retryCount" INTEGER NOT NULL, "scheduleTime" TIMESTAMP WITH TIME ZONE, "rule" VARCHAR(255) NOT NULL, "trackingData" JSON NOT NULL, "businessStatus" VARCHAR(255) NOT NULL, "status" VARCHAR(255) NOT NULL, "event" TEXT[] NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL, PRIMARY KEY ("id"));
+
+
+Redis Setup :
+* Install redis using command
+      *  brew install redis
+* Run command to start redis-server 
+      * brew services start redis
+* Run command which is given to check redis installed or not
+   * redis-cli ping
+( output should be “PONG”)
+* Run command to set values
+   * redis-cli
+* 1Set supported merchant and gateways(to decide which merchant and gateways should process through euler)[s][t][u]
+   * set euler_supported_gw '["RAZORPAY","PAYU","GOCASHFREE","PAYPAL"]'
+   * set txns_enabled_merchants '["azharamin"]'
+   * set euler_refund_enabled_merchants '["azharamin"]'
+   * set enabled_payment_method_types '["CARD","NB","UPI","WALLET"]'
+   * set enabled_payment_method '["MASTERCARD","NB_DUMMY","UPI","MOBIKWIK"]'
+   * set euler_order_status_merchant_cutover '{"enableAll":false,"merchants":[ {"merchantId":"azharamin","rollout":100}]}'
+
+
+
+
+
+
+* Start redis cluster:
+   * Download this http://download.redis.io/releases/redis-5.0.7.tar.gz
+   * Unzip the tar file downloaded. Go to src/ and execute following command
+   * make[v]
+   * cp $(which redis-cli) .
+   * cd ../utils/create-cluster
+   *  ./create-cluster start  
+   * ./create-cluster create[w]
+   * Above commands should start a cluster at port 30001, 30002, ..
+* Run the backend in the euler-ps/Backend
+      *  npm start
+________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+________________
+
+
+Do Not touch this part. This is an old setup doc. Dont refer to this. 
+Prerequisites:
+* You need Node version 8.x.x which you can get from here, or use nvm
+* You must have purescript 0.11.7 (npm install -g purescript@0.11.7 )
+* You must have Pulp version 11.0.0 and purs version 0.11.7. (We haven’t migrated to Purescript 12 yet.) (npm install -g pulp@11.0.0)
+* Pulp recommends to set up NPM so that it keeps your global packages in your home directory. Instructions can be found here
+        
+SetUp for euler:
+* Clone project : git clone https://username@bitbucket.org/juspay/euler-ps.git 
+* Checkout for branch “staging” using command git checkout staging[x][y][z]¡
+* Once cloning is done goto euler-ps/Backend then run npm i[aa][ab] && bower i
+* Run the command to check project building pulp -w build
+* mysql db setup
+   * If mysql installed already uninstall it using command [ac]
+      * brew uninstall mysql
+      * If brew uninstall doesn't work . Uninstall it manually by 
+      * rm -rf  /usr/local/mysql*
+      * rm -rf  /usr/local/Cellar/mysql*
+      * rm -rf /usr/local/var/mysql*
+      * rm -rf  /usr/bin/mysql*
+   * Install mysql db ( make sure cmake and openssl is installed they are dependencies of mysql)        
+      * brew install mysql
+   * Start mysql service
+      * brew services start mysql
+   * Login as root user using command 
+      * mysql -u root 
+   * Create database 
+      * create database jdb;
+   * Select database
+      * use jdb;
+   * Download sql dumCan't initialize batch_readlnep file from link https://drive.google.com/file/d/1kwaEa5olZECOxTgdxDQ_paSEy8FbiJNx/view?usp=sharing (don’t copy it to Euler folder, keep it in local disk)[ad]
+   * To Use the below command
+   * (New sql dump)(dump command : mysqldump -u jdb > filename.sql) -- execute only to get the dump. Not required for initial setup 
+   * Run command -- to Dump the downloaded File[ae][af]
+      * source “path of dump file”; (Remove the quotes for the path)
+   * Create a user ‘cloud’ with password ‘scape’ using          
+      * CREATE USER 'cloud'@'localhost' IDENTIFIED BY 'scape';
+   * Grant all permission to the user using command 
+      * GRANT ALL PRIVILEGES ON jdb . * TO 'cloud'@'localhost';
+* If you are facing issue as authmethod not supported use commands : (For Error: SequelizeConnectionError: Client does not support authentication protocol requested by server; consider upgrading MySQL client, in the logs after running the project)
+   * mysql -u root
+   * update mysql.user set authentication_string = "*DFC4515F062F9045F27C59FCCDFC80334F8A5B6B",plugin="mysql_native_password" where User = "cloud" and Host = "localhost";
+   * flush privileges;
+
+
+* Psql db setup
+   * Install psql version 9.6 using command 
+      * brew install postgresq[ag]l
+   * Export the path for postgres :[ah]
+      * export PATH="/usr/local/opt/postgresql/bin:$PATH"
+      * echo 'export PATH="/usr/local/opt/postgresql/bin:$PATH"' >> ~/.zshrc
+      * echo 'export PATH="/usr/local/opt/mysql@5.6/bin:$PATH"' >> ~/.zshrc.pre-oh-my-zsh
+      * export LDFLAGS="-L{/usr/local/opt/postgresql/lib"
+      * export CPPFLAGS="-I/usr/local/opt/postgresql/include"
+   * Start psql server 
+      * brew services start postgresql
+   * Login as admin user 
+      * psql -d postgres -U postgres;
+      * If getting error as postgres does not exists run commands
+         * unset PGUSER
+         * createuser -s postgres
+         * psql -d postgres -U postgres;
+   * Create a database using command 
+      * create database hpcldb;
+      *    * Create a user in psql using command 
+      * create user cloud with password 'scape';
+   * Grant Permission to db for user “cloud”
+      * grant all on DATABASE hpcldb to cloud;
+   * Create and set schema using command 
+      * create schema jp_hpcl;
+      * set schema 'jp_hpcl';
+      *       *    * Give permission to cloud user 
+      * grant all on SCHEMA jp_hpcl to cloud;
+   * Logout from psql using command 
+         * \q
+   * Login with cloud user using command 
+         * psql -d hpcldb -U cloud
+         *    * Create and Set schema 
+      * create schema jp_hpcl;
+      * set schema 'jp_hpcl';[ai]
+   * Create table “ProcessTracker” if not present [aj]
+      *  CREATE TABLE IF NOT EXISTS "ProcessTracker" ("id" VARCHAR(255) NOT NULL ,"name" VARCHAR(255) NULL , "tag" TEXT[] NOT NULL, "runner" VARCHAR(255), "retryCount" INTEGER NOT NULL, "scheduleTime" TIMESTAMP WITH TIME ZONE, "rule" VARCHAR(255) NOT NULL, "trackingData" JSON NOT NULL, "businessStatus" VARCHAR(255) NOT NULL, "status" VARCHAR(255) NOT NULL, "event" TEXT[] NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL, PRIMARY KEY ("id"));
+      * 
+
+Redis Setup :
+* Install redis using command  i
+      * brew install redis
+* Run command to start redis-server 
+   * brew services start redis
+* Run command which is given to check redis installed or not
+   * redis-cli ping 
+( output should be “PONG”)
+* Run command to set values
+   * redis-cli
+* 1Set supported merchant and gateways(to decide which merchant and gateways should process through euler)[ak][al][am]
+   * set euler_supported_gw '["RAZORPAY","PAYU","GOCASHFREE","PAYPAL"]'
+   * set txns_enabled_merchants '["azharamin"]'
+   * set euler_refund_enabled_merchants '["azharamin"]'
+   * set enabled_payment_method_types '["CARD","NB","UPI","WALLET"]'
+   * set enabled_payment_method '["MASTERCARD","NB_DUMMY","UPI","MOBIKWIK"]'
+   * set euler_order_status_merchant_cutover '{"enableAll":false,"merchants":[ {"merchantId":"azharamin","rollout":100}]}'
+   * 
+
+
+
+* Start redis cluster:
+   * Download this https://download.redis.io/releases/redis-5.0.7.tar.gz
+https://download.redis.io/releases/redis-5.0.7.tar.gz
+   * Unzip the tar file downloaded. Go to src/ and execute following command
+   * Make
+   * cp $(which redis-cli) .
+   * cd ../utils/create-cluster
+   * ./create-cluster create
+   *  ./create-cluster start  
+   * Above commands should start a cluster at port 30001, 30002, ..
+   * Run the backend in the euler-ps/Backend
+   *  npm start
+[a]Now Euler is compatible with node version v14.16.0. Use this version to install
+[b]Now Euler is compatible with node version v14.16.0. Use this version to install
+[c]If even this doesn't work, try:
+
+
+sudo npm install -g purescript@0.11.7 --unsafe-perm=true --allow-root
+[d]If you face x-code issues while npm i. Install the x-code  and make sure to run this command.
+
+
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+[e]PS. Xcode can be found on the app store.
+[f]If app store doesn't work, download from https://developer.apple.com/download/more/
+[g]If you are facing env: python not found issue. Refer this - https://github.com/TryGhost/node-sqlite3/issues/1552#issuecomment-1075059490
+[h]`ursa` package fails if node version >= 9.x.x. So use node version 8.x.x
+
+
+also purescript and pulp versions should be 0.11.x and 11.x.x
+[i]https://www.codementor.io/@mercurial/how-to-install-node-js-on-macos-sierra-mphz41ekk
+[j]for arch: follow this https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-on-arch-linux
+[k]Guys, please don't ever export your `mysql` database when you do a dump -- always specify which databases should be exported. Otherwise you will break people's existing mysql setups. (You just broke mine.)
+[l]Latest DB dump 
+
+
+https://drive.google.com/file/d/1Wq5Py_ovEqFuBWKysOmrOCJxr2yhW0vl/view?usp=sharing
+[m]Thanks
+[n]> mysql -u root
+>>  ALTER USER 'cloud' IDENTIFIED WITH mysql_native_password BY 'scape';
+>>  flush privileges;
+[o]for arch: 
+https://geoidin.wordpress.com/2018/01/02/setting-up-a-postgresql-r-environment-for-data-analysis-arch-linux/
+[p]set schema 'public';
+
+
+select * from "ProcessTracker" order by "updatedAt" desc limit 10\x\g\x;
+
+
+update "ProcessTracker" set "scheduleTime" = NOW(),"status" = 'NEW' where id = 'WEBHOOK_GENERIC_EULER_EC_ORDER_REFUND_FAILED_evt_V2_ff36ba259af7413588e77b82746e1d86';
+[q]Schema should be public for "ProcessTracker". 
+
+
+If your facing issue with connecting to psql in your EULER project then execute this in psql 
+
+
+set schema 'public';
+
+
+You can check that with the help of "\dt" command
+[r]For local database is changed. Create this table insode ProcessTracker
+create database "ProcessTracker";
+[s]If using redis dump file follow
+1 run redis-cli 
+2 In it run config get dir then copy the path
+3 stop redis service
+4 copy dump.rdb file to the path you copied 
+5 start redis service and proceed
+[t]_Marked as resolved_
+[u]_Re-opened_
+[v]if anyone gets error "variable has incomplete type 'struct stat64' struct redis_stat buf"
+add `#define _DARWIN_C_SOURCE`  in config.h in src after #ifdef __APPLE__
+
+
+after that visit
+https://github.com/redis/redis/issues/10420
+in last comment, a patch is given. download and apply the patch and run   make again.
+[w]If this fails, run ./create-cluster start first and then run ./create-cluster create
+[x]If you face x-code issues while npm i. Install the x-code  and make sure to run this command.
+
+
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+[y]PS. Xcode can be found on the app store.
+[z]If app store doesn't work, download from https://developer.apple.com/download/more/
+[aa]`ursa` package fails if node version >= 9.x.x. So use node version 8.x.x
+
+
+also purescript and pulp versions should be 0.11.x and 11.x.x
+[ab]https://www.codementor.io/@mercurial/how-to-install-node-js-on-macos-sierra-mphz41ekk
+[ac]for arch: follow this https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-on-arch-linux
+[ad]Guys, please don't ever export your `mysql` database when you do a dump -- always specify which databases should be exported. Otherwise you will break people's existing mysql setups. (You just broke mine.)
+[ae]Latest DB dump 
+
+
+https://drive.google.com/file/d/1Wq5Py_ovEqFuBWKysOmrOCJxr2yhW0vl/view?usp=sharing
+[af]Thanks
+[ag]for arch: https://aur.archlinux.org/packages/postgresql-9.6/
+[ah]for arch: 
+https://geoidin.wordpress.com/2018/01/02/setting-up-a-postgresql-r-environment-for-data-analysis-arch-linux/
+[ai]set schema 'public';
+
+
+select * from "ProcessTracker" order by "updatedAt" desc limit 10\x\g\x;
+
+
+update "ProcessTracker" set "scheduleTime" = NOW(),"status" = 'NEW' where id = 'WEBHOOK_GENERIC_EULER_EC_ORDER_REFUND_FAILED_evt_V2_ff36ba259af7413588e77b82746e1d86';
+[aj]Schema should be public for "ProcessTracker". 
+
+
+If your facing issue with connecting to psql in your EULER project then execute this in psql 
+
+
+set schema 'public';
+
+
+You can check that with the help of "\dt" command
+[ak]If using redis dump file follow
+1 run redis-cli 
+2 In it run config get dir then copy the path
+3 stop redis service
+4 copy dump.rdb file to the path you copied 
+5 start redis service and proceed
+[al]_Marked as resolved_
+[am]_Re-opened_

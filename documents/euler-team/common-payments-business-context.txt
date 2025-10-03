@@ -1,0 +1,722 @@
+# Common Payments Business Context Training Session
+
+• **Payment Fundamentals & Card Transaction Flows**: Covers the three-domain system (merchant/acquiring, interoperable/network, issuer domains), detailed authentication vs authorization processes, clearing and settlement stages, and various transaction types including CIT/MIT, subscriptions, installments, and auth-capture flows.
+
+• **Payment Ecosystem Players & Business Models**: Explains the roles and differences between payment gateways, acquirers, PSPs, payment aggregators, and pay-facs, including merchant-on-record models, pricing structures (interchange + scheme + acquirer fees), IC++ vs blended pricing, and liability shifts in different authentication scenarios.
+
+• **Cross-Border Payments & Advanced Topics**: Details cross-border transaction challenges including currency considerations (IPAS - issuer, presentment, acquirer, settlement), FX fees, money movement mechanisms through correspondent banking, network tokenization for risk reduction, and optimization strategies for international merchants.
+
+
+
+Transcript:
+
+[00:00:00] Purposes go through the video. Got it. So, we'll, just like any new person who will hire, we will just share these videos to them and it'll help them in like onboarding, because everyone will join remotely across countries. Yeah. Right. So it'll be helpful for them. Even like for us also, we will be adding more people here.
+
+[00:00:16] So for them, like, because still now we do not have like these kind of onboarding videos and now that people are joining remotely. Right. It's getting difficult to get them on onboarded. Perfect. Right. Uh, so even though I, I like Shiva just mentally called me yesterday that he wanted to record this session.
+
+[00:00:35] I did not have anything in my mind. He asked me to prepare a deck. Like I don't have a deck also. So, because I, Shiva just told me yesterday that, uh, this needs to be done. Sorry. Maybe it's a test on that, in that case. Yeah, yeah, yeah. So maybe, um, fuck is that all that right? Cool. Um, so till now, right. Um, James and everyone.
+
+[00:01:01] So, um, we have had sessions around. Um, the tech part, right? Like how just pay tech fundamentals are built. You have would have sessions around how oil stack is built, how payment page is built, some of the other products like just jBASE offers hyper switch, all those things. So you would be getting some of the other flavors how just pay has built all these products over the course of years.
+
+[00:01:26] Right. Uh, today's session, what I was thinking in my mind, um, I will cover some of the, okay. I will not go into two basic, right? I guess one of the feedback from your side was can we do like a payments 1 0 1 session? But that will be two basic for you, I believe, because you all come from payment background, right?
+
+[00:01:45] So you would understand how the usual payment flows. I will try to go a little bit deeper into that so that you can make some, um, mental, um, model right as to, um, whenever you are discussing with merchants. First the mental model will be how you can correlate the payments. Understanding with what we are building internally, that is the first mental model that you need to build.
+
+[00:02:12] Second mental model you need to build is, uh, if my merchants are asking me any question. Uh, can you relate as to, uh, uh, can you relate where the problem lies in the complete, because in the payment, right, there are multiple stakeholders, multiple ecosystem players. So if they're asking anything, can you relate where exactly is the use case of problem statements and what I need to build internally or what I need to tell to my merchant as to how I can solve for it, right?
+
+[00:02:41] So the, the core idea from today's session will be, uh, for you to, um, build some mental models around it. You go deeper into payment understanding, and you are able to have a very, uh, comfortable conversation with your merchants, right? Because now that you are working, you all will be working with merchants who would have use cases across cross border, right?
+
+[00:03:07] So the mental model, and all your merchants will ask you, like today, only Yum brands, right? They would be asking you that, okay, I don't have entities in this market. Okay, how can you support me? All those things will be there, right? So we'll try to cover those aspects about cross-border payments, about, uh, domestic payments, about some of the ways that you can tackle your merchant questions while you're conversing with them.
+
+[00:03:33] It's all about, um, sounding a little bit smart because see what happens right now, uh, you are pitching some solutions to merchant, but even because it's cross country solutions, right? There could be a case that you would not know about how the payment method works in that country or how the payment gateway works in that country.
+
+[00:03:55] But if you at least have a broad understanding how the payment work, you can talk something, you can relate it, you can talk something. Basically, you will not look like a full in front of merchants, right? You should sound a little bit smart so that they can trust you. Right? That's the basic understanding.
+
+[00:04:12] Um, so what we will try to cover today is I did some, just a general, I was noting down some of the points. So maybe we can start with, uh, okay. Yeah. So maybe we will start with transaction flows. Then we will cover, uh, maybe some of the use cases of cards, like how M-I-T-C-I-T author capture, subscription installments, all those things.
+
+[00:04:36] Then we will touch upon network tokenization as well. Uh, we will touch upon some of the acquirers, pay effects, psps, all those things. We will touch upon, uh, domestic cross-border payments. We'll touch upon pricing model and then we will touch upon orchestration. Right. These are the broad things. Um, and James, feel free to like, add, uh, wherever you like, whatever I'm speaking.
+
+[00:04:59] Right. You can add, uh, wherever you want to give your inputs. Well, like you have much, lot of experience when it comes to payments, cards and all. Sure, right. Uh, on. Travel networks, maybe travel, we will touch in a different session. So travel, uh, if I can cover some of the things related to cross border, I will cover here related to GDS and all I will see because it won't flow into the usual flow because it's a very different thing.
+
+[00:05:27] So we will maybe cover in, uh, tomorrow, Sunday, right? Uh, so, okay, how do I start? Uh, so see, um, if I ask you how the card flow, because I'm talking about card, right? Because once you understand card, once you understand all the domains in card, you can easily understand how the usual payment flows work. Like for example, of course you don't have to learn about UPA because UP is very native to India.
+
+[00:05:56] But once you understand card, you can very well understand how bank transfers or wallet, BN ps, all those things works, right? Because you just need to build that mental model right in your head. So cards you already know, right? How cards work, merchant acquirers, network issuers. Very simple, right? But this is what we would expect you to know, right?
+
+[00:06:17] That is, uh, like a very basic knowledge that people will know, okay, merchant, to network, to acquire, to network, to issuer, right? But, uh, you need to go a level deeper into that just to understand or just to, while you are talking to merchant, right? Because now you'll be talking to merchants and they would have various use cases like authentic capture, even the authentication per that we are building, right?
+
+[00:06:42] So only if you understand how the actual in detail the card flow works, then you'll be able to relate to it, right? Mm. In cards, um, you would know about what three Ds is. What is three Ds? Yes. You wouldn't hear about three Ds. Three Ds, right?
+
+[00:07:10] Okay, so see in cards, uh, I should have asked you doing interviews this, okay? So in cards, um, there is three domains, right? So first domain is your acquiring domain, or basically it's your merchant domain, right? Merchant or acquiring domain,
+
+[00:07:33] right? Uh, then there is your, um, then on one side there is acquirer on the th on the right, like on the other side there is issuer domain.
+
+[00:07:45] Right. And in the middle there is interoperable domain, which is mainly the domain of networks,
+
+[00:07:56] right? So three Ds in pure play Word is known as three domain system, right? So first domain is merchant acquiring interoperable, which is the networks part. Third is the issuer part. And um, so you would understand, right, like during, once the card was getting, like when the initial, like when the original card payment was when they thought about card payment, right?
+
+[00:08:17] Generally it was Bank of America, two, three other banks, they started this credit card, uh, uh, payment side, right? But then there was issues, okay? If, if Bank of America is issuing a card, how can other banks accept these card? Well, there were too many banks, right? So what all these banks did, all these banks built a consortium.
+
+[00:08:39] That consortium is called Visa MasterCard. So basically networks are a consortium of banks. It was built and Visa, MasterCard were built. Or when I say Visa, MasterCard applies to all the networks, American Express, union Pay, et cetera, et cetera, right? So these networks are a kind of consortium that was built to standardize the flows of transaction between the complete payment journey, right?
+
+[00:09:04] So that you go anywhere in the world. Every bank who is connected to Visa, MasterCard, they will process the payments in a certain format. Right? That was the core thing why Visa MasterCard was built. So it's kind of an hub and spoke model. There are many merchants on the acquiring side. There are many merchants on the issuer side, but uh, it's difficult for them to talk to each other, right?
+
+[00:09:25] So Visa, MasterCard has that hub and spoke model, right? If you know, hub and spoke. So, uh, there are multiple players here on one side, multiple players on the other side. In middle there is all the networks which connect one bank to other bank, right? So that was the origination of Visa MasterCard. Now, uh, okay, so there is merchant domain and the reason of having these three domains is right, so that if once a transaction goes from one domain to another domain, it is the responsibility of that domain to securely process the transaction.
+
+[00:09:58] So once you would've seen it once the, uh, if you receive an OTP during transaction, right? That OTP is the issuer domain. So once you move from merchant to issuer domain, it's the responsibility of issuer. So while having this domain, it's the clear responsibility of which party, uh, to securely process the transaction.
+
+[00:10:18] Right? Um, now coming to how does a transaction actually happen? Mm, you would hear about it and there are two flows into it. Basically, one you will hear is authentication. Another you will hear is authorization. Right. Um, generally whenever you do card payment, you just call one transaction a p and the transaction is done.
+
+[00:10:44] But in actuality, there are two, uh, legs to a payment. There are more legs I will cover, but in broad there are two legs authentication authorization, right? Once you enter your card number onto a merchant website, right? Um, merchant won't know, uh, which card is this, which bin is this, right? So there is, um, like how the authentication work In the merchant acquiring domain, there is a, um, MPI, so this is called merchant plugin, right?
+
+[00:11:13] This is the first step. So all the card numbers that you enter, it goes to MPI. That is a merchant plugin, which is in the merchant domain or acquiring domain. So, merchant plugin can either be built by merchant or can be built back acquirers, right? Generally acquirers have this white label. So acquirers built merchant plugin, right?
+
+[00:11:31] There is another case why merchant and acquiring, but that I will cover later. But basically currently, you can consider all the acquirers built have this merchant plugin, right from merchant plugin, a merchant plugin calls directory, server of networks, right? So this is directory server, which again comes under network domain, right in directory server.
+
+[00:11:57] Simple, very basic directory server means you just, you have a bin, you know, this bin belongs to which bank. Uh, right, or which type of card this is. That's the main purpose of directory server. So once it's coming directory server, then it goes to a CS off issuer, right? So this is the complete authentication journey.
+
+[00:12:22] First it, the card goes to MPI merchant plugin, then it goes to directory server, then it goes to a CS, which is, uh, access control server, right? A CS is that URL where you enter OTP right Now, um, issuer will know because the OTP is triggered by issuer, right? You will receive the SMS from issuer. So only issuer knows the, okay, I have generated this.
+
+[00:12:46] OTP. Once you enter OTP into a CS page, issuer can authenticate, okay? You are entering the right OTP, right? Network cannot authenticate the OTP acquirer cannot authenticate the O OT P because OTP belongs to issuer. So only issuer cannot authenticate the OTP. Hence, it is another issuer domain, right? So issuer will authenticate the OTP here.
+
+[00:13:09] Uh, generally you, and these are again, some of the A Cs or some of the providers, like again, many of the banks cannot build the system, right? So there are a CS providers like WiMo, and there are many other a CF providers that build or that build this. A CS server for all the banks, right? And let's say for example, in India there is wemo is very big, right?
+
+[00:13:30] And similarly in multiple banks, multiple countries, there will be some other, um, a CS providers that are building this a CS, right? So this is the authentication is done, right? So once you enter the OTP and the issuer authenticates the OTP test, you have entered the correct OTP, then the authentication is done, then we'll start the authorization process.
+
+[00:13:54] So once the auten, uh, A-C-S-O-T-P is done, then the issuer will send, uh, delete. It basically is a CS, like the issuer will send two values. One is ECI with a key other is CAVV, right? So this ECI is very important. ECI generally there are typically two values. One is zero five and one is zero seven, right? Um, one authentication is done in many of the places you would've seen that there is no authentication happening, right?
+
+[00:14:25] In many of the cases. So if ECA flag is zero seven, that means that authentication is not done right. If ECA flag is zero five, that means authentication is successful. Right. So issuer will send this ECI and CAVV values to acquirer. Then acquirer will again send these values plus other parameters. There are multiple parameters.
+
+[00:14:48] They will collate all these parameters and then they will send, uh, this, uh, request to the networks. Right? And the network will send it to issuer and, uh, issuer will authorize the payment. Yes. Right? So this is the complete journey of a card transaction, right? Generally, you would've seen that many a times.
+
+[00:15:13] All the gateways like strip party and et cetera. They will just give you one transaction, API. So all these gateways, they combine these two flows into a single transaction. API you're two, right? But if you go deeper into it, there are actually two calls that they are making to the underlying systems. One is the authentication call, one is authorization call.
+
+[00:15:35] And many of the big merchants, right, let's say Amazon or currently Agoda, is using this, right? Agoda also is, um, if you ask all these gateways, right, they can expose you, their two APIs. Also, they can expose you authentication a P authorization, a P separately, right? So Agoda for example, they have asked with the partner that they're integrating with, they have asked them to, uh, expose them the separate APIs.
+
+[00:16:01] And typically big merchants wants to control both the journeys by themself because it gives them more power, right? Uh, there are various advantages to it. For example, you know which leg of the transaction, the transaction fails, you can do authentication and then wait for some time and then do authorization also.
+
+[00:16:19] So you have full control when to, uh, call authorization, when to do authentication, right? And then there are, um, some of these MPA providers that do complete this leg also, right? So, um, MPA providers like net, et cetera, is there, right? Uh, then there is Cardinal, right? So these are the MPI providers basically that completes the, that do does the authentication.
+
+[00:16:51] So a merchant, um, so for example, currently right, a Agoda, what they are doing, uh, they are doing first authentication with, uh, Cardinal Kim, right? They do authentication with them. They receive, uh, Cardinal will give them these values, E-C-I-C-A-V-V, and additional values. Then they will call authorization API of their gateway.
+
+[00:17:18] That is Worldpay. Right. So these are like how big merchants try to optimize their payments. Now, what will happen now, see the, the, some of the advantages, right? Let's say this authentication is done right? Uh,
+
+[00:17:37] you have done the authentication and um, you called authorization a PO, Worldpay, right? If Worldpay fails by chance, they can make a different authorization call to, let's say add in. Okay? Right? So in this way you can do multiple payment retries as well, right? Very seamless payment re right? So this will improve your co, improve your conversion rates.
+
+[00:18:01] 18, right? And there are many other benefits to it. Like as in when you discuss or as in when you understand more about the use cases and all, you will understand like there are, there are many, many, many use cases to this just right. Uh,
+
+[00:18:22] this is bad,
+
+[00:18:33] this can,
+
+[00:18:39] right? Uh, so this is the complete, uh, there it is. Still this time, right? That transaction confirmation is done, right? So, you know, let's say if authorization is successful, you, the customer will get to know, okay, the transaction is done right? But, um, all of the confirmation is done. It's an instant confirmation, but the money has not moved yet, right?
+
+[00:19:05] So there are more stages to it. So the next stage is the clearing stage,
+
+[00:19:14] right? So after this transact just for confirmation, right? So you will see that your money is reflected in your account and all, but it's only the confirmation the money has not moved between accounts, right? So, um, again, depending on the frequency, typically it's at the end of the day. At the end of the day, what will happen, whatever the acquirer here is, acquirer will collate all the transactions that happened with him during the course of the day.
+
+[00:19:44] They will create a kind of a file,
+
+[00:19:49] right? That file, they will move to network.
+
+[00:19:56] Now every this network, right, they will have their own format of files, right? How you can send file to network. Like some Visa will have their own formats. MasterCard will have their own format, right? So this acquirer has to handle this file movement. Right. And then Visa, MasterCard will push this file to issuer,
+
+[00:20:19] right? So this is means clearing. Now every party knows how much money they owe to each other, right? Because ultimately, let's say there is a, there is a hundred dollars transaction, right? It is coming from issuer, but issuer needs to send this money to the acquirer account, right? And then acquire to send to the merchant account, right?
+
+[00:20:42] So this is clearing. Now everyone knows how much money I am owed, and the last stage is the settlement part,
+
+[00:20:53] right? Where the actual money movement happens. Now, let's say the original transaction was of a hundred dollars, right? Acquirer would've sent a file, uh, let's say a hundred dollars to, uh, network. Network would've collated. I'm just assume there is only one transaction, right? So they have sent the issue a hundred dollars at the end of the day, um, coming to pricing part, right?
+
+[00:21:23] Okay. Uh, you know, like they, in the pricing just broadly, there are three companies. There are versions, interchange, then there is scheme fees, then there is acquirer fees, right? I will cover in detail about that. But there is, uh. Issuer fees. Inter issuer is interchange fees. Then there is scheme fees and there's network fees.
+
+[00:21:42] Typically, let's say the MDR, that the, that the acquirer would've charged them is 2%, right? Out of that, um, 1.5% would be the interchange issuer fees. Um, let's say 0.2% would be the scheme fees and remaining 0.3% would be acquire fees, let's say. Right? Typically this is the ratio, like the highest allocation is to the interchange, right?
+
+[00:22:08] So once the, in the time of settlement from a hundred dollars issuer will keep $1.50 to himself, right? He will transfer $98.50 back to network, right? Then there is a bank account. So in practical, there are a lot of complexities around it that a network and acquirer have a same bank account where they pull the money, but don't go into the, that complexities.
+
+[00:22:40] Uh, just imagine that 98.5 came to scheme, uh, issuer took his cutoff. $1.50 from $98.50 scheme will take his cutoff $0.20, right? And they will transfer, let's say, um, $98.30 to acquirer. Right. And then acquirer will then again take his cutoff $0.30 and they will pass $98 to merchant. So ultimately $98 will be deposited into merchant account, right?
+
+[00:23:20] So once this is done, now your complete transaction is complete. And the money flow, uh, like the, this part is the transaction confirmation. This is clearing, this is settlement, right? So this is how the complete transaction flow happens. There are some, there are few things that I'm still not covering, but you will get to know us as you talk to more and more merchants, right?
+
+[00:23:44] So this is the usual process, right back. Now,
+
+[00:23:53] any questions in this part? First years.
+
+[00:24:07] Okay. Just, just remember this, right? So, uh, I cannot remove this straw.
+
+[00:24:18] So now I want to cover, so you understand, right? What are the parties in a payment journey right now? Typically, if you can relate it to. Any other payment flow, right? There will always be some parties that will be core to any payment journey, right? One party will be merchant, one party will be acquirer, one party will be schemes.
+
+[00:24:45] Schemes will not be in the wallets and all. But I will tell you how schemes come into the play and then one will be the issuer. Right? Now, let's suppose there is a wallet, right? Wallet is, let's say Alipay, WeChat. There some, some wallet, right? Or let's say grab pay and all there is a wallet. So in wallet case, this scheme is not required, right?
+
+[00:25:08] Because it's just one wallet. There is. Why is this Visa MasterCard required? It is to standardize. If there are multiple acquirers, there are multiple issuers. To standardize it, the scheme is required, right? In case of wallet is just grab, right? There is like a grab can create its own standards, right? So there is no, no body that is required to standardize everything, right?
+
+[00:25:33] So in case of wallets, the schemes are not there. But there is a merchant, there is an acquirer, and then there is a issuer as a wallet provider, right? Journey happens the same way. There is just one transaction where transaction flows from one player to another player, right? In case of. Wallets. BNPs is the same, right?
+
+[00:25:53] BNP. Also there is one BNP issuer. So the transaction journey can happen, but in case of let's say account to account payments, for example, in India, UPI is there, which is an account to account payment, right? UPI again, and in case of other, like let's say in pay now in Singapore, right? Or US Fed Now, right?
+
+[00:26:13] Uh, or um, Thailand, prompt pay, all this. There are account account payment, right? In account to account payment money has to move from one bank to another bank. Now again, there are multiple banks on this side, there are multiple banks on this side. So you need a central body that can standardize everything, right?
+
+[00:26:32] So in India for UPI, that, that work is done by NPCI, right? Which is kind of scheme for UPI, right? In Singapore, all the banks, they're connected to MAS, I guess, right? So MAS is that scheme for Singapore. Similarly in Thailand, all the banks, they're connected to like a central body of Thailand, right? So those are the schemes for account to account based de payment instruments, right?
+
+[00:26:57] Because you need to have a central body that can, uh, standardize all the payment flows, all the integrations, all the features, everything, right? So that's why, uh, the. So I pay core framework remains the same in all the payment journeys. Card is a little bit more complex, but it's very much like they have written a very, like, very good standard so that you can extend it to any of the use cases.
+
+[00:27:24] Right. But ultimately the framework remain the same. Every payment flow will have a merchant and acquirer, a scheme if required in some of the payment flows and then the issuer, right? This will always be required, right? Uh, then I would cover some question, right? Yeah. Now there are, so we have, um, so we have covered authentication authorization right?
+
+[00:28:00] Now, again, this authorization can be broken down into two aspects, right? One is authorization and one is capture flow,
+
+[00:28:13] right? So typically, um, generally authorization capture happens in a single API call wherein you are authorizing that the money has to move from my account and then, uh, the capture means okay, money has actually been debited from your accounting credit to someone else account, right? But you would've seen in various other use cases, right?
+
+[00:28:33] For example, let's say you are working with a travel company, right? Wherein, um. Let's say there is ago, right? They would have to blame the first when the transaction is done. They will have to go behind the scenes to their partners. They'll have to check if the inventory is available, and then they will come back and confirm the inventory, right?
+
+[00:28:53] So if you do the transaction immediately and the inventory is not there in the backend systems, then the merchant has to refund the amount, right? Which is again, an operational issue. So what does all this, all these players do, they will just authorize the amount when they're authorizing the amount, uh, the bank is putting kind of a hold for that particular amount, right?
+
+[00:29:16] So even though the money has not been debited or credit, but the money has been put on hold by the bank, right? Then Agora will go back, check the inventory, and if inventory is available, then ago will call the capture call. Once the capture call is done, then uh, the bank will release the hold on the amount, and then the credit and debit will happen, right?
+
+[00:29:39] Generally the difference between authorization and capture can be till seven days in most of the cases, right? So if you do not call a capture call within seven days, then that block will automatically be released, right? Then your authorization will be voided, right? So this is against one of the use case that you can talk with your travel merchants.
+
+[00:30:06] Right. Many of them ask for authorization and capture, uh, flows. Author like, it's called author capture, pre-auth, delete capture. All these things are called this flow. Like delete capture means the same flow author capture, right? There are multiple terms for it, right? This is one term. And then there are features of, uh, you would've heard about CIT and MIT, right?
+
+[00:30:32] Um, again, like this will come into, so I'm just giving you some of the terms, right, that you will encounter in your pitches to merchant, right? And they will ask you about, can you handle, uh, these flows for me, right? So it'll be very much useful for you, like once you understand how all these things function.
+
+[00:30:53] Sorry.
+
+[00:31:01] So first is CIT and then is MIT. So this is basically a customer initiated transaction, merchant initiated transaction. You would've seen in, um, example grab, right grab. What they do is, um, they will first save your card. What they will do, they will do a $0 authorization, right? They do a zero authorization by $0 authorization.
+
+[00:31:28] What they're doing, they're. During this complete journey, they're authenticating your card. You will get an OTP first time once you're saving your card. In some of the cases, maybe in some of the cards you won't get OTP that I will also talk about. But essentially they're doing this flow authentication authorization, although the amount is $0, but they're, uh, authenticating your card.
+
+[00:31:48] Once your card is authenticating, authenticated, then your card will be saved into in grab system, right? And then whenever you are taking a ride, they are just doing an MIT call, MIT's merchant initiated, where authentication does not happen, just the authorization happen, right? So will they will just directly call authentication authorization.
+
+[00:32:12] They will pass ECIS zero seven. That means the authentication not done and they will complete a transaction, right? So this is a usual flow when, um, it's a very big merchant. Let's say grab is a big merchant, right? So if grab, see, um, one thing you have to clearly understand that MIT you are just doing authorization.
+
+[00:32:37] Like you are just, you have the card, you are not doing authentication, you are just author authorizing the card, right? So in many of the cases it might happen that some of the issuers might decline also, if the issuers see that the transaction is a high risk transaction, right? Therefore, um, MIT transactions have a high failure rates.
+
+[00:33:01] Right. Because if issuer sees that there are a lot of, it's a risky merchant, then they might decline the transaction. Now, there are ways, how do you improve this MIT flows, right? For example, while you are doing authorization, you can send more and more data to the issuer so that issuer can evaluate that data and they can mark it as low risk and just authorize a transaction, right?
+
+[00:33:25] Um,
+
+[00:33:32] for example, um, if Grab, which is a very big merchant, right? If grab calls a MIT transaction sends it to issuer, issuer will know, okay, it is coming from grab. So they will, they will consider low risk transaction, right? Whereas if a gaming merchant does the same flow, they store your card, they will call a MIT issuer will not.
+
+[00:33:54] It's coming from a gaming is a high risk transaction, right? So they will decline the MIT transaction. So in most of the cases you would've seen for gaming merchant, every transaction, they will do like an authentic, like they will authenticate the transaction also, right? So that's the way how CIT and MIT performs.
+
+[00:34:11] MIT there are high chances of failure. So only a, a less risky merchant can complete an MIT transaction, like grab gojek, like big players, right? And they send more and more data to issuers so that issuer can classify those transactions. Lowest transaction, right? This is C-I-T-M-I-T-A corollary to this is subscriptions eight, right?
+
+[00:34:37] Um, now in some of the cases, this is a very easy way, right? You do a $0 auth and then you call MIT again and again and again. But MIT is fraught with high failures. How to avoid that? One way is that okay, you send more and more data to issuer. If you are a big merchant issuer will allow it, right? Um, in case of subscription.
+
+[00:35:01] Now to solve for it, right? How you can solve for failures. In MIT first transaction, you set up a mandate, right? While you are setting up a mandate, you tell to network because the schemes, right? They have built a very good product. Basically, while you're authenticating a transaction in some of the flags, you can pass the information that this is a mandate set up transaction, right?
+
+[00:35:27] So you do the authentication complete journey, and you set up a mandate, right? While setting up a, setting up a mandate, you are taking consent from the customer key. Okay? I am setting up a mandate of a hundred dollars and the customer is authorizing me to deduct, let's say, a hundred dollars every month, right?
+
+[00:35:46] So this is the kind of subscription that you are setting up. And then every month you can do a, a recurring transaction. You can just call authorization API, you pass the scheme, um, the mandate id, right? Basically, whenever you're setting up a mandate, the issuer will give you a mandate ID or a scheme ID or something, a, a parameter through which you can recognize that is a mandate transaction, right?
+
+[00:36:15] And every time you do a recurring transaction call, you can just pass that mandate id. It could be a mandate ID or it could be a reference to your first transaction, right? Depending on issuer networks and all, it, again, changes a lot, but I essentially you are just passing a mandate id, which is telling you, okay, this is a mandate transaction or a mass recurring transaction.
+
+[00:36:38] So in, in this way, since you are taking consent from the customer, your success rate will greatly improve during subsequent transactions. Right? So this is C-I-T-M-I-T. We have covered subscription. We have covered subscription, right? I guess whoever work with a core plus subscription is a major use case for them.
+
+[00:36:59] So while you are working with a core plus, you will go deep into subscriptions, right? So you will clearly understand how a subscription works, right? Um, and they will start the integration, I guess from January onwards, right? So you will clearly understand it. Um, apart from subscription, then comes emis, which is like installments.
+
+[00:37:21] So again, um, um, right installments again is, uh, you break down your order amount into multiple, uh, equal installments over the course of number of months, right? Again, in some of the cases, like Visa has a protocol, visa installments, MasterCard also has a similar product. So what Visa does is you create a call of, let's say $500 to Visa, and then, uh, visa will and you pass, of course, certain parameters.
+
+[00:37:54] That is an installment transaction. The installment frequency, let's say six months. So for that $600, visa will break it, or Visa will pass it on to issuer, and then Visa will tell issuer, okay, sir, six months installment transaction. So now issuer will break down that $600, $200 every month. So in your credit card statement, you will receive a hundred dollars every month till six months, right?
+
+[00:38:17] This is again, like a installment. So basically subscriptions installments are to increase affordability of your customer. So in case of, let's say travel merchants, right? Generally travel merchants, airlines, OTAs, any merchant whose ticket size are higher, right? Um, this can be a pitch, okay? That we have visa installments.
+
+[00:38:40] We can do installments via multiple issuers. So all those things, whichever increases the affordability of the customer, any high ticket merchant will take that, right? Subscription use case would be in categories like insurance or, um, let's say you are purchasing loyalty program for a core plus, right? So all those cases, uh, you will have the use case of subscription, right?
+
+[00:39:05] So this will cover some of the use cases. Um, one thing I wanna discuss with you was, because today there was some discussion around, uh, payment gateway and all those things. So you are clear on these things, right? Any questions on this part? Yeah, I think could you also go through a liability sheet?
+
+[00:39:27] Because think now the day is much as they play around with the or then model, right? So one of the big questions is, do I get liability if I famous this or I add in this? So I think that would be a good thing for us to like run through. Good. Uh, nice question. So in a transaction journey, right, basically there are three flows that typically happens.
+
+[00:39:51] Um, one is generally what the parlance is, right? One is no, three ds, one is frictionless, three ds.
+
+[00:40:06] I do and another three Ds, right? These three things happen. In general, normal every transaction, right? Typically the, if the issuer is authenticating the transaction, then the liability is of issuer. Otherwise, the liability is of merchant. If the merchant is initiating a, if the merchant is not authenticating the transaction, for example, in case of MIT, merchant is not initiating, like authenticating the transaction, right?
+
+[00:40:39] So the liability will be of the merchant, right? So coming back to these flows, what is no 3D flow, that authentication has not happened. So in no 3D flows, liability will always remain of the merchant, right? What do you mean by frictionless three Ds? Frictionless. Three Ds is, if you would've seen like this, uh, three Ds 2.0 coming up right in three Ds 2.0 in a normal three Ds, right?
+
+[00:41:06] Okay. First normal three Ds, normal three Ds. You have seen that OTP comes, you enter the O-T-P-O-T-P means that issuer is authenticating a transaction, right? If the OTP has come and you have entered the correct OTP, that means issuer has authenticated a transaction. So if there are any chargeback, anything happened, right then the liability will be of the issuer.
+
+[00:41:29] Yep.
+
+[00:41:32] Right now coming to frictionless three Ds. Um, sure, sure. In three DS 2.0, you are the idea of three Ds 2.0, right? Um, you are passing much more parameters to the issuer. When I say parameters, it could be your device parameters, it could be your, uh, location parameters. It could be some merchant identifiers.
+
+[00:41:56] It could be your, um, your, your browser information, like device information, all those things, right? So there are like more than, I guess, 80 parameters that you can pass in three days, 2.0 to the issuer. The more information you pass to issuer, issuer will analyze the risk of your transaction. And if issuer determines that, okay, it's a low risk transaction, then issuer will not step up.
+
+[00:42:23] The transaction. Issuer will say, okay, I'm authenticating the transaction and I'm, it's doing a frictionless authentication. Issuer is authenticating, but issuer is not doing a step up OTP, right? So it's called frictionless cs. Whereas authentication is happening, but it friction is not happening. Friction means OTP.
+
+[00:42:44] Right. So in this case, even though you would not see any OTP coming into the picture, but you are still making authentication calls, authorization, call acquirer is still making, but while you're making authentication, call issuer has received all the data. They have deemed this transaction low risk transaction.
+
+[00:43:05] So they have not stepped it up to three Ds. They have just said, okay, I'm authenticating the transaction. And then you call authorization EPA, right? So this is called frictionless three Ds. And frictionless three Ds issuer has actually authenticated it, right? Issuer has deemed it low risk, but issuer has deemed that low risk.
+
+[00:43:22] So in frictionless, again, the liability will be of issuer only.
+
+[00:43:30] Right now, uh, all this network products, right click to pay and all right, and click to pay. Um, the authentication is not via OTP, the authentication is via device biometric, right? So it could be other fingerprint or face scanner and all. And what networks are proposing, or what networks point is that okay, for click two, pay networks have made a guideline that they have onboarded all the issuers into click to pay ecosystem, right?
+
+[00:44:04] And then issue networks have guaranteed this, that if I am doing a good authentication. Like if I am doing a biometric authentication, they are doing that authentication based on issuer framework, right? So even though authentication is being done by networks here, but all the issuers are signed up for this, right?
+
+[00:44:25] So networks are doing authentication, but the issuers are signed up for this. So if there is any fraud, the issuer is liable. Merchant is not liable, right? So this is how, uh, the one, like the network click to pay works, right? So again, the issuer is liable. So now you can, like, with this information, you can easily relay like where authentication is happening, who is liable.
+
+[00:44:53] So all these things, like once you have the complete flow in your mind, right, you can make those, you can connect everything together, right? So this is how you can connect, click to pay also like why, like you, because you will be now pitching more and more click to pay to merchants, right? And you will tell, okay, uh, if the merchant ask why in click to pay issuer is not doing authentication, but still the, uh, the liabilities of the issuer, right?
+
+[00:45:16] Then you can tell them like how the actual uh, um, like what's the reason behind it, right? Any question? How does liability shape works for Apple C and Google Feed?
+
+[00:45:35] So again, in Apple pay, Google Pay, um, I. Who's doing the authentication?
+
+[00:45:45] Google pays a different flow. Take care of it. Take example of Apple Pay, because Google pays still. Uh, I would say Apple pays a more better flow, I would say, right? In Apple Pay, who's doing the authentication? Should be Apple, right? With the device biometrics. Correct. And Apple has onboard all the issuers, right?
+
+[00:46:06] Issuers have agreed to Apple Pay that, okay, I'm authorizing Apple Pay to do authentication on my behalf, right? That's why Apple pay charges certain bips or certain revenue share from the issuer as well. Like for all the issues that are onboard on Apple Pay. So in this case, if there is something, um, there's anything fraud or something like that, then the liability will be of issuer.
+
+[00:46:29] Same case, right? Same click, click to pay case, right? But this is only about, uh, the fraud transactions, right? If let's say the merchant is not delivering goods and all right? Then again, the liabilities of merchant only, let's say the customer will raise a dispute. If it's a fraudulent dispute, then the liabilities of issuer.
+
+[00:46:51] But if, let's say the merchant has not delivered service, right? Then of course merchant is to be liable, right? So again, you have to classify the kind of frauds. Alright? Uh, yeah. Any other questions?
+
+[00:47:12] Or the seven days is seven days specs Seven days. Yeah. You be longer? No, no. For author capture, there is a seven days window. In most of the cases, like many of the issuers, seven days is the window. So if you are not doing a capture call within seven days, your authorized will be voided. Okay. Because, so I think that's one merchant asking for this because they make like another pre-order, they want to capture the food, uh, full power first, but the goods have received, yeah.
+
+[00:47:41] Yes. They receive the new afterwards. So they, that will be more then more so in that case, often capture won't work. Um, so you can either, they can do C-I-T-M-I-T, right? They can authorize that card, but that will also not work for them. Yes. Right. Uh, um, so generally, right, with all this kind of, um,
+
+[00:48:11] for example, this typical hotels, right? Uh, a goda and something, some like these kind of hotels. Let's say you are doing a booking today. Um, today is what, um, fourth December, right? You do a booking on fourth December and your hotel stay days, let's say 25th December. Right. So you are doing a booking today.
+
+[00:48:35] You are stay the 25th December. What generally all this hotel providers do is they will okay, block your, uh, they will like get your card details and all. They will do a, some time they will do a zero or off some timelines, zero or off. They have their card details. Your card details. They will block the inventory, let's say till 17 December, right?
+
+[00:49:04] So essentially they are giving you like a 13 days cancellation free window, right? So they're authorizing your card amount, $0, and then at the end of 17, now here, they will authorize the amount complete. Let's a hundred dollars before this. If you cancel your amount, there is no refund charges for the merchant and all right, so they will, they're giving a 13 dash cancellation free window, right?
+
+[00:49:33] This is also some of the use cases that all the hotel providers work on, right? So they will like, they will do zero auth, they will have your card details. They'll authorize the amount, let's say s in December and then before, let's say before five days of your hotel booking, right? This is how like many of the hotel providers also work.
+
+[00:49:51] So in this case, right? Yours case, we'll have to think about like how, what we can give to them because they want to block the money beforehand only, right? Even the three year model let's this, so. Correct. Free model also works like this, right? So there is a cancellation window, and this is like a feature that all the hotels, airlines can give to the customers, right?
+
+[00:50:11] Uh, or all marketplaces. Those that take the money and put it in esco, where does it sit in the, that is again, a different case. Okay, let's discuss those case. Um,
+
+[00:50:54] so see, uh, you would've heard of all these terms like payment acquirers, gateways, processors, and all those things. There is subtle difference into the actual definition of these players, right? If you see like, um, a typical, um, functions of a payment acquirer, right, or a function of a striper, Ian, what does strip and audience does?
+
+[00:51:15] Right? Um, they will first do KYC of the merchant, right? First step, KYC of the merchant. They will generate MID for merchant. Um. Then they will do transaction processing. Mm-hmm. Right? Then what all so transaction processing is done, then there will be certain value added features, right? Like dashboards, analytics offers, alternate payment methods, right?
+
+[00:51:50] All those things. Value added services. Um, then there will be, uh, let's say sales is, uh, again, a different function altogether. Let's say sales is also there, like you have to go and acquire like, um, acquire merchants and all. Typically, uh, now there are multiple terms that you have heard. Fastest payment gateway, right?
+
+[00:52:19] Generally all these terms are very interchangeable, so sometime you say a gateway, acquirer, processor, every of those things, but in actual scenario, if you go to the truest sense of sense of it, what does a payment gateway do? Right? Payment gateway. Okay. Payment gateway is one. Then there is acquirer, right?
+
+[00:52:47] Then there is, let's say all those terms that you hear. Payment service provider, merchant service provider. Right. This all the same terms. Then you hear another term called pay fax.
+
+[00:53:05] Pay fax. Another term that you hear a lot, right? And uh, yeah, so these are the mainly terms. Any other terms that you hear,
+
+[00:53:15] right? So payment gateway, payment acquirers, payment service providers, payment processors, merchant service providers, and pay fax or payment aggregators. Payment aggregators. Also, same thing. Pay fax or aggregator,
+
+[00:53:33] right? It is the same thing, right? Typically the P what? The payment gateway, right? Payment gateway. You can consider like what cyber source is or what MPGS is or what just pay has built for HSBC, right? Again, I'm coming to that point. So what is the, um, what is the core functionality of payment gateway?
+
+[00:54:00] They don't do KYC, right? They are just a tech platform in a true sense. It's a tech platform, right? They don't do MID, they will do transaction processing, right? Connecting to Visa, MasterCard, doing transaction processing. They will do value added features like they will create dashboards, analytics offers, all those things.
+
+[00:54:26] Like even though CyberSource and MPGS that, okay, some of the gateways will have better value features. Some of the gateways will have very bad value added features, right? But they would have some former value features. Sales they won't do because they're a tech platform, right? Ah, acquirers again, there could be like a traditional bank acquirers, right?
+
+[00:54:52] What they will do, they will do KYC of the customer because, and they will do like if it's a very traditional big acquirer, right? They will do KYC of only very big merchants, right? They won't go into and doing KYC while the small, small merchants for them, they will talk like how pay effects and psps come into picture.
+
+[00:55:08] But if it's a bank acquirer or a traditional acquirer like World Line, world Pay, these are very big acquirers, right? They won't go and onboard small, small merchants. They will just onboard very big merchant, right? They will do KYC, they will generate individual MID for each merchant, right? Individual, MID, they will do transaction processing.
+
+[00:55:33] They might have or may not have value added features if it's a bank acquirer, right? It might not have value added features and that's why just space coming into picture, right? We are building value features for them. They might or may not do sales right for them. Again, sales is selling to very big merchants, right?
+
+[00:55:55] So might or may not do coming to um, ah,
+
+[00:56:10] so now coming to bank acquirer, they can only onboard large merchants whenever I talk these terms, right? These are the general view, right? Of course there could be certain, in some countries, some bank will be onboarding small merchants also, but in generally they onboard large merchants, right? Um, now who will onboard all the small merchants, right?
+
+[00:56:34] All the smaller mid segment merchants. That's why like all this payment service providers come, come up, right? All the audience of the world, strive, stripe, checkout.com, um, air wallets, all those player like, so what they did, they build a very good platform wherein they are doing all this function. So they're doing KYC, they're creating MID, they are doing transaction, very good value features, doing sales also, right?
+
+[00:57:04] So now all the stripe aian, now they are doing everything very good. And hence they're competing with all the bank acquirers now. So if bank acquirers are, they're not able to onboard small and mid merchants, they are, they are not giving good value, value features, right? So merchants will move to Stripe Ian, right?
+
+[00:57:24] And that's why like now all the banks, they're not able to, like, they're losing their market share to all this new psps, Stripe, ENTs of the world, right? See in value added features, I have also mentioned APMs, which is like local payment methods. Alright? So payment gateway might have, might not have, maybe I'm writing traditional bank acquirer does not have Stripe.
+
+[00:57:52] Ardent has in some countries, some countries they might not have, right? Uh, now coming to payback fact we were discussing about right, the today's model about that. What was that name of the gateway? Oh, the gaming gateway. Ex Ex, right? So they mentioned, right, that they have a kind of a merchant on record model.
+
+[00:58:13] So generally there are two model, like once you're onboarding a merchant, you can either create an MID for that merchant and then that MID will be the individual MID, right? How an acquirer performs or what, what you can do, like for example, like sub D local, right? Or um. De local P Pro, right? All this kind.
+
+[00:58:37] What they do, they, they do a merchant on record model,
+
+[00:58:44] right? So merchant on record is, okay, let's say if, um, if de local is there, right? De local will go and create a merchant on record in bras, Brazil market, let's say. And Bra Brazil is like very high risk market, right? So they will create a merchant on record, let's say, of any of, let's say they will have their own merchant on record, let's say Thelocal.
+
+[00:59:08] I am the merchant on record. And then within Thelocal, they're adding all the, their merchants, sub merchants, right? So the MI is issued against the merchant on record, which is thelocal. And then all Thelocal merchants are under sub mids, right? So in this way, how does it help? Now any merchant can go to Brazil and work with Thelocal and open an MID with the local, right?
+
+[00:59:32] Or any without opening an entity. Now, any merchant can go to, let's say a country like Africa, they can work with an acquiring that country. That country will work on an merchant on record model, right? So all those things are done by pay fax. Of course, they also create like an individual ds. But the differentiating factor is that they work on merchant, on record model as well.
+
+[00:59:54] They're a differentiating factor. Otherwise, they also do all those things. Right, but, uh, like how thelocal is different than Stripe is because Thelocal will be, thelocal will be able to take more risk and Thelocal will be able to onboard merchants and merchant on record, which Stripe to a large extent won't do.
+
+[01:00:16] Right? Wait, so this is how everything works. Coming to your question about marketplace, right? Again, if you say if it's a marketplace, um, generally, um, that is under a scenario of settlement. Um, so once you have onboarded this merchants, right, once you have issued an MID to them, so the meaning of issuing an MID is that you are opening a settlement account for the merchants, right?
+
+[01:00:46] So in marketplaces, how does this PSP function is they open up parent settlement account of the merchant, right? So all the money will first come into the parent settlement account, and then that settlement account will be linked to all the sub merchants account. Then the money will be from the parent settlement account to the individual accounts, then the money will move, right?
+
+[01:01:09] So there are companies that can move that money from a parent account to sub merchant accounts. It can be like a payout thing, uh, on a regular frequency or on an add off frequency. So again, there, there are processes around it. So basically the money will first get pooled into a main account. From that overall pool, the money will be distributed to the individual accounts.
+
+[01:01:29] Right? And that both PSP can do, pay effect, can do, right? Right. Traditionally, bank acquirer won't do that flow. So in that case, bank acquirer will deposit all the money into a parent account. Then merchant can use a third party to move money from parent account to individual accounts, right? Again, it's kind of value added features, right?
+
+[01:01:51] Value added features, uh, bank acquirer maybe may not be right. So those things they can do. Why digital there, like before their reset is small. That is the business model, right? So if you see in a normal scenario, Stripe would earn 3% on transaction, right? The local will earn 5% on every transaction. That's the business model, because they operate in all the emerging countries, all the risky countries where a merchant would not want to go and open an entity, right?
+
+[01:02:22] Let's say if I am a, let's say I'm an e-commerce merchant out of India. I want to sell my goods in Brazil. I will go to Brazil, I will get registered as a merchant on record on Thelocal, right? I don't have an entity. I will the parent, MID will be of de local. I will be registered some MID within thelocal.
+
+[01:02:43] Now, settlement money will first come to Thelocal account and then Thelocal will give it to me, right? So Thelocal is able to onboard all the risky merchants and all those things. Like they're able to do those things because that is a business model. And they earn like heavy on that. Like their commission is 5%.
+
+[01:03:01] Right? So they are able to onboard gaming merchants, crypto merchants specifically targeting, um, emerging markets. Right? Sorry, can I clarify? Emily mentioned that, um, failure rates are high. So if there's more recurring transactions happening for say gaming, you know, you simply, you're coming and buying different things.
+
+[01:03:29] Does that increase the success rates when this individual That would, I would say increase the risk of transaction. Because see, whenever you are initiating an MIT transaction, issuer will determine the risk of transaction. Now, if issuer will see, okay, there is a high velocity of transactions coming from the same merchant ID or from the same customer, right?
+
+[01:03:53] Let's say, then they will deem the transaction very high risk. So if you are doing a lot of transactions, MIT transactions within a certain time period, so that means the velocity is very high, right? So your risk will be very high. So the chances are that the transaction will start getting declined. Okay.
+
+[01:04:13] Yeah, understood. I see this happening with, um, the NGO space as well for nonprofits like donations. Nonprofit is a high risk business, right? Because, um. It is a means to channelize all the black money and all those things, right? So the bank consider them as a high risk merchant, okay? Right? So then why even there proper K license for these optimization service protections, then KYC can be done.
+
+[01:04:40] But, uh, even though once the KYC is done still, the issuer will determine the risk of the transaction, right? Issuer have their own criteria as to, so see, uh, whenever a KYC is done, right, certain MCC codes are issued, right? MCC codes are based on industry, right? So if there is a, uh, A NGO that will have a different MCC.
+
+[01:05:02] If it's an e-commerce, we'll have a different MCC. So while you are sending the transaction to issuer, issuer will know, okay, what is the MCC of this transaction? If it's a high risk MCC, they will decline it. They will mark the riskiness higher, right? They will, uh, assess at the high risk transaction basically.
+
+[01:05:20] So depending on the industry, issuer analyzes a risk. Yeah.
+
+[01:05:29] Any other question? Good. Now what is left? Let me check my agenda.
+
+[01:05:41] Okay. Network tokenization is also, uh. See, one of the ways as to how you can lower the risk of transaction, right, is by doing network tokenization. So what is network tokenization? Basically you are, uh, in a normal card scenario, right? In a normal transaction initially, you see that once you are, uh, you are, um, typing in your card number, right?
+
+[01:06:03] Your card number are flowing from acquiring system to schemes to issuer. In case of acquirers, there could be a bank acquirer, A-P-S-P-A payback, right? Because in many of the cases, let's say Stripe goes to some country, Thailand where they don't have acquiring license, Stripe will partner with let's say two C two p in the backend, right?
+
+[01:06:24] There are multiple cases like this, so your card number is flowing from stripe to two C two p to the scheme, to the issuer. So there are a lot of ways where a card number can be compromised, right? So networks came up with this network tokenization basically, um, whoever holds the card or whoever is the owner of that card, the card number will be stored only with them, with those parties for a card.
+
+[01:06:50] Who is the owner of the card? Like who issues the card? Like it's either the issuer or Visa MasterCard. Right? In an in a that card, you will see that only the issuer and either a Visa, MasterCard name will be there, right? So issuer and Visa MasterCard are the, what's the word? Those are the. I was a parent of the card or um, like owners of the card, right?
+
+[01:07:16] So card number would be stored only with issuer and network, right? So in network tokenization, what happens is, uh, once you are initiating a transaction, you will first call network, you will get a network token, and then you will use that network token to, uh, in the complete transaction journey, right? So basically, uh, let's say merchant is there, right?
+
+[01:07:57] Let's say acquirer. And acquirer is a token requester. Also, let's just suppose I'm taking very easy examples here. Acquirer, token requester, right? So once the acquirer receives the card number from merchant, he will first call either Visa or MasterCard, depending on the card bin. He will call them Visa.
+
+[01:08:19] MasterCard will send a network token right now. Then they will take that network token, they will pass it to, uh, if there are any intermediary bodies between, let's say this was acquirer, was tribe here, right? Yeah. All you acquire that. Stripe would call Visa, MasterCard, get the network token, pass that network token to let's say two C two p.
+
+[01:08:47] Two C two p will pass that network token to Visa MasterCard. Now here, visa MasterCard would understand, okay, this is a, this is not a card number that I'm getting as a network token that I'm getting, right? So now here, visa, MasterCard would decrypt that token into card number, right? And then pass the pan, which is the actual card number to issuer,
+
+[01:09:15] right? Because that token or tokenization done by Visa, MasterCard, right? So if you send that token number to issuer, issuer won't recognize that token number, right? How would issuer recognize that? So during the transaction journey, visa, MasterCard would decrypt that token and then pass the actual pan to issuer, right?
+
+[01:09:34] And now in this flow completely, if you see the card number is only with Visa, MasterCard, and the issuer, right? Otherwise in the complete chain, it is just that network token that is flowing right? So in this way. Now, once Visa, MasterCard is telling to issuer, okay, this is a, they will pass the pen, but they will also tell this is a token transaction.
+
+[01:09:56] So now issuer will know case, a token transaction, so they will reduce the risk of the transaction, right? So this is how whenever like your, your merchant will ask you, right, how does tokenization helped me in risk reduction? So this is an example, right? Because issuer will determine that this transaction, lowest transaction, right?
+
+[01:10:16] Hmm. Yeah. So this is, this covers like most of the flows I have covered here. Uh, typically you will encounter these terms during your pitches to the merchant, and a merchant will ask you, like, they won't ask you direct questions. They would ask you some flavor of the question. So you will have to understand where the question fits in.
+
+[01:10:42] And then you will have to like do some mental modeling and then try to answer that question, right? For example of why does click two pay? How does issue a liability shifts, right? So now you can easily understand, right? Why does issue a liability shifts during case of click two pay or Apple pay, right?
+
+[01:10:59] All these things. So you will have to see to it like, um, straightaway questions are very easy, but while you are doing talking to merchants, they will ask you some questions. Um, not straightforward, like, because tho like those merchants are. Actually solving some of the real life use cases, right? So they will ask you some practical questions and practical questions.
+
+[01:11:22] You will be able to answer them once you have the complete, uh, behind the scenes picture of everything.
+
+[01:11:31] Right? Uh, next I want to cover, um,
+
+[01:11:39] I want to cover crossbar transaction because that is again, like a very, that you will encounter on a very regular basis. Um, like you would've seen, uh, this once we are talking to Tide Square, right? You would just, like you, you heard her, her questions, right? They don't have entity in these markets and how to, uh, let's say how they can, um, work without opening an entity.
+
+[01:12:06] T and all those things
+
+[01:12:10] ship
+
+[01:12:20] just a part.
+
+[01:12:25] This is very
+
+[01:12:29] Okay. The, this part we can remove. Yeah,
+
+[01:12:37] it is a good way to take a break.
+
+[01:12:44] So for mass? Yeah. Does this merchant of record uhhuh countries? Why don't you want all all other markets? Because it solve for the needing to set up an because for a company, right, it's very easy to go and open an entity in Singapore, it's a very low risk country. You can open an entity. So why would they use them?
+
+[01:13:09] They, the, it's easier to opening Singapore, right? Because for if you want to open in Brazil, right? There are a lot of regulation, taxes and all. So you would not want to open your entity in, uh, in Brus, Brazil compared to Singapore. If you're seeing that your business is going good, you can go and open your entity in Singapore market, right?
+
+[01:13:30] Hence like all the countries that de local targets are emerging markets, right? You would see that Thelocal does not have a business in, um, us, uk, Europe, or Singapore, Europe. They might have again, uh, yeah, thanks Europe. They might have, but then again, in those countries they would be targeting high risk merchants like, uh, gaming and all.
+
+[01:13:55] Who does not want to open an entity in that market, right? So basically they're targeting high risk merchants and emerging markets, right? Mimic is easy for you to set up why, what you do. MOI just creates a lot of. Friction for settlement. Correct. 'cause your personal t plus two three. Yeah. Settlement is t plus two.
+
+[01:14:17] T plus three because in T plus one, all the money will be coming to that parent merchant account. Then parent merchant will distribute the fund to the all the child accounts, you know, so it takes T plus two, T plus three, all those things are risk gonna still be higher. Risk is higher. So because that's why like, uh, any merchant of like thelocal, the reputation is that right of thelocal that your account can be suspended any, any point of time.
+
+[01:14:42] That also the risk that working with Thelocal, right? Um, even in some of the cases, right. Stripe also does merchant on record. It's not that they don't do, they also do merchant on record, but it's not their core business. Right. Uh, for Stripe, they are like very risk averse company, right? Because they are big, their reputation is good.
+
+[01:15:03] So even if they're doing merchant on record, they would do proper KYC of the merchant. Right? They would like, um, the, the merchant quality will be very good. For example, Stripe does not onboard gaming merchants. I think so, right? They don't onboard gambling, gambling, gaming. They don't onboard. No, not on say airlines.
+
+[01:15:21] Yeah. I, no, I think it's ot OTs. Yeah. Because OTs chargebacks are very high, so they won't onboard. So even Stripe and like a DN, right? They won't onboard risky merchants of certain industries. So in that case, de local and those guys can onboard them, right? So Stripe and AD also does merchant on record.
+
+[01:15:43] It's just that that is not the core business. And even if they do merchant on record, it would be only for very good companies. Like they will do a proper KYC even if they're doing merchant on record, right? Uh, now coming to cross border thing, right? So, okay, before I cover that, right? In a normal transaction, right?
+
+[01:16:08] In a normal MDR, what are the components of MDR? So I talked about, because I'm talking about crossbar, it will come into that play, right? So I talked about, uh, your MDR is comprised of, what is this? Color? Cheese. It's light is visible. Visible, right? Yeah. Yeah. So your MDR comprises of interchange plus scheme fees.
+
+[01:16:44] I mean, they took sheet and plus acquirer fees broadly, right? Broadly interchange scheme, acquirer plus fx. In case of cross border, right? I will cover that broadly. This is the fees component. In a typical scenario, around 80% will be interchange because actually the issuer is taking the risk, right? If you see like the money is moving from the issuer to the acquirer to the merchant, but it issuer who is giving you a credit line, so issuer is the highest.
+
+[01:17:22] Then uh, then acquirer and then scheme fees, right? So there's a major component of MDR. Now, typically you will also hear in many of the terms that there are two kinds of pricing. One is IC plus plus, and one is blended
+
+[01:17:43] pizza, right? Typically in a very enterprise merchants good payment gateways like Stripe, aian, they will give you IC plus plus pricing. What is IC plus plus? They will exactly tell you what is the interchange rate, what is a scheme rate, and what is my acquirer margin? So they will give you each component in IC plus plus.
+
+[01:18:05] Now, interchange rate, it greatly depends on what is the issuer, what the type of card, right? For example, if it's a corporate card, it could be higher. If it's a, um, like if it's a virtual card, it could be even higher, right? If it's a normal personal credit card in INTE can be lower, right? So I see. Differs greatly depending on the card.
+
+[01:18:29] So for every transaction, the merchant will have a different pricing, right? Because the acquirer is giving them the pricing based on the IC plus plus. So in every transaction, acquirer fees will remain the scheme. Scheme fees might differ, and interchange will always differ, right? This can remain the same.
+
+[01:18:52] So for every transaction, IC plus plus fees will be very different. So merchant would have to reconcile every transaction, okay? For this transaction, this was the interchange fee. This was a scheme fees, and this was the acquiring fees. So they will have to reconcile every transaction, whereas in blended acquirer will give a blended rate of, let's say 2%.
+
+[01:19:11] Right? Now, irrespective of the transaction type, and for every transaction, they're charging 2%, right? So typically all the big merchants, they want to go to IC plus plus because then they can control the actual pricing. They know where my cost components are happening, right? In fact, like we are building a product in on, for, on the US Europe side, it's called hyper sense, where we are actually analyzing the pricing of transactions of every transaction.
+
+[01:19:41] And then we are telling merchants, okay, if is there a scope as to how we can reduce a transaction, right? So, um, that product is still under development. Once that product is developed, I will. Urge you to look into that product, right? It's a very good product where they're actually talking about these things.
+
+[01:20:00] How you can reduce your in, uh, like your transaction pricing right? Now that you understand these things, let's go to cross-border payments. Now, whenever you are doing a payment, right, um, there typically are four currencies, right? Um, what are the four currencies? So first currency is banks. The issuer currency that it,
+
+[01:20:35] right? First currency issuer. Basically, let's say you are transacting on a merchant. You have a credit card. Let's say you have a Singapore dollar credit card. So your currency will be Singapore dollar because that is the currency of your card, like your bank, your issuer bank, right? Um, second currency will be presentment currency.
+
+[01:20:56] Good. Sir.
+
+[01:21:00] Let's say you are transacting currently on Sugi, right? In Sugi you are seeing all the transaction amount in INR, right? So presentment currency is the currency which is being shown to the customer, right? Um, then there will be your, um, acquirer currency.
+
+[01:21:21] Basically Sugi acquirer is in India, so the acquirer currency is India, right? And then there will be settlement currency,
+
+[01:21:35] right? Settlement currencies in which currency the money is getting settled to the merchant, right? So there are four currencies in all, in every transaction. If you see, these are the four currencies that will be there, right? Let's call this as IPAS, right? If this, um, IPA and S are equal, let's say your issuer currency is equal to presentment, is equal to acquirer, is equal to settlement, right?
+
+[01:22:09] Let's say if I am an, I have an Indian card. If I transact on Sugy, Sugy showing me all the amounts in INR, Sugi acquirer is, let's say pay you or raise pay, which is again their acquirer currency. Their acquirer location is India, and Sugi is getting settled into INR, right? So all the four are are same. So this is like a domestic transaction,
+
+[01:22:39] right? If any of these currencies are different, then it'll be a crossbar transaction. Right. For example, if I use Sugi from my Indian card, it's a domestic transaction. You are using a Singapore card right now. So your Singapore card you're using on Sugi, it's a crossbar transaction, right? So if any of these things differ, it's a crossbar transaction.
+
+[01:23:04] Right? Now, let's say, um,
+
+[01:23:13] uh,
+
+[01:23:19] right now, um, your issuer currency is Singapore dollar, right? So your issuer currency is not equal to acquirer currency, which is Sugi currency, right? What will happen? Yeah, issuer. Um, you will be charged in FX fees, like in your credit card statement. Once your comes, you will be charged a car of FX fees, right?
+
+[01:23:49] So customer gets charged an FX fees. Right. And because the merchant is accepting a, a card, an international card, the scheme fees goes high here. So, um, the cross-border, MDR, so coming back to this part, right? Scheme fees. In case of domestic transaction, let's say scheme fees, 20 basis point, right? In case of when you are doing a transaction on Sugi, because it's a cross-border transaction, the scheme fees might shoot up to one percentage, a hundred basis point, right?
+
+[01:24:33] That's why cross border transactions are costlier for merchants, right? In many of the cases, you would see that a domestic merchant won't allow any international card to be transacted on his website, right? But Sugi is allowing, because Sugi can bear that high MDR fees, right? Typically, let's say if you go to countries, like any country, if there is a small merchant and you try to use your international card, they won't allow it, right?
+
+[01:25:03] So they have restricted international cards because they are, they, they would, they would have to pay very high fees on this because the interchange is the same because bank is the same, but the scheme fees shoots up, right? So, um, you will have to pay high fees, right? Uh, now, so this leads to, um, both high fees for customer
+
+[01:25:33] plus high fees for merchant,
+
+[01:25:40] right? Make sure a lot of business, so
+
+[01:25:48] two pieces, customer won't bear. Customer will have a separate FX piece. So on a credit card statement, they will be like a foreign transaction fee. Like, um, it's, uh, you go back to Singapore, you download a credit card statement, you will see that for every transaction your issuer will have charged you an FX fees also.
+
+[01:26:07] Right? So let's say $10 is a transaction fee. Over top of that, maybe 2% will be the cross-border fee that your issuer will charge to you, right? Nick Credit,
+
+[01:26:22] you know, you trip transfer wise. Yeah. Yeah. They have very low, like, there was like no exchange fee and that is like powerful. That works. Like why would they, so that exchange fees for the customer. Yeah. Right. Uh, for example, if you use your card, in your credit card statement, let's say $10 is the transaction amount.
+
+[01:26:44] On top of that, you will see that 2%, kind of 2%, roughly 1.5 to 2% is a FX fees. So you will see an additional charge of 0.2%, right? In your credit card statement. This is charge to customer, not to merchant, right? In case of these all cards, which are, uh, um, like a zero Forex charge cards, like zero Forex cards, right?
+
+[01:27:08] In that case, the merchant is still bearing the high scheme fees, right? Merchant is still bearing high scheme fees, but the customer is not bearing this $0.20 because this is their own positioning that they are doing a zero forest transaction. So they're actually bearing that, they are bearing that, or they might partner with a local bank in that country, all those things, right?
+
+[01:27:32] Different business models, right? But for you as a customer, you won't get that FX fees charged, right? So whenever I travel to like any other country, right? I have a, like a zero for X card, I use a zero for X card. So even though the merchant is bearing like a high transaction fees, but I am not getting charged any FX fees, right?
+
+[01:27:53] And that's why again, um, in many of the cases, again, you would see that even though, um, that zero for card will not be accepted in many of the merchants, right? Because again, the, the MD to the merchants is really high.
+
+[01:28:23] What, because some they don't accept the travel card. Right? But if the travel card compost means like this? No, no. If it's an inter, like, um, even though if you go to a merchant, right? And even though like all the cards are Visa, MasterCard, but they still won't accept an international card, they'll just tell you like, oh, we don't, they will block you.
+
+[01:28:45] Right? Even if you do a transaction, we'll get declined because I, they would not have enabled any international transaction, international card on their MID. So whenever you set up an MID with a, with a gateway or with a Stripe or a DN, right? You have to enable bottle transactions. You need to allow any MID, right?
+
+[01:29:04] So, um, you would've seen it like whenever you're onboarding a merchant, setting up an MID, there are configurations to it. So you will allow, let's say for my merchant account, I want to enable all the domestic transactions. I want to block international transactions. So during setup thing of the MID, they will do all those things.
+
+[01:29:22] So for those merchant, none of the international card will work, right? Even though if it's a zero four x, it's a normal four x. None of the card will work if the merchant has disabled international cards. Because even though it's a zero for X card, it still is an international card. Right. So it won't work.
+
+[01:29:39] But that's, try it at a gym here. All my core accident do not work. Oh, you are going to gym also. Nice. No fats works perfect in your hotel. Gym is not there. It's not working. It's not working. I think it's working. So which gym are you going? You said nearby gym like four minutes away. Oh, so I pay cash every Sorry, what?
+
+[01:30:02] Okay. If you want, like if you have sufficient cash, right? Well I took and then it's fine. Uh, you can, if you don't have just like let me know like we can Yeah. Oh, there, there's a reason. Right, because those pause machines of that gym provided they would not have enabled it national cards. Yeah. And you say Google, uh, takes a Google Pay.
+
+[01:30:21] It's quite, um, whereas we not out until the can quota so that Google pays UPI. So that, like in India, right? Uh, Google Pay means UPI, unlike outside of India where Google pays, uh. Is a container of your cards. In India, Google Pay means UPI, same Amazon pay, same as Amazon Pay, right? So in India, Google Pay, Amazon pay are UPI payment.
+
+[01:30:45] You scan a QR code through your Google Pay app and you complete a transaction. So you need to have an Indian account for that. Yeah, right. Outside of India, Google Pay works as a container of cards. So like Apple pay, Google Pay, right? Those are same thing. So you like, you just tap your Google Pay apple pay, and then compare it on that.
+
+[01:31:03] So that is a container of cards in this. It's UPI. So there's a difference, right? So India, like it's, yeah. Uh, UPI is there. So, but you cannot use UPA. Yeah. Right? Uh, yes. So I talked about this thing, right? Customer merchant. Now, um, for every merchant whenever we talk to, right? The best case scenario is that if you are, um, if your presentment currency is equal to your settlement currency, then merchant will phase zero fx,
+
+[01:31:46] right? What do I mean by this? Um, in your case, um, in your case, merchant was facing an fx, right? Because the, you are issuing currency or acquirer or your pay like. In acquirer, you can either call it acquirer or set or, uh, settlement currency, right? In your case, mm. The issuer currency was Singapore dollar, but the acquirer currency was INR, right?
+
+[01:32:19] So they were accepting, um, I like Singapore cards, so their effects charges were a little bit higher, right? Whenever presentment currencies equal to settlement currency, for example, um, let's say you go to a website, Washington Post, right? Let's say go to Washington Post. If you go to Washington Post, you are trying to purchase a subscription there, they will show all the amount in USD dollar, right?
+
+[01:32:52] So there, the presentment currency, USD dollar, Washington post, um, settlement currency also will US G dollar, right? So if the presentment currency is equal to settlement currency, then um, the Forex part will become zero. So there were IC components, scheme, component acquire component, right? Then their com effects component, right?
+
+[01:33:17] If presentment is equal to settlement, FX will be zero,
+
+[01:33:25] right? Let's say in case of. Close. Mm. If presentment is not equal to settlement, what I mean by that is, um, you are, take example, tide Square, right? Tide Square does not have an NTT in, they are a Korean company, right? Let's say they don't have an entity entity in Singapore. In Singapore, but they have a website in Singapore.
+
+[01:33:50] Uh, their main account is in Korea. They are showing all their, because you are in Singapore, right? They're showing all their amounts in Singapore dollar. So their presentment currency, Singapore dollar, they, but their settlement currency because they have an account in Korea, right? So it would be like, uh, Korean dollars, right?
+
+[01:34:10] So there's a difference, right? So what will acquirer do? Uh, they would have an acquirer. Let's say, um, Ian, they have right? Something. Let's say they have Ian Tide Square. So what would ARD n do? Ard n will have to move the money from Singapore dollar to settle into the Korean dollar account, right? So ARD N will have to do, do this money movement from Singapore to, um, co Korea.
+
+[01:34:39] So in that case, AR n will charge, uh, tide Square and FX fees. Now, FX fees can go from 20 basis point to 2%. 3% can go anywhere, right? In today's call with. That Jillian, right? What I was talking about in this case, RDN is accepting the money in Singapore. Dollar. RDN is then transferring money from Singapore dollar and settling into Korean amount, whatever currencies, right?
+
+[01:35:13] Let's say it's a hundred dollars transaction. They would be charging, they would be charging, let's say 1% FX markup to move the money from Singapore to Korea, right? They are, um, they're charging the FX margin, right? And they're changing the currency and all those things. So that's the reason. If you work with, uh, your parent, your, your domestic acquirer, and you use your domestic acquirer to process payments across your countries, the merchant is charging FX fees, which can go from 0.2%, 0.2% to 2%, right?
+
+[01:35:52] That's why, uh, whenever your presentment and settlement currencies are different, merchant will face a very high effects fees. And because it's a cross border fees, uh, issuer market as a high risk transaction, again, coming back to the same point right about issuer. Issuer always marks or see how does issuer marker transit risk or not.
+
+[01:36:14] They, they see multiple parameters of a transaction. If one of the parameters is the cross-border parameter transaction, issuer risk goes up, chances of failure goes up. Right. So far, always a cross border transaction merchant will face low success rates, very high charges, and they won't be able to enable local payment methods.
+
+[01:36:39] Right? Now, let's say if you're using a Korean gateway and start to accept payment in Singapore country, or let's say you go to Japan or you go to Hong Kong, three major points, right? Very low conversion rate because of high risk of transaction, low conversion, high charge,
+
+[01:37:05] and um, what did I say? Third point, waste name, uh, coverage.
+
+[01:37:15] So no local payment methods. Can you ask, right? So if you are a Korean company and you are using your Korean gateway and you are expanding into Japan or Hong Kong or Singapore, or any of those countries, right? With the same acquirer, you will see low conversion, you will see high cost, you will see low coverage in terms of local payment methods.
+
+[01:37:43] So these are the major problems, which is why. Any company when they're expanding into multiple countries, they would first analyze, okay, where my, is there a country where my volumes are increasing? Right? If their volumes are increasing, then it's up to their best interest that they open an entity in that country, open a settlement account in that country, and make that transaction a domestic transaction.
+
+[01:38:12] Right. Once it's become a domestic transaction, you can improve the conversion rate, you can lower the charges, and you can also enable local payment methods. Right. That's why, let's say, uh, in typical scenario going forward, whenever a company, let's say Tide Square has come to you, right? They are a Korean company.
+
+[01:38:31] Uh, like the first, some of the first questions I asked to them were the same thing, right? Like, which countries your entity in, um, which country are you looking to expand more like from? Where are you seeing most of the volumes coming in? Because those are the considerations that the merchant might have to take to open an entity, right?
+
+[01:38:51] So let's say for Tide Square, they mentioned, right? They want to go into either Japan, Hong Kong, or Singapore they mentioned, and Canada also, they mentioned. Australia, as I mentioned, right? So, but it's not that they can go and open an entity in each of these markets, right? So they will first do prioritization.
+
+[01:39:07] So they will see, okay, Hong Kong is a major market. So first they will go and solve for Hong Kong, they will open an entity in Hong Kong, they will open a settlement account in Hong Kong. They will partner with some local payment providers in Hong Kong so that they can reduce or they can solve for all these points, right?
+
+[01:39:29] So ideally, like for everywhere, um, your presentment currency, the currency that you're showing to the customer and your settlement currencies should always be equal so that you face zero Forex and you like solve for all these charges. If this is not equal, then you will face all these three problems, right?
+
+[01:39:51] So that's the I scenario for every merchant coming to the case of, um,
+
+[01:40:01] there is one more concept here, right? For OTA merchant or for, uh, not for OTA, for OTN travel merchants, right? There's a concept called like to like settlement, you know, but is like to settlement.
+
+[01:40:15] So like-to-like settlement is that an acquirer can open a multicurrency account for you. Once a multicurrency account is open, you can get settlement in let's say 10 plus global currencies. All right. So even though, let's say, um, but even though they're, uh, okay, it's, uh, tide Square is the example, right?
+
+[01:40:44] So even though they have a Korean bank account, if they ask their, uh, acquirer that, can you open a multi-currency account for me and then do a, like to like settlement, right? So all the Singapore dollar that they're settling and converting into Korean account, the acquirer can also deposit just Singapore dollars to them, right?
+
+[01:41:07] So in like, to, like settlement, what changes? It is still a cross border transaction, right? Some of the effects, instead of let's say 1%, they will charge us slightly less effects. Basically, they won't charge effects. FX is not charged, but they will increase their acquirer fees, right? Because now they're giving them like a, like a typical, like a very high value features, right?
+
+[01:41:36] So even though Forex fees will become zero, but the acquirer fees will shoot up, right? But still, it's better than getting settled into Singapore and then transferring money from Singapore to Korea. In this case, let's say Tide Square has an account that can accept USDS, G-D-A-U-D. Right. Let's take example.
+
+[01:41:59] And they're operating in these three countries. So they will, from their customers, they will get the presentment currency as USDS, G-D-A-U-D. And then, uh, typically, let's say in this bank account, they will settle, let's say a hundred USD, 200 s, GD, 300 a UD. All those will be settled here as different, different currencies, right?
+
+[01:42:20] But still, even though FX is not there, acquirer fees goes up. Um, this remains the problem. Charges are, um, better than a local transaction, but, uh, sorry, charges are better than, uh, the earlier case, but still very high compared to a local transaction. Conversion rate will still remain a problem because the transaction is still a cross border transaction because the currencies are actually different.
+
+[01:42:51] Just a settlement is happening, uh, differently, right? And of course, coverage will still a problem, right? So this gets solved to an extent, but these two problems still remains right in like, like settlement, right? Um, in case of airlines. There are certain regulations that the airline can go and open, like even without having an entity, they can partner with a local acquirer and they can open a local settlement account.
+
+[01:43:26] So basically there are certain regulations of visa, uh, that for any airline, if you are an airline and you operate in that country, by country I mean if you have like a, like in any of your roots, if your original destination is one of those countries, then you can open a local account in that country and partner with a local acquirer, right?
+
+[01:43:51] So far, airline providers, it becomes very easy to optimize your transaction cost and all, because now you don't need to open an entity, right? You can just go to that country, partner with a local acquirer and open a settlement account debt currency. So you can essentially see the ultimate goal of every merchant is to make presentment equal to eco equal dis.
+
+[01:44:13] This is the main goal of every merchant, right? To make these three currencies equal, right? In case of acquire airline, they can go to any country and they can partner with any local acquirer and they can open a settlement account. Right. Not any acquirer would like those acquirers. Those are enrolled into that Visa program.
+
+[01:44:33] So all the big acquirers are enrolled into Visa MasterCard program. So they can open an, uh, an account for that particular airline in that country. So for an airline, it becomes very easy, right? But for all other industries it becomes very difficult, uh, for some of the cases, like to, like settlement can help solve.
+
+[01:44:56] So it's like to, like settlement is called L two L settlement basically. So L two L settlement can solve for high charge rates, but still some other problems still remains, right? So typically whenever you are dealing with, uh, uh, queries of merchants, which are trying to expand to multiple countries, and typically these are very big merchants, right?
+
+[01:45:19] So they will ask you these questions that, how do I, how do I, uh, improve my conversion rate? How do I reduce my cost? And I don't want to open my entity in that market. All the things can you suggest to me. So ultimately in background, you have to always remember that. Of course, the best case scenario for any merchant is this, but.
+
+[01:45:43] E every merchant cannot do this in any, in all the countries. So it's a step by step process. Um, first you, we can help them partner with a, like a global acquirer that can do like, like settlement for them. We can help them open, like integrate with a partner that can enable local payments for them. We can help them improve their conversion rates through some aspects.
+
+[01:46:06] Like for example, um, one of the reason why this conversion rates are lower is because issuers are determining them as a high risk transaction. Now what if you start sending more and more data to the issuer? For example, let's say in, in, in addition to card information, if you pass address details, call, like if you have heard about address verification system, right?
+
+[01:46:30] A VS. So it's the same thing. So you start sending address details, you start more details to the issuer, then you can improve on the conversion rates, right? So these are the various levers that you can talk about during your pitches to the merchant. And then you can give them a roadmap basically that, okay, first we will help you partner with a acquirer that can open, like they can enable local payment methods for you.
+
+[01:46:52] Then we can help you improve your conversion rates by doing some, sending additional fields or by doing some good fraud checks and all. And then as a next step, then we can help you partner with an acquirer that can open likely settlement for you. And then once you see that your transactions are flowing a lot, then you can go and open a local entity in that market.
+
+[01:47:12] I. Right. So it's a gradual process as to how you, uh, solve the problems. Like typically cross border payments for, for a merchant, right? Any question, lec? I know this little bit complex, the first instance because I also took like lot of reading to understand this, right? So, um, I would say like, um, build, uh, like read about like not read, like there is no as such difficult to get resources on the internet, right?
+
+[01:47:42] Because like I also had multiple discussions with various players, like merchants, even many of the, uh, people, right? Uh, um, Pramod, right? So Pramod, you have already met Pramod, right? So he's like an, uh, I would say expert of card, right? So I had a multiple discussion with Pramod also. And then, um, discussion with merchants and all, and then Ultimate Direct getting some information from some of the people and then just joining every information into one single, uh, uh, just to create that blocks, right?
+
+[01:48:15] So that's why, sorry, Ash. Uh, um, so that's why I'm now able to like correlate some of the things like from different, different sources I will correlate. So you also try to, um. Go through this. I would say, um, noted down, um, take examples, right? Whenever you are doing a transaction on a merchant website, see how does the transaction flows, you will see like the merchant is redirecting to a different, uh, webpage, which is a different gateway.
+
+[01:48:49] So all those things you can correlate, okay? Like if, um, if it's a foreign website, I'm doing a Singapore transaction, I'm getting some charges on, on my credit card or my credit card statement. So I even merchants are, uh, encountering high MDRs and all. So you can just correlate all this information and try to like, um, revise this more and more.
+
+[01:49:11] Gradually you will be able to understand it. Very, very good. Like, and as in when you talk to more and more these merchants, right? Let's say if we sign up Tide Square, right? Um, we would be helping them actually implementing all these things, right? So once we are getting these things implemented, then we will be understanding more and more about it, right?
+
+[01:49:32] So the best way to learn about all these things is to get actual, to do actual implementation with merchants, right? So once we start the implementation, we will understand more about, about these things, right? But till that time, you, um, revise these concepts. If you're able to find some sources over internet, also read about it.
+
+[01:49:52] You can share also because I am not able to find any resources. So please do share. If you have any doubts, reach out to me. Um, if I don't know, we can discuss it. Uh, because I also don't know everything, right? Because in this case, this is also like, um, very foreign to us also, right? Because we are venturing into cross border for the first time.
+
+[01:50:12] Like we were focused on Indian payments. Right now we are vening to cross border payments. So I would also not know many other things and we will discuss it within ourselves. We will discuss with merchants, banks, like we have connected banks also, right? So we'll discuss with any one of them and we'll come up with the right approach solution, right?
+
+[01:50:30] Because um, now more and more merchant that we are talking to, they're asking us how we can reduce my cross border fees, right? So in case of like coming to that cross border fees, right? Let me see if I have anything else on my agenda. Uh, okay. Do not talk about the orchestration at all in this part. I, for orchestration, I guess we will do another session like how orchestration came into picture, use of orchestration, how we are targeting merchants, that will be more typical, what we are doing, like typical what we need to do and how we need to strategize for next year.
+
+[01:51:08] We will talk about all those things. I was thinking I will cover it in today's discussion, but not able to. So coming to cross border, right? Many merchants will be asking you, okay? Uh. All those things are fine. I am not able to, uh, cross-border fees is typically what I told you, right? That um, if any of these things are different, then it becomes a cross-border transaction, right?
+
+[01:51:37] So many of the merchants will ask you, how do I solve for my cross-border thing, right? For a cross-border payment, there are few things that we have to remember. First is, um, how do you improve the, um, conversion rate of cross-border,
+
+[01:52:00] right? This is the success rates. Then how do you reduce the fraud and right, uh, conversion rate fraud. And the one more thing there is money movement,
+
+[01:52:23] right? Uh, typically in cross border, let's say if you, there are certain countries like India, for example, right? If you are settling in Indian rupees, it's very difficult to move money outside of India, right? Uh, Taiwan is another country. If you are settling money in Taiwan, it's very difficult to move money outside of Taiwan, right?
+
+[01:52:47] So how do you move money from, let's say, Taiwan to there a Singapore merchant who's operating in Taiwan? How do you move money from Taiwan to Singapore, right? Or how do you move money from India to Singapore? So all these questions will come, like when you're talking to your merchants. So for example, conversion rates right?
+
+[01:53:07] Now, of course, those are things that we usually discuss with all the merchants, like, uh, multiple pgs routing payment Ries. That is applicable. That is okay, like that is applicable, but what specific in cross-border, right? So then comes about the, uh, all the, that I told about the data that we need to send, right?
+
+[01:53:28] Uh, so, um, like additional data to issuers, right? You can send some address details, device details, all those things. If you bundle it together and send those details to issuer, the conversion rates might increase, right? And if you're able to reduce fraud, right? How do you reduce fraud? Uh, you do some good FRM checks, right?
+
+[01:53:54] You can either build it in house or, uh, work with some FRM providers and all those things, right? FRM providers are there. You can use some good experience authentication product, for example, you can, you can do like a three DS optimization, right?
+
+[01:54:15] Basically, um, in three DS optimization, um, when to trigger no three Ds, when to trigger three Ds, when to do frictionless three Ds, um, when to use click to pay apple pay. All those things comes into here. So it improves your experience, it reduces your fraud, and then it improves your conversion. So all these things comes here then money movement.
+
+[01:54:37] So money movement, uh, for example, if you have to move money from India to Singapore, right? Um, every country will have their own specific mechanisms. In India, uh, we typically can partner with an 81 bank, right? So typically, um, all these banks like Citi, JP Morgan, HSBC, these are global banks, right? That have their, um, um, branches in all the countries, right?
+
+[01:55:05] So if you have to move money from India to some other country, right? Typically, uh, we partner with, uh, a D one bank and there are guidelines about cross-border money movement, which is called PSEB guideline in India. So you cater to their guideline, you work with a bank, and the bank will help you move money from India to Singapore.
+
+[01:55:26] Right. Similarly, every country have their own nuances, have their own regulations, right? Taiwan, there's a regulation that you cannot move a certain amount of money. Like it's, there's a maximum limit as to how much money you can move from outside Taiwan, right? In a particular time duration. So all those regulations are there, so you have to work with a bank to move money from, um, uh, your foreign, current country to your domestic, domestic country, right?
+
+[01:55:56] So all those things are there. Generally, how does this money movement happen, right? Um, there's a concept on Nostri Ostro account. Basically. Um, let's say, um, there is a merchant, okay? So we typically do this for Microsoft, currently in India, right? Microsoft, they don't have a, um, Indian entity where they settle the money.
+
+[01:56:22] So, uh, their settlement account is Singapore dollars, like in, in Singapore. So they're accepting all the money in INR in Microsoft, uh, let's say they're using a gateway called build desks, right? And you heard about build desks. So they're using a gateway called Build Desk in India, right? So let's say all the customer's money.
+
+[01:56:52] So whatever money is coming. Right? So builders is putting that money into a Builders Plus Microsoft account. So this is a, like a joint, kind of a custodial account. I would say they're putting, let's say some thousand, sorry, some INR thousand, um, let's say some INR amount they put here, right? Then, um, Microsoft account, and then they have to move this money to, let's say they have to move this money to Microsoft Singapore account,
+
+[01:57:31] right? The money has to move from IR 10,000 to some SGD dollars in Singapore account. Then how the money movement takes place, right? Build desks has partnered with let's say a D one bank and just taking out name here, right? Let's say their partner with Citibank, right? So they will first transfer the money to City India account, right?
+
+[01:57:54] This builders transfers from this account. They transfer the money to City India account, right? Then Citi India. Then there will be a correspondent bank called Citi Singapore
+
+[01:58:15] in Singapore market, right? That city, Singapore, like whatever amount is there, after deducting the FX charges and all City Singapore will transfer that quo like that, uh, amount, SGT to Microsoft Singapore account, right? Between City India and Citi, SGP, right? They will do a net settlement kind of a thing.
+
+[01:58:44] So they will, Citibank will comply with all the PACB guidelines. Like they will have a record of, let's say 10,000 is the INR, right? They will have a record of all the customers who have done this 10,000 transaction, like 10,000 INR transaction. Basically they have to submit this to RBI, right? Uh, like the, like the government body of India.
+
+[01:59:06] So they will do all those due diligence at their end. Then they will allow City Singapore to move money from City Singapore account to uh, this Microsoft Singapore account. And they will be doing this on a very large scale and not just, not only for Microsoft. So there will be cases where, um, city Singapore, so there will be, let's say some other merchants, right, who would want to move money from Singapore to India, right?
+
+[01:59:33] So in that case, city, uh, in that case, city Singapore will be, so basically Microsoft wants to move money from India to Singapore, right? So City India will move to City Singapore. In many of the other merchants or other, other transactions, right. Money would have moved from Singapore to India. Right? So City Singapore would've moved more City, city, India.
+
+[01:59:55] Ah, just change the battery. Okay. Yeah, yeah, good one. Whatever they will be doing that settlement, they will be keeping a record between themselves that, okay, after one month this city India owe city Singapore this much amount, then City Singapore will owe some city, let's say Japan, some amount, city Japan will owe City India some amount.
+
+[02:00:14] So it's like, because the, like these other banks, right? They have like, they're, they're very good at these things, right? So they main thing is moving money across borders, right? So ultimately they do net settlement between themselves, but for a merchant they deduct the commission and, and like settle into the merchant account, right?
+
+[02:00:34] So through this help, uh, money moves between borders and all. So for every country they will be different nuances to it. We have to figure out, we have to work with, like, this is a challenge for us also, right? We now, because we are working with multiple countries, right? So we have to understand how all this money movement happens in each of these, each of these countries.
+
+[02:00:59] So, difficult task, but yeah, uh, we will have to do it like we will have to, um. Discuss with various merchants, we will have to study all, all these things in details. And then we have to figure out how this money movement happens. So for our cross-border transaction, right? Um, these are the three things that typically comes into the conversation.
+
+[02:01:20] Uh, how to improve a success rate, how to reduce fraud, how to do money movement. And of course all those things are there, like settlement currency, um, uh, entity opening. All those things are there only. So yeah, this is the major thing. Any questions?
+
+[02:01:44] And we can further try to map out if the, the ecosystem be to the country. Yes, yes, definitely. Correct. Exactly. Exactly. So that's why, right? Like once we start working with all these merchants, we will try to understand the use cases directly from the merchant and then we will create like all this, like a repository of everything.
+
+[02:02:08] The solution
+
+[02:02:12] for the settle range. They, when they do a settlement and there's a delta, then do the option. You stay soon. Very difficult. I guess James can tell that like, uh, I am also because. In actually, there is net settlement. It takes over a period of time, right? So city will have multiple countries account, right?
+
+[02:02:32] So India will owe Singapore, Singapore will owe Japan. Japan will owe India. So it's their job to settle it between themselves. And then there are a lot of things like, um, in some country, let's say Citi won't have a presence, right? So Citi will partner with some other bank, right? Citi, let's say it's called intermediary banks.
+
+[02:02:53] So Citi will, let's say, partner in Taiwan. Let's say Citi does not have a branch, right? Citi will partner with some Taiwan bank then, then Taiwan bank and partner with someone in China. So like very complex mesh like, uh, banks can do it better. Uh, like maybe James, if like you have any idea like how this actual net settlement happens?
+
+[02:03:15] Yeah, I mean that, that's, uh, yeah, that's a very different type, but that's exactly it, right? I mean, you're sitting on a balance in each market, but then you also have the complexity of certain regulatory considerations around how much balance you can keep in certain markets. You have the FX risk that the banks doesn't want to take.
+
+[02:03:29] So it, it's actually what Citi does internally is also what it does for large enterprise clients, which is what they call pooling and virtual pooling and all of these things where you're just holding money in different accounts virtually in effect. So as to benefit from interest rate changes, fx, regulatory overhang, et cetera, et cetera.
+
+[02:03:48] But it's, it's very much an internal accounting procedure to be totally honest. You're not really physically moving anything. Yeah. And even all this cross border money provide like nim uh, taza pay, all these guys does the same thing. So they will have their accounts in multiple countries and then they will, whatever they do the cross border payouts, right?
+
+[02:04:08] They will, they will won't move the money from one country to another country. And actually, right. They will try to do net settlement within the countries. Right. So for, and actually mostly you're right, you're spot on and mostly what they're doing is actually just sitting on top of accounts provided by the likes of Citi and others.
+
+[02:04:23] Yeah. Almost every FinTech is just sitting on a global transaction bank like a Citibank HSBC, you know, at Deutsche. JPM. Yes. Uh, so I guess this, we covered like a lot of things, right? Like we cover starting from cards to um, like how does actual card transaction happens, what are the major players in any payment flow be cards, wallets, bank transfers.
+
+[02:04:51] Then we covered clearing settlement. Then we covered different terms that you will hear. Payment gateway, acquirers, PSP, pay, fax. Then we covered tokenization, we covered all those things. Also like the, the subscriptions, M-I-T-C-I-T, uh, all the EM installments, author capture, delayed capture, three Ds, no, three Ds.
+
+[02:05:13] We also covered, uh, I guess covered to a large extent, right then domestic cross-border payments effects problems. Orchestration is left. So the main topic is still left. The big one is left. Yeah. So, but it's like, it's two and a half hours. So maybe, yeah, we will cover orchestration maybe tomorrow or day tomorrow.
+
+[02:05:36] Whenever I will talk to Shiva. We'll set up another session where we will cover, um, so we talked about like all these players, right? Payment gateways acquired these all things. Then why the hell you need an orchestrate, like another layer over top of all these players, right? There are any, there too many entities in the payment ecosystem.
+
+[02:05:55] Why do we need an orchestration provider? So we will cover that. We will cover some other things that we did in India as to how we grew, grew in India from an orchestration point of view. Then we will cover, uh, how to pitch orchestration and like how, um, what kind of merchants to target, what kind of problems and orchestration gets solved for a merchant.
+
+[02:06:18] Uh, and then we will cover some of the bank solutions aspect and what we are doing for banks. And then we'll cover the travel aspect. So this thing will cover next session, right? Um, but whatever we will cover in the orchestration session right now, you should be easily relate to it because what are the challenges?
+
+[02:06:39] All those things that we talked here. Everything and orchestration, a good orchestration can solve for merchant. Right. Whatever we discussed here, whatever you di you would've heard in tech sessions, in your oiler payment page offers, um, just based sessions, all those sessions that you would've heard, plus this session.
+
+[02:07:01] Now, when we talk about orchestration, what just paid does, how we build products for merchants, how we build products for banks, and what we are doing with travel players. So now that you have understand all those things, those things will be very easy for you. You will be able to quickly relate to it.
+
+[02:07:18] Right? And that will finish your onboarding, and then you will, then we will discuss how to what, how we can approach next year. Right? Cool. Any questions?
+
+[02:07:36] Okay. Then, uh, and any, any point you want to highlight James? Uh,
+
+[02:07:44] no. No. That was great, Nicole. Thank you. A good refresh for me as well. Yeah, I think it's very well organized. I, I think that it, it felt like there's a lot of planning that goes to the flu with movement. Like even I, I've been through five or six trainings through my multiple companies, right? Like they don't go through the IPA as we have to figure out ourselves.
+
+[02:08:08] So I, I think with this being recorded, the next two. That just we having a good time. Yeah. We just need, when they are onboarding, could review this. Maybe three more breaks.
+
+[02:08:22] Yeah. So thank you, NA. Cool. Great. Thank you. Now, next session, maybe we'll set up time with Shiva again. We will ask him to set up time. Cool. Uh, then we will call this off, James and Prachi. Thanks everyone. Thanks.
+
+[02:08:41] Bye. Nice to see you,
+
+[02:08:47] Bob. Hello. Thanks. Because the knot, I also click a photo. I it
+
+[02:09:06] is it yours? Yeah. Okay.
+
+[02:09:15] Via Google. What recording Via Google. He got that and he, this one was sold how Faces, yeah. Oil.
+
+[02:09:31] Oh yeah.
+
+[02:09:35] This one. Uh, wait, how will the report, how the actual video come? Uh, we'll mix it like, you know, talking their reaction. Then they're asking questions. I think we have no expression. No, we asked something. We used to video introduction. Like, what, what, what? So whatever we click, we will jump to that. Like we be having into, do like timelines.
+
+[02:10:02] Yeah. I can Oh,
+
+[02:10:09] oh, wonderful. These guys Cambridge. What, what that wine we already have.
+
+[02:10:34] So when would this, this
+
+[02:10:44] take had to do some editing.
+
