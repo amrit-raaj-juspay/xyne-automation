@@ -1,0 +1,80 @@
+Juspay Xplore _ Authentication Masterclass - Part 1.mp4 - https://www.youtube.com/watch?v=6hEQW093Ick
+
+
+
+Overview -
+
+Payment Authentication: Building Trust and Security
+
+The source discusses payment authentication, explaining it as the process of establishing the identity of a user for financial transactions. It introduces the concept of a "chain of trust," where a single authentication can grant access to multiple services, and highlights multi-factor authentication (MFA), which uses three types of factors: what a user knows (e.g., passwords), what they have (e.g., a phone for OTPs), and who they are (e.g., biometrics). The discussion contrasts India's long-standing use of two-factor authentication for every payment with the Western world's shift from risk-based mitigation to secure customer authentication, noting that the latter is now adopting methods similar to India's. Ultimately, the text emphasizes that while authentication introduces friction, it significantly builds trust in digital payments, contributing to their widespread adoption and growth.
+
+
+Transcript 
+
+[00:00:00] Explain authentication to us without any jargons. 'cause we have heard a lot authentication at the core is just that, which is called a chain of trust. Essentially. The authentication factors are of three types. What we have, have had in India for a lot of time is also now being adopted, uh, in the western world.
+
+[00:00:19] Exactly. It's just not about user convenience, it is also about building trust.
+
+[00:00:35] Hi everyone. Uh, I'm Ishan. Today we are here to talk about a subject close to our hearts that is payment notification. RBI recently released a set of new draft guidelines and that has had everyone talk about this subject. So we thought we will sit down. Have a deep dive on the concept of authentication and its relation to payments and how payment authentication is done.
+
+[00:01:02] And then we will use this concepts to unpack on what these guidelines mean for future of payments in our country. To break it down further, we have with us Rishi, my dear friend and colleague, and he'll help us and guide us on what his research says and what uh it means for us. Uh, welcome Rishi. Uh, let us start.
+
+[00:01:25] Thank you. Yeah, let's start. So, Rishi, starting straight away, right? Uh, explain authentication to us without any jargons. 'cause we have heard a lot, but simplify it. Yeah. So we'll start with the example, like today, morning when you came into your office. Yeah. There was a friendly guard who let you inside the gate when he let you in.
+
+[00:01:50] That was also authentication. There might be a different setup of office where you have to swipe your card against a machine. When that machine opens that gate, that is also authentication. So authentication is establishing the identity of a owner of an A set or anything valuable, right? Mm-hmm. So authentication at the core is just that.
+
+[00:02:13] It is just establishing that the person who wants to use this asset is truly the rightful owner of this asset. So that seems simple, but in complicated processes where there are multiple steps. How, how does this work? Right? Because I, I get access to one, but that allows me access to multiple things. How do you balance that?
+
+[00:02:36] Yeah, so, so there's this very interesting concept that we use a lot, which is called a chain of trust, which means that. So you establishing one form of identity can help you establish multiple forms of identity. Okay? Like in a way that today, uh, let's say you are logging into Flipkart. You'll do it via Google, right?
+
+[00:02:55] So you authenticated yourself with Google ones, and now in any number of websites you can authenticate yourself using Google. So this is quantum chain of cluster, which means that you use existing chain. To find new factors of authentication that you can use in a lot of places. This makes the live very simpler, right?
+
+[00:03:11] Yeah. Because the new form of authentication might be a simpler to access. Yeah. Interesting. This chain of trust is something that is used behind the scenes, but as users, we take it by defaults. Right? Right. Trust you remember earlier, used to set up so many onto so many websites. Yeah. Just to make sense, you just have one button log in via Google or log in via Facebook, and that has simplified a lot of lives.
+
+[00:03:35] Got it. So. Another, uh, what say something that discussed a lot in authentication is this thing called MFA or multiple form authentication. Yeah. And some principles behind it, right? Yeah. I've also read it, but if you can, uh, throw some light on it, what are they, how are they relevant? That will be helpful.
+
+[00:03:53] Yeah. Yeah. So, um, let's assume that authentication is as we talk, right? Authentication all about identifying the rightful owner of data set. Now, let's assume that one of your factor gets compromised or there is a site. So typically that is why we see that you multiply those, uh, number of factors, which means that if one factor you compromised, your second factor is not get compromised, right?
+
+[00:04:17] So it is multiplication. So then the risk becomes very low and. Let's say when you are entering the office, there was just one factor of authentication. However, for making a payment, you'll have two factors of authentication. As the complexity or as the assets value increases the number of authentications, we add more number of authentications to minimize the risk, and that is called multifactor authentication.
+
+[00:04:41] But what are these factors like? How do you decide, like is the, are there some principles behind it or there some. Set in stone things or it could vary. Yeah. Yeah. How, how does it work out? So, so here, there's a very popular framework, and you'll find it in a big website. Essentially, the authentication factors are of three types.
+
+[00:04:59] It is what you know, which means the knowledge factors. Mm-hmm. It, it includes like passwords, pins, things like that. The second is a mode only you are, which is the inheritance factor. This can be your iris, like user's, iris, it can be your biometric and things like that. And the third thing is what you have, what you have is also called position factor.
+
+[00:05:20] Like a sim is what you have. So hence you get OTPs. Uh, sometimes people, you have a Google Authenticator, which when you get six digit codes. Mm-hmm. So there are these three essential factors of authentication and the guidelines around the world say that you have to use multiple of them to authenticate a user.
+
+[00:05:37] And these are the frameworks in which the factors of authentications are set. Interesting. So three things can, can be used in any order. Knowledge, possession, inherit. And it could be multifactorial. It could be two factor, one factor, depending upon the value of the asset or whatever you're trying to unlock.
+
+[00:05:57] No, in uh, yes, got the framework, but what about payments then? What is so special about payments and why is this thing so relevant to payments? Like, and it would be interesting to know that. You know, because what I understand from the ecosystem is that India has certain ways in which we authenticate payments, waste follows a certain paradigm.
+
+[00:06:22] Okay. So if you can throw some light on it, it'll be interesting. Yeah. So, um, in, in payments you would often see this a very famous term, which is fraud versus friction. Mm-hmm. So we have to understand what is fraud and what is friction. Yeah. Fraud is that, let's assume that we're trying to make a payment so.
+
+[00:06:41] The Western world uses a concept of a risk-based mitigation, which means that the authentication is not being used. But a risk-based framework is used to evaluate that if this person is really the the right or full owner, right? So if this becomes off the chart, which means that if risk is mis judged or wrongly, it'll result into a fraud.
+
+[00:07:02] So this is called a fraud. The second part is friction, which means that whenever you are trying to authenticate, not all the user will be successful because the hardware world and the sort of world is not perfect. It doesn't work according to a hundred percent all the times, right? There might be factors.
+
+[00:07:18] Outside of the control, which will lead into drop offs, which means that whenever you add a factor of authentication, it might be lead into small, drop into the funnel, which means that a rightful user will not be able to access it. Mm-hmm. So this term of fraud versus fiction is very important and that is how, uh, the west, west has mostly been a risk-based, uh, system versus India adopted, uh, two factor authentication.
+
+[00:07:45] As a very, as a affordability payment. Yeah. Yeah. I think this is, uh, we experience every day here, uh, in India. I have seen that in West also, the behavior is very different. Mm. So, uh, where whereas we in India always enter and OTP or even many you using PIV enter in, whereas in the western world. A lot of times it was just about entering your card and the transaction would just go through.
+
+[00:08:08] However, uh, what I understand is that that's also evolving with new guidelines coming up. Yeah. Can you speak a bit more on that? Sure. So, uh, the West and primarily the eu. Uh, is now has been transforming itself through the last 10 years, right? And over there they have adopted, under the PST two, they have adopted the kind of secure customer authentication, which says that for, except from a few exemptions, all parents have to be authenticated.
+
+[00:08:36] Which means that they're moving away from this space mitigation and they're migrating to actual customer authentication. Mm-hmm. Which means that in the U region also we see concept of rise of previous in cards and in open banking. Also, there are some technologies by which authentication is being done.
+
+[00:08:54] Mm-hmm. So these authentication concepts are being, um, rapidly being adopted by the EU region as well. Got it. Got it. So it's interesting that, uh, the. What we have, have had in India for a lot of time is also now being adopted, uh, in the western world. Exactly. And uh, that's very interesting and, uh, maybe we can use some of the learnings that we have here in, uh, as well.
+
+[00:09:19] Right. So, because you see right in India we had a lot of authentication, which means that. For cards, we always had, uh, CVV and an OTP, right? For when the user is entering the card, but it'll always come the CV and OTP. For UPI, you always enter your UPI pin on a device, which is your own factor. So, uh, in India always had this and blue device.
+
+[00:09:41] There was a lot of friction also, but India, um, adopted these two FA technologies. Yeah. And, and, and, and when you think about friction right now. That digital economy or payments in India, despite whatever friction, supposedly it has boomed a lot. Right. Got it. I remember we, what we, what we would be doing like one transaction in a week, but 10 years ago towards almost seven transactions a day.
+
+[00:10:08] Correct. That's the frequency that is increased. So it's not that the friction has, uh, been uh, uh, you know, not helpful. I think in a way it has been helpful for the ecosystem because. It is just not about user convenience, it is also about building trust. And in the world of commerce, trust is as important maybe as the user convenience.
+
+[00:10:26] Exactly. Because today if you go right and you ask anyone in the office or around in a family. They'll always say that payments are being trusted. Right? It'll never happen that without my authorizations, our money can be built from my home. This is a very foreign concepting idea. Yeah. E-commerce economy has gone almost 10 times because of that.
+
+[00:10:42] Yeah. Yeah. I think definitely that's something that we have all lived and uh, uh, and uh, seen Right. What do you think you know will be the next evolution? Unlike the big manufacturers, like Google and Apple have invested a lot in the actual hardware of the mobile. We almost 95% of thes now carry that. What happened there?
+
+[00:11:04] Someone ask my phone as a factor will come inside the merchant payment ecosystem and we see that from our very early, um, POCs. Um, there'll be a massive jump in the authentication success rate, this evolution of. New factor of authentication will, will absolutely be that friction outta it.
+
+
+
+

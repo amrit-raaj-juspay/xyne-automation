@@ -1,0 +1,681 @@
+
+Mandate Flows Q&A Session Summary
+Debit Plus Enash: Combines two transactions in one order - first transaction debits money (via net banking/UPI), then second transaction sets up enash mandate, solving the limitation where enash reaches more banks but doesn't collect money upfront while e-mandate collects money but supports fewer banks.
+Smart Convert Features: Includes requeue (retry same transaction for gateway failures), retry (new transaction for technical/business declines), and retarget (send payment links via SMS/WhatsApp for persistent failures like insufficient funds), with configurable retry attempts, grace periods, and error categorization.
+Auto Refund & Revoke: Handles multiple successful mandate registrations by keeping the first response, auto-refunding duplicate transactions, and automatically revoking extra mandates at PG level, plus mandate status checks during execution to catch revoked/expired mandates and update system accordingly.
+
+
+Okay. Uh so we can start then. Okay. So I was thinking maybe we can start with the basics of the three flows which you're about to discuss and then take it for forward as a Q&A session. So the three flows which you are discussing is debit plus enash retarget and uh retry flow and the auto repo feature. U any maybe we can take it after uh that.
+So Uh Ragul can we have auto refund? How auto refund work on mandates and EMI plus?
+Sure sure we can discuss that in the same call.
+Sure.
+Sure.
+Hi. Uh so let's start with uh Okay David plus ensh because okay that is where the registration will start to happen. So uh we have multiple modes of mandate right so we have we started with card mandate after that there is something called e-mandate came up where PG is directly integrated with the banks and uh it was like direct debit money will be debited over there but there was the limitation is like there were there was only few banks available post that when NPCI came into picture they integrated with all the banks and they provided the ENA solution. So there there is there won't be any money movement but the mandate will be set after that merchant can can call the recurring for the till the max amount. So now this u enash is reaching maximum banks but it won't debit the money. So the solution which okay but the merchants want to collect the money the first place then they want the mandate to be set up so they can't go to e-mandate because the limitation like the banks over e-mandate is very less there there are only four to five major banks only available not all the banks but in ENSH it is reaching more than 100 banks in NPCI level so that is the reason uh we proposed this debit plus enash where there will be a two transaction it kind of a split transaction so there will be two transaction available first transaction will happen for the money move m move m move m move m move m move m move m move m move m move m movement that is the debit so okay let's say you wanted to set up eash that is mandate on some banks let's say corporation bank or union bank uh what we will do is we will first provide you like redirect you to the net banking of uh union bank so there you can enter your credential and you can transfer the money once they receive that response the pay response of that first debit that is the first split transaction I will load the second transaction over there. It is kind of a seamless itself like once you complete the trans first transaction immediately the second transaction will be loaded. The in the second transaction you will be giving the authentication to set up the mandate. So single order two transaction kind of a split one to debit the money and one to set up a transaction. So this solved the problem of uh uh less number of banks available for eanditate and we offered Okay. Now in the recent time we offered uh like cross payment method type also like you can uh do first transaction using up also and set up a inash using uh uh any of the banks available but the PP is not yet ready but at back end side it is it's possible. It is a split payment which we are processing. So the first payment first transaction you can pass the up pay information and the split information you can pass the inash information. So that is for the mandate registration the UPA sorry uh the debit plus enash. So when it comes to auto refund or auto revoke. So as of now okay auto refund we were hap we were doing only for multiple successful transaction of mandate registration.
+We haven't took the uh conflicted status that is exceeding the threshold cases for auto refund because all mandates will not fall under the same category and it will not follow the same uh uh TTA like uh the mandate to move to active is not same for all the payment method or all the mandate flows. So that's the reason we haven't took but we will take it for specific uh payment method. Now when it comes to multiple charge transaction it's the same thing like uh okay I try to do a mandate transaction uh but in between I got like I may or may not sorry customer may or may not complete the transaction but I receive a failure response but in the back end side it might might be a success. So once I receive the failure response I allow the c merchant to initiate another transaction for that same order. Now I have two successful transaction at my side. So whatever whichever response comes first to me that mandate I will persist the second transaction response which will receive me uh which will reach me that transaction I will mark as conflicted I will auto refund it also I will create a process tracker. to revoke those mandate from the PG side at my side. I won't be having the entry for the second mandate.
+No.
+Uh Anjeli yeah you have any doubt or can I I'll explain every flow at once and post that we can go for the QA session.
+Good.
+No but then
+yeah so uh the second transaction which we receive no so that transaction mandate information we won't be storing it because and we won't be having the information also.
+So that process is handled separately. It is completely independent of the transaction and that maintains its revoke part for that second transaction which is successful over there and autorevoke we are revoking in multiple places now. So uh before making any transaction okay uh one place uh which was which was available from the beginning is post response post receiving any mandate payment responses if the response says that Okay, you can revoke the mandate is not active then I will revoke in my system and I will send a web book. So that is one place. Second place is like before making the transaction or before sending the notification I will be verifying the status of the mandate with a PG. If the mandate status comes as revoked or expired I will expire or revoke at my side also and I will mark those transaction as just declined. If that p that step passed like uh po from the not notification till the execution there is 24 hours gap. So from the notification let's say I tried to do a status check and I received that as okay successful mandate is active and I sent a notification post that customer can revoke his mandate. So after that even if I try to like after that also I try to do mandate status when I just before I do a transaction call. So at that phase also I can able to catch this and I can revoke the mandate. So this is the second part and uh now if you move to third part that is retry and retarget
+along with these two we also have something called req so the difference between these three are uh when whenever a mandate payment happens so we have categorized the error messages and code which we received from the gateway into different buckets so few error messages says that okay you okay we haven't even rece uh sent the request to okay whatever request we have sent that has doesn't uh reach the PG system. So in those cases we can recue the transaction which means no need of sending or generating a new transaction ID. We can use the existing transaction and uh hit the PG once again. So before hitting the PG we will be checking the status of the transaction. If the transaction status comes as not found then only we will go for rec. So that is the one check we have kept for rec and that is also configurable like the threshold or the time uh uh like that can be configurable for rec but it is not exposed to merchant. Now the second part is retry. So let's say uh I have I have made a APA cost to like mandate payment AP cost to PG. I received a failure response.
+People are saying that you are going too far. They not able to understand. They have few questions.
+They have just answer this question first.
+Yeah, you can ask the question like once it's done you can ask the question. I'll I'm here to repeat also. No worries.
+But then for us to ask questionable something right
+I'll explain this one like later we can go.
+Okay. So the retry retry part shall If you want to ask something
+uh Kan I think Anjel and Viv few queries and team also from our MS team
+so I think they were interrupting but I think you were going on and on. So
+sorry the problem is all of us are muted. Uh I thought Rahul's system will be unmuted for the speaker thing.
+Kan for us to ask questions right first we need to understand what the flow right
+that That's why like I I told that okay we'll first explain the flow then you can
+it was too fast to follow up also.
+Yeah you can just uh but slow because it is being quite fast and some terms are not really uh catching. So if you can be a little more slow and we take up one by one slowly that would help.
+I lost in cross transaction itself. First transaction would happen via UPI or second transaction we can right until that I follow. after that to follow it up.
+Okay. You have any doubt in that like debit yourself?
+Oh, let's go one by one itself. Okay. So, debit plus enhance maybe a screenshots or APIs or something to understand. I mean for people to relate how it is.
+Okay, visuals. Uh I may not have the visuals of PP but I can show you the AP uh request. One second. Okay,
+you can check this
+and we can explain it that way. Yeah, this this better. Okay, let me share my screen. Uh, is it visible? Uh, I'm in the video. Yes. Yes.
+Yeah. Mid screen is visible.
+Video is not visible. Media is not visible. What is happening with this one to share screen? Right. It's not coming to this one. screen. It's not moving somewhere. Can you keep on sharing the screen?
+So in PP let's say this is how it will be. Your transaction amount is 2 rupees. So you'll select ICB like the same bank and uh there it is like okay you'll pay and uh we'll go for enh separately we have debit plus enash separately right is two different set of uh bands that we have to enable or when a user is coming on payment page or for a merchant how would they how would they really differentiate whether it will be a debit plus or it's a normal Malina
+uh at back end side it's not you have to enable two different flows uh for the front end you have to because okay if it's a PP merchant he has to build like PP people has to build this uh TX and curl right so for that reason at PP side they have to enable it but for back end side if they they themselves is handling the split part then it's not need to enable like only single bank enablement is enough So in PGCC say against razor pay or something I will enable uh SBI bank.
+Correct.
+That is all.
+That is all.
+So and uh when we initiate a request it can be it can be for enash alone which is for register alone or I can do a normal transaction plus register.
+Correct.
+So
+either you can go for enh that that will just set up a mandate or You can just uh split the transaction. You can send me the split information. Uh the information will uh look something like this.
+Okay. So to be short, debit plus is nothing but you are initiating a mandate. You are doing a normal transaction.
+Correct?
+Straightforward, right?
+I'll first debit the money. So I'll first do a normal transaction.
+So post receiving the confirmation that okay the normal transaction is successful. then I'll go and uh set up the mandate.
+Okay. It's like you are clubbing the two transaction in a single order.
+Correct. Correct. So this this how the curl will look like. So this is the first payment method that is the debit one the NB or NBICSA and after that how we were sending the split information no additional payment details. So the same way we have in the split information we will be sending the in wala information. So JP bank code and what is the bank if bank account number and beneficiary name and what is the mandate type. So all these informations will be sent. Suppose this we will be uh first loading the transaction like pay start for this transaction. So once the customer completes the transaction I'll receive a pay response. So post receiving the pay response I'll load the payout of the second transaction. You will only load it. H
+I will only load it. I will store the pay start. I'll generate pay start for both the transactions and one by one I will load it first. Okay. First first transaction pay start has to be loaded by the merchant because as a transaction response I will give that pay start. So once the merchant loads that first pay start the transaction will be completed by the customer and once I receive the pay response back I will load the second transaction second pay start.
+What if we don't get a response because of some issues.
+We will uh wait for that and we will try to sync the first transaction and uh the that uh if that is that exceeds the confliction like threshold then I will mark the transaction to failure or order refunded
+first transaction first transaction so second transaction will not be loaded in that case
+okay
+only if I receive a pay response V2 pay response then only I'll go for the second pay Start
+by any means
+response right?
+Huh?
+Success. The first transaction should be
+first transaction should be success.
+Okay. And then only we will initiate the second P.
+Correct. Correct.
+And the second transaction can be success can be failure also.
+Huh. Usually inner setup will take uh minimum of one day. So like I won't be receiving the instant response of mandate active. So I will be keeping it pending like active state. Sorry not active sorry. creator state. Uh some cases I may receive but not all the cases. So after that I will mark like it is up to them like now whether to continue with that or not to continue with that.
+Okay. So there is a possibility that a transaction can become successful and mandate can be failed.
+Yeah.
+Okay. Transaction successful not doesn't mean that mandate register is successful.
+Correct.
+Okay. And we do send webbooks when mandate status got updated.
+Yes. Okay. Okay. Sure. On a UI, how would this look? Can you reassure that? Yeah.
+Yeah. So, customer will be entering the informations.
+Okay.
+Uh sorry, one question. So, here also if um the user is trying uh he will first receive the u like he'll be appreciating it for one time, right? First time for the debit one.
+Huh?
+So do we have any guidelines saying that merchant should collect all the details up front or after the transaction because on TXNS only you would need all the information right?
+Oh correct.
+Okay. So for the users it will be like you'll be selecting it too or uh like I don't know how people have implemented or is it like we just collect the information required for enash and based on that we shade the first debit.
+Yeah, as of now the implementation is like okay let's say the union bank is not supporting the e-mandit so what I will do is I will collect okay for eash also they have to send me the account details and ifsc
+and so I will consider that as he has selected union bank so nb_un will be my payment method for the first transaction and for the second the subsequent mandate reg it will be JP_UN. So by that way like I will be collecting the information up up front and then I will try to do a transaction.
+Okay. This is taken care by payment page.
+Huh? As of now? Yes.
+Okay.
+So this is the first transaction response and after that I will load the second uh once I receive the pay response I will load the second page start. So this is the second page where you'll be up like approving for your Nash.
+Uh yes,
+my first transaction has gone through gateway one.
+Huh?
+My ene gateway one.
+No, it is uh depends uh it may or may not because two different transaction will be created. So decider will be called twice based on the enablement availability SR. So all this information like we may fall into same bank sorry same gateway or not
+is it possible that the bank which I am trying to do EAS it doesn't support EASH but still I am passing it will we allow one time and not allows the E
+that is not possible right so if the bank is not allowing the enash I won't be showing that in the PP itself
+okay so we give this information in SPM
+yes the MGCA information gateway card info and merchant gateway card info.
+So is there a way that I can ensure that wherever my transaction has gone through I want also to be registered on the same
+same bank sorry same gateway
+gateway yeah
+uh yeah you can pass the gateway ID
+no but I would not know which gateway is getting selected in the first one right my requirement is that whichever gateway has gone through for my debit. I wanted the same gateway for Enash also.
+Okay, that is as of now it is not and uh same gateway for uh okay it's as of now it is not but we can think of it
+but I know there was on config right this was a requirement raised from uh nab I'm sure
+okay requirement is to uh select move the gateway same and then we added a config and then it out I'm not sure but we can
+uh I'm not aware of this decider changes
+yeah K there is a config which allows
+which allows merchant to password in a single gateway for debit
+okay sure is it like uh this gateway ID has to be passed and the same will be selected for both No no no they won't pass gateway ID but whatever gateway selected it will be selected for the enash also
+okay
+sure so there is a conflict that we can do it
+okay
+yes
+I think I missed one thing you told in the starting only what is the purpose of debiting first then doing a
+because you are sure After that you are collecting you got your money the first month subscription amount you received in your hand then you'll try to do a inash for it. So if not okay if you're going for plus debit you have to wait okay uh I'll try to do a inash that inash may take plus one day also to confirm. So till that time you can't hold your customer on on that
+you want the service to be
+service to be enabled right now till first money will get debited. service will start and later will be set up then you'll write the service for one month and then next month will not happen uh one more question like suppose for union bank it is not supporting enes
+then I won't be showing the showing that
+this debit plus enes these both thing will be happening by a same bank
+as of now yes like according to the PP implementation it is. Yes.
+So basically the difference between the previous like uh registration plus recurring while thing in plus debit and debit plus uh insh the the thing is the instant uh enablement instance it can be enabled that
+any other doubt in this uh WP inflow not now we can
+okay The response of TXNS will be the same right in debit plus also we will not be giving them two pay starts and all right
+no it will be the same so we will give one pay start of the first debit transaction.
+Uh in order status will merchant get the list of both the orders?
+Uh like how we are giving for split transaction they will be receiving both.
+Okay. So if I do an order status with the order ID I will get uh both.
+Huh.
+Okay. I in one I'll have uh charged other one also I'll have charge but it will block
+yes
+okay okay uh the transaction ID is of different format in this or it is hyphen 1 hyphen 2
+uh it is hyphen one hyphen 2 only
+okay just like two transactions are getting
+two transaction will be created that's it
+okay instead of merchant calling it twice we have convered to a single call with additional information where we ourselves will call the second transaction Yes.
+Okay. Uh but I Okay status there for transaction that one we will update.
+Sorry I lost your voice.
+So as we mentioned can take plus one day.
+Huh? It can take yes for the payment. Can you mute your
+n? Yeah. So, uh whatever we give the status for the um first time the debit transaction we will update it as it is.
+Huh? Debit transaction will be updated as it is. Now,
+okay. The order will be kind of charged and mandate will be uh failure.
+Okay.
+So, I got a pending response from PG
+for the debit transaction. Okay. Uhhuh.
+Uh we have to sync with them, right? We have not the web book. We have to sync.
+But our sync starts after 5 minutes.
+Huh. That's what right. So if I receive the pay response, then only I can able to load the second pay start.
+So we we can't load the pay start of Nash in sync or webbook.
+Correct. So can I assume that if no pay response, no uh loading of email?
+Correct. Yes. Yes. So in that case uh say if it is a PP merchant only
+how will PP merchant know that it will be a debit plus inash he has he was supposed to reg he is supposed to set the mandate also where is the information and what will be the order status for this
+uh I didn't receive okay for okay in that case okay
+pending state
+it will be uh it will be shown as one time like order payment transaction since the mandate block itself is not available.
+So it will be kind of order payment transaction. If the first transaction status is charged, we will show the charge as uh uh the overall order status response.
+Okay. So after we receive
+it will be created but it will be in pending.
+No, after creating V2 pay responses we call the second DXNS or do we call both The TXN is at the same time but loading of pay start is one after the other.
+Uh we will create the transaction at the same time but the loading of pay start is subsequent like one after one after other.
+So in this case where it has been a delayed success or something there will be a mandate block which is in created state but then what happened to the status of this because we have not even loaded the pay start right. So what happens to such order such transaction attempt? Uh okay order status it will be considered as order payment because I can't able to load the second transaction
+but you a mandate block for that no
+huh yes we have created a mandate block for it uh so the mandate block will be created for the second transaction um that will be in create state only we haven't even got any information of that Okay. Because we have not loaded it at all.
+Yeah.
+And do we do order status for with the PG for such orders?
+Second transaction. No.
+Yeah.
+No,
+we do not.
+No,
+we'll mark it just or go to authorization.
+Okay. Uh if if okay when the second transaction has been created, we will create a PT entry. Right. So the PT sync will be happening and based on the response, it will be a not found and the mandate will also get updated. Okay. So it goes to authorization failure.
+Uh authorization failure and uh uh failure in mandate status.
+Okay. Okay. Okay. Sure.
+Uh so if uh the second transaction got failed, we won't refund the first transaction. It will be going for a month then.
+Yes.
+That is up to merchant.
+We giving notification to merchant.
+Merchant. Yes. The mandate is failure.
+Mandate. EN failed. So it depend on the merchant what he want to do. Correct.
+You want to refund, he can refund and stop the service
+or he can proceed the service.
+Okay. The merchant can then maybe register a mandate separately also. He can send
+normally normally.
+Correct.
+Okay. Uh do you know how on PP that this is getting differentiated like for a merchant where where I can use only enash like this case only let's take an example when user is coming first time it is debit plus enash but my debit was a delayed success because of which I could not register now we have sent it as failure to the merchant now merchant wants to collect made the mandate register for this customer
+PP said uh not sure about it
+okay sure
+okay so can we go to try and retarget.
+Uh Gan one more thing this uh this specific banks HDFC and ICICIC right they support direct uh setup of mandates as well along with the debit.
+Huh?
+So there is no need of setting up of separate debit plus for these two specific banks right?
+Uh okay there uh the okay if you want if you are going like that the it it should be enabled for that merchant. So gateway will be providing you HTFC bank under both the categories e-mandate as well as e-ash. So whichever g merchant is chosen chosen at the gateway site based on that only we have to proceed. So if you see the TPSL gateway configuration we have given the option of selecting HDFC as e-mandate or enash.
+Correct.
+So if he's opted for e-mandate then which means that okay he has choose choose the HDFC bank as e-mandate at the gateway side also. So in those cases yes it's not needed. But if If he has selected HTFC and Each in the gateway side then he needs that W plus Eash for HTFC also.
+But for other I think gateways we have we don't have that flat to different
+other gateways they okay TPSL is kind of they are maintaining separate bank code for uh all the banks all the payment flow kind of thing. So if if you are choosing HTFC uh they have five to six different bank code for HTFC alone based on the flows. Uh but other gateways are like okay like us uh they are also they will accept a payment method as HDFC and based on the enablement at their side they will handle it and most of the time it will be like only for Razer Pendall and the other other mode is like the amount one. So if we are receiving amount less than one rupee then we will consider it as in more than one rupee it's kind of
+yes okay got it another one is uh this uh I think uh uh razor uh razor pay and other gateways which have recently integrated with mandates specifically e- mandates
+they are supporting more than like four banks uh SDFC ICA access and SBI
+so two to we have other two SBI and access do we have support across all the gateways at our end this way uh access and SDI.
+Yes.
+Uh one second. First thing like it should be available in TPSL site. Other gateways uh uh it is normal. So just Access, SDFC, ICICI and SBI. So these are the four banks right?
+Yes. SDFC, IC, SB and access. Yes.
+Uh these are
+do we support SBI and access is?
+Yes. Yes. Yes. We have
+Yes.
+Any specific PG or across all the pages which
+across all.
+So it is the GCI which we need to add.
+Okay. Okay. Got Sure.
+And this uh UMRN identifier which we get once the mandate is set
+for e-mandate or enash. Uh I think some merchants would specifically ask for that identifier because for UP auto we get right. So to
+many merchants have asked it but for RN also uh many merchants are like do we uh have we added start started consuming that parameter and started sending it to the PG as well or do we need to ask them to enable that toggle from the web hook section add full gateway response or something like that?
+Okay. Uh as of now I don't think so we have just let me check it.
+Uh we are not consuming it as of now but we can start consume it or else like yeah they can enable the full PGR Full gateway response.
+Sure. Sure.
+Uh was it in any of the
+sorry
+was it raised in any of the thread or something that
+auto pay? It was raised but for Nash and eandate uh I think some merchants were at the time of integrating they were asking it but it was not prioritized.
+Okay. Sure, we can try to add it.
+Okay. Even for ENS, uh there are certain cooperative banks, right? Small small small banks,
+huh?
+NPCI keeps on sharing the banks. So, uh whatever PGs we support for Each uh do we uh uh do you uh can you let us know from which table or from which service config do we have to get those bank codes added because we can't keep on raising the request to you, right? Uh
+it is gateway card info table. only one that table or uh in so uh gateway card info is a table where we are maintaining all the banks supported for that gateway and once merchant select source bank there will be an entry created in merchant gateway card info MGCA table so that is for all the gateways uh only specific to TPSL we are maintaining service configurations because TPSL uh uh we can't Okay, let's say for different mode of authentication they were using different bank codes for uh card authentication, NB authentication, other authentication. So they were using different bank codes. So that is the reason we are maintaining uh okay you have for TPSL alone you have to add that in GCI as well as you have to add that in service config. The
+service config as it which uh is can you
+okay I'll send the service config names. This is only for Aadhaar authentication, right? Not for
+all all all three authentications we have to add it.
+There is a list maintained in code also. If uh that is not available like if the bank is not available then we'll try to go and search in uh service config. So if any new bank comes and we need to map a bank code for that bank then we need to go and and add it in the service config.
+Okay. Okay. Sure.
+And uh there is a mandate or end date parameter right so
+huh
+for reach and demandate I think uh by default we are considering it as a 30 plus years from the time the transaction has initiated.
+Okay.
+Okay. So ideally this is uh not of uh valid question but do we expire the mandate automatically once it exceeds or if merchant customize like he passes uh that parameter explicitly by himself mandate end date as 2 years from now
+he can pass mandate end date
+once the two year gets passed do we automatically expire
+we are not running a prawn for that so we need external invocation for right either a mandate status check or revoke or pass API call or a transaction on it. So any of the merchant external invocation then only we'll try to verify the expiry. Uh we are not maintaining any chron for this uh mandate life cycle.
+Okay. It will be still active at our end even if the data
+correct unless unless I get a external call on that mandate. from the merchant.
+Huh?
+Sure. Sure.
+And I have shared the service configuration name for uh TPSL.
+Uh Kan in debit plus enash flow the register the mode of authentication for enash can be either of these three what you have sent right can be aar card or net banking.
+Uh yes
+all three will be supported and uh all three modes of authentication will be supported. in devel.
+Huh. If you see that video there also like they will give a drop down to select the mode of authentication.
+I saw that.
+So it is supported.
+Okay. Okay. Sure. I think we can go ahead with the other part.
+Okay. So the second option let's go for retry. Retry and retarget.
+So along with the req. Okay. In register. Okay. After that uh do we need to go for retry or the auto revoke? because autorevoke is also linked to the register itself.
+Let's do auto refund.
+Okay. So auto revoke uh and auto refund. So only in case of multiple charge transaction we will be considering that for auto refund. Now uh but the threshold uh since as as of now we were not considering uh threshold exceeding that is conflicted transaction for auto refund for mandate because not all the mandates will be falling under the same category of uh um okay but that will be completed within 5 minutes or 10 minutes. So we need t+1 for uh enash and when it comes to paper nash we need t plus 7 days. So that is that that is completely long procedure to mark uh a mandate and the transaction to to success and active. So that's the reason we haven't considered it but we are you know plan to consider two let's say UPI or wallet for uh auto revoke or auto refund auto refund basically for mult for threshold exceeding case also
+but we don't support paper nash right
+we are supporting paper nash we have two gateways lotus pay and djo
+okay it's not at live
+razer razor pay is also there I think I think it is live.
+Uh with whom is it live?
+Okay, that merchant information. Okay, no merchant is available I think but uh the code is available in production.
+Okay. So we have it by Lotus pay dio and raise a pay raise.
+Uhhuh.
+Okay. Okay. So that's why we do not have auto refund for mandate transactions.
+Ah correct.
+Okay.
+Auto refund in case of threshold like the conflicted transaction.
+Sure.
+Uh we have for multiple charge transaction the use case is similar uh like how the uh normal transaction works but along with that we will create a workflow for uh revoking the second mandate which is set up at PG side.
+No. Uh in case of debit plus there is two successful transactions only. Right.
+Huh.
+Okay. But in general Also we have auto refund on multiple transaction multiple
+there is a check there is a check if the split is available then we won't consider that for uh multiple charge transaction category
+okay okay
+so we will maintain a split information in the transaction so if that is available then we won't consider it
+what if there is four transaction two for debit
+same same uh thing applies so if if if it is a split then I won't consider that for uh multiple charge transaction case.
+No, I mean say register only register.
+Mhm.
+So somehow um we have uh okay first transaction is initiated.
+Mhm.
+Okay. It become failure.
+M
+uh or okay if it is failure we will not invoke the second. Okay. First transaction is initiated. It became failure.
+Okay.
+And retr.
+Uhhuh.
+Second transaction is initiated.
+Uhhuh.
+Which is realtime success.
+Uh-huh.
+You will load the second pay for register.
+Uh-huh.
+By the time the first transaction also became success.
+Okay.
+So in this case will multiple charge refund work?
+No.
+Why?
+Uh we considered like that as a complete split transaction and we were not doing a multi-charge auto refund over there.
+But you have to debit trans successful transactions, right?
+Uh correct. But this use case is very rare. But it can happen. Yes. But as of now, we are not.
+Okay. Okay. Sure.
+Yeah. Fine.
+When will this auto revoke come into a picture? What is the scenario?
+Okay. The same thing like now we have two different uh mandate setup right for that. register at our side it may be a one mandate single mandate but for the customer if you see like if he's using up also if he went to his PSP app he will be seeing two different mandates
+for same merchant
+yes because there is two transaction uh involved for gateway we are sending two different transaction ids so which means two different transaction and two different mandates will be available
+no but he would have opted for say two different things no what is
+no no no so if if I'm seeing a multiple transaction for the same order
+then okay then the the use case will be I I made two different API calls to PG with two different transaction and PG generated two different mandate ID
+but for for me it is only one order
+no did not get you Okay. So, uh you okay there there's a transaction which has been created.
+There's order created and a single transaction has been generated.
+Huh.
+And for that transaction, I will create a mandate.
+Okay. Mandate register.
+Huh. Mandate register. Mandate entry is available. Now, if uh the same transaction like the transaction went to failure and uh we retried the transaction like merant retried another transaction for the same order.
+Okay.
+So, we will reuse the same mandate which we have
+we will use the same mandate
+same mandate is created for that order we for that previous transaction we will use the same mandate.
+Okay.
+Okay. But at PG side since let's say the transaction one the T1 I have already initiated.
+So PG is create created a mandate for T1.
+H
+at PG said it is not the it's not linked to any order. Right? So PG said it's simple transaction. So he created a mandate M1 for T1.
+Okay.
+Now I got T2 request. T1 is failure. T2 request I received
+or T1 is pending and T2 request I received. I will load the T2 to gateway and gateway will create another mandate M2 for T2 that second transaction.
+No but when I I'm initiating the second one.
+Uh so my debit should be successful, right?
+That is not I'm not talking about debit plus. It is pure mandate register.
+Uh oh. Okay. Auto rework is not specific to debit plus enash. This is across the mandate.
+Across. Yes.
+And for debit plus enash does autorework work?
+Uh no. The we are completely ex uh removing the splitted transaction from in this case.
+Okay. So these are the cases excluding the debit plus.
+Okay. So maybe okay user would have attempted second time and both became success that one. Okay. Got it. Got it.
+So yeah once we are doing auto refund we will be uh revoking it also.
+So that is the one place where we are uh revoking the mandate.
+No but say in case of enash only
+uh there is no actual debit which is happening right.
+Huh. But up it will happen. Huh? But in case of each if there has been two transactions against the same order,
+do we really do auto refund does it required or we just do revoke?
+Uh it is actually not like even if we write the refund request to the PG,
+they will give me the uh response but it there will there will not be any money movement.
+Okay. PG will even give a success.
+Huh.
+Okay. Okay.
+We will revoke it also.
+We will Revoke it also.
+We will revoke the latest one or the first one.
+So whichever response I received in the second place.
+Second place.
+Huh?
+So it can be that one I do two two attempts.
+Huh.
+One is real time success.
+M
+one is late success.
+Huh.
+So uh say my first transaction is late success. So I will autoreote the first transaction.
+Huh? uh so the entry which I don't have in my system so we will maintain the epgtx and id that is the mandate token in my in our mandate table
+let's say uh I receive a response
+from pg okay it's a two different transaction case I receive a response from pg
+and that response uh has a mandate ID which is not in my system for that transaction ID
+okay So which means that okay that is the M2 which is created at PGZ but I don't have the uh information of that
+okay
+so in that that case I will revoke that M2
+but you don't have that system you don't have it in your system right how will you revoke then
+I have the information right I have the transaction ID which is associated with that I have the mandate ID which is associated with that
+no you don't don't have the mandate ID right?
+No I have the mandate ID that is that will be available in the response right PG's response
+but if it is available in the PG response we can store it no
+uh but for the same order already a mandate is available right I can I cannot store two different mandate for the single order
+uh then how is PG creating um two different
+PJ it is two different transactions right it is not linked to single order
+different okay uh Oh, we have a check.
+One order, one mandate. Huh? Yes, we maintain one order, one mandate. So even if it is second attempt, the mandate ID which would have created for the first time, I will be sending that ID to PG. If in case some identifier is being passed,
+huh? If if I don't have the information at my side, then that case is kind of I can't uh consider this mandate. So I'll need I need to revoke that mandate.
+Okay. When you revoke the mandate, you send any information back to the merchant?
+No, that is not because merchant doesn't know that there's two different mandate has been created.
+But say uh uh okay you will not
+for that merchant for that order there will be a mandate.
+Okay.
+Since there's two different transaction
+huh
+we have have to okay two different mandate has been created. It is this this revoke this case of auto revoke is only meant for uh customer uh perspective okay he has created two different mandate it's my responsibility to revoke one mandate which is not belongs to me or which I I won't be using so that is one use case of autorevoke the second is like I receive a pays okay I went to mandate execution
+so during the mandate execution I receive response from the gateway saying that this mandate is revoked or it is not active at this moment not active. So in those cases those responses I will be maintaining a bucket uh system. So all these responses categorized and for them I will be revoking the mandate and sending a web hook to the merchant and making a transaction failure.
+Oh so mandate status is being done. on transaction mandate status check is done upon transaction with the VGS and not
+so in the mandate execution. Yes.
+Okay. Clear.
+Okay. Sure.
+So the auto revoke is done on the second transaction or the late success one.
+Uh it is late success one.
+Late success.
+Do you have JSON for that to match their
+uh mean band mandate execution? Yes. We have GSM for it.
+Do we also do status check for mandates?
+Uh we also do status check check for mandate.
+Huh.
+Okay. Uh let's move to retry and retarget.
+Yeah.
+Okay. So uh req, retry and retarget. These are three different uh operations and or features which is available for mandate payment. So So uh I may have a uh slideshow like PTA uh available. I'll search and I'll send it across. So what actually these things does is uh recue it will be performed on uh gateway not available cases. So let's say the gateway is completely down. Whatever request I'll be sending to that gateway is not reaching it. So I I will be continuous receiving 503 or 502 uh and in those cases what I will do is I will schedule it and I will verify the status with the gateway. If the status return me that okay TS are not found which means that okay I don't have any entry at uh gateway side then I will go for the recube so I will just reinitiate the same transaction let's say the transaction is T1 mandate execution T one I will just initiate the mandate execution the T1 uh with the gateway again that is rec
+this mandate execution tool in process
+huh so these are uh all this rec retry and retarget is only applicable for those merchant who are either in workflow or in scheduleul flow. So if the merchant is uh handling directly direct manet execution then these features will not be available.
+What is scheduular flow? Workflow is rehandle the
+notification.
+There is one more flow. If merchant wants to handle notification but he want to have all these features retry, retarget then we can enable them for the scheduleuler flow.
+Oh merch not there in uh workflow but they're in scheduleuler flow.
+Oh they can be in scheduleuler flow.
+Okay
+that that's also like enablement only
+because uh once we tried to onboard all the mer to scheduleuler flow
+but we got escalation from few of the merchant. What they were doing is for execution also they were keeping a fulfillment window kind of thing. So they should be getting execution response within uh 30 seconds or 1 minute. But in our side if the merchant is enabled for scheduleuler then we will be scheduling the transaction and the next batch pickup will happen between 1 to 5 minutes. So in any odd case it will be a 5 minutes delay for them to receive the response of those transactions.
+Response TX.
+Yeah. No, TX and response will be pending
+but the transaction status updation will happen after 5 minutes because at that time itself we will be calling the PG.
+Okay. And read Q we do it only for a certain error message that we have defined.
+Usually it is for uh gateways failure like gateway time out or we haven't reached we fail to reach the gateway only those cases we will go for recube
+okay
+and these messages will not change regularly so these are like fixed kind of messages
+okay
+so the uh second uh second option is retarget sorry retry second option is retry so in retry what we will do is uh we have categorized retry into two different buckets. One is technical retry, another is business retry. So let's say the technical retry is uh the same reason uh gateway face some issue but over here we have a entry available in gateway side in that case I can't use the existing transaction ID for making the second transaction because gateway will give me duplicate error duplicate ID error. So that is the reason We will be creating one more transaction. We will schedule it and after some time we will be initiating those transaction.
+What?
+No.
+Uh that is must configurable.
+Uh one second. So again this retry is again based on some set of error message which we receive on the first attempt.
+Correct. Every every uh operation or every all of these features are completely depends on the error message which we receive in the first execution.
+Okay. So If I just summarize these two, you can correct me if I'm wrong.
+503 like it can be different also.
+But then what could be other technical failures from see let's say there's a business decline from uh so
+so okay PG okay PG accepted the request but upper bank is down in those case PG can't give me 503 so they will give me 400 with some error messages upstream bank is timed out huh then We will retry in an interval.
+We will we will change the uh the
+transaction ID.
+Huh?
+Yes.
+Okay. Sorry. Sorry. So if I summarize this retry and uh um recue, right? If my understanding is correct.
+Uh once this is all on execution only, right?
+Correct. It's all on execution.
+Okay. For workflow or uh scheduleuler
+scheduleuler enabled merchants.
+So merchant will call TXNS.
+Huh?
+We will do predit notification wherever it is required.
+Correct.
+Okay. And next day when there is actually a debit, we initiate the transaction.
+Correct.
+One possible is that the request has not even reached PG.
+Uhhuh.
+Okay. We have received 53, 54 or some 5x.
+Correct?
+Okay. In such cases, we do list mandate or I think
+sync sync transaction transaction sync
+okay we do a sync
+sync if we receive no records found
+huh
+we will put this into reg
+with the same order or transaction ID
+the same transaction ID
+uh with the same transaction ID we will again initiate it after some time after the schedule time
+correct
+okay now if this first request which we have initiated have reached the But they have given some declines. It can be a technical decline. It can be a business decline.
+Again we have a set of technical declines and business declines. We will see the message is matching with us
+and we will now ret try
+retry
+with the second order.
+Second transaction.
+Second transaction we generate a transaction ID of our own and then we do uh the retry.
+It is hyphen 1 - 2.
+So those transaction we will generate and we will uh retry it.
+And one more thing is like this retry. Okay. Recue can be performed for those merchant who opted for that feature. No order ID same sorry transaction ID same as order ID.
+Oh
+uh so reced over there but retry we can't perform on those merchant
+because we can't generate a transaction ID. If that config is enabled then we will roll out this fe. itself.
+So I am received the first transaction as a failure.
+Sorry,
+I have initiated the first transaction.
+Huh.
+We have received a failure which was a technical decline.
+Huh.
+Now our systems have identified it. Yes, this can be a possible retry.
+Huh.
+Okay. At this point of time, what is the order status? What is the transaction status?
+Pending VB. Uh first transaction status will be failure.
+Okay.
+And second transaction uh will be pending. So my overall order status will be pending.
+So in this case, no order failed webbook to the merchant.
+No, only we will send transaction failed webbook.
+Okay. If merchant has transaction failed enabled, we will send transaction failed.
+Correct.
+Okay. And then we initiate this retry for the second time.
+Correct. We try for the second time.
+How many retries are possible?
+Okay. That is the we have given the option to merchant in the dashboard.
+So there is something called smart convert uh cate ory in the dashboard. You can see that in any of the merchant like might be it may be enhant once the merchant ask for it we will be providing those information there we have two categories. Uh one second let me I have a recordings of it.
+What is smart convert? This one only retry recube.
+We will yeah we combined everything and we named it as smart convert.
+Okay. So smart convert is equal to retry plus recube. plus
+huh
+revoke.
+Yes.
+Okay.
+Okay. I'll uh share us share my screen for that recording.
+Sure.
+Or uh let me log into my merchant itself. Just a second.
+What are some of the examples of business decline?
+Uh business decline is like uh uh let's say you have your uh card credit card set up on your credit card and for that month limit is exceeded. So I can't debit more from your account. So I have to wait. Or in your other cases of uh business decline can be your UPI mandate where your per day limit of one lakh or two lakh is exhausted. So I need to wait for 24 hours to get that back or in UPI
+huh
+that that is handled in the retarget. So uh other cases are like okay UPI you have per day limit of transaction. per day you can only perform this much transaction. So if you ex exceeded that limit also we have to wait minimum 24 hours
+to uh get the transaction limit back.
+Say we are retrying after 24 hours. Okay
+then user will get another notification to most of the PGs will be accepting 7 days notification.
+Same notification for seven days.
+Uh some P will be accepting it. So they won't notification.
+Kithan sorry one question uh did you say that same notification can be used for 7 days or every uh say my time uh I retried retried retried it was four five attempt but it has been almost 2 three days uh then also the older notification will work.
+So for that reason like we have categorized this technical and uh business retry right so technical retry we will uh inform the merchant to use maximum that day itself so zero days of technical retry so the same notification and more all all of the gateways will be covered under this one but for business retry we have to wait for 24 hours and uh not all gateways will but some gateways will be accepting notification for one week I think patent v2 will be accepting that notification for a week. You if you send a notification, you can try to do a transaction for that in for that week. I think PM V2 and pay you maybe.
+But in case of Razer Pay where we initiate their DXN and they are the one who is invoking notification for them, how will this retry work?
+Uh for them the only technical retry can be possible
+because they already have a and razor pay they themselves will be have handling this retry. They will will be giving a spending.
+Oh, when you say technical retry, one example if you remember anything
+uh like like I said like it can be a upstream bank timeout or something like that bank uh is not available. So those error categories
+Razer Pay themsel also will be doing a retry right would still remain pending.
+Uh but in that case they might be giving a different Right. For the pending cases, it can it it won't be a failure case.
+Uh no, say if underlying bank is having some issue, we initiated the transaction to Razer Pay. Status is pending. Now Razer Pay initiated it to bank. Bank said I am busy. I will not do it right now.
+Then Razer Pay also would retry at their end, right?
+But Razer Pay will not give me a failure response, right?
+Okay. So
+it depends on the error messages. So we have error code and message combination. So even the message says that okay it upstream bank is down the code cannot be a failure code right if they are doing a retry the code cannot be a failure code
+okay so only when we receive a a proper failure that is when will put it to a schedule retry
+correct
+is there did we encounter a scenario where we have scheduled it but it did not get executed because of some reason
+uh no
+okay And do we also tell merchant that what is the next scheduled time or uh merchant for merchant it will be only pending he will not know what is happening in
+merchant uh we won't show the next scheduled time but we will show them like how many retries pending like okay this you have opted for if he's opted for uh six retries we will send him that okay which which retry I'm currently doing and how many retries are pending.
+Where do we give this information?
+Both in uh order status as well as webbook.
+Webbook in the sense tx and
+char. Yeah, tx and web
+tx and web book.
+Okay.
+Okay. So now
+full gateway response or in the standard response.
+We have uh created another block in the response.
+So order status response we have created another block. Uh there we will be providing it transaction webbook uh It is just said saying that okay this transaction is retried post that he has to check the order status to get the complete information.
+Okay. So when we tell us in case of merchant implementation also you may get a transaction created uh transaction failed webbook but you are always expected to do an order status and see what is if it has been retried because if it is
+transaction transaction status web book We will send that. Okay. We will say that that transaction is retried or not.
+Uh in the order status structure will I get the complete list of all the retry transaction?
+Order status structure. Uh no it will be giving you the latest transaction. It is not split. It is kind of multiple transaction scenario.
+Then in this case if I am retrying it right there will be a second attempt. Then I'll always give second attempt in the order status
+uh because for merchant it will be of pending the transaction as well as order will be pending. We will be we have created another block. Uh let me show the uh order status structure. message. First IDK. Sh. Sorry. Ken you may show the smart convert parallelly maybe it's or you are only fetching
+my my screen sharing is not working I'm waiting for it
+okay sure
+let me join back Fending VBB. We will be giving the latest transaction information and we have also created a new block says additional information to provide all the information regarding this uh retry, retarget or recube. Uh all of these are version controlled. Uh merchant has to pass the version uh greater than uh 0727 that is July 27.
+July 2020. Yeah. 2020. 23 0727 that is version controlled. So let's say if uh he has opted for ret if we tried that mandate for retry I will be providing the information is retried order uh retries done count like how many retries are completed whether I did a technical retry or business retry and how many retries are there in total.
+So Sorry
+I'm I'm not able to hear you.
+Echoing.
+Okay, I'll put myself in mute.
+Okay, so what I was asking is that in In case if it is a not a mandate transaction will the still additional info block come in or it will be only for wherever we have retried or such cases these fields will present in other cases this field itself will not be present.
+Other cases this field itself will not be present.
+Okay. So so wherever this uh field is there it means either it has been retried, reued or removed.
+Retargeted. Yes. Okay.
+Yeah. If if it is retry. Okay. So these are the possible data which is which can be available in that block. So if it is retargeted payment information I will be providing this information. Uh what is the payment link that we have? Okay. What is the link expiry? How many retarget done? Whether it is retargeted or not and what is the link which we used for retargeting. And uh we spoke about It's about and
+retarget that is I was about to spo speak.
+Okay. Okay.
+So this additional information is built for all this in to hold all this information. So retry, retarget and uh recue.
+Okay.
+Uh re also we will show
+uh and the dashboard uh will look something like this. So under smart convert you have conf urator. So in this configurator you can enable or disable this first flag that is mandate enable mandate retry. So if you enable this one we will show for uh two options. One will be technical error and another will be business error. So technical error has like both of them has this common uh uh configuration number of grace days number of attempts initial silent retry after and gap between retries. So number of grace days means until how many days I can able to uh I I should be doing a retry. So we will always uh suggest that uh technical retin but there will be a case that okay merchant okay the the day day means it's not 24 hours from the transaction has been initiated over here the day means the end of that day let's say today is uh 20th Feb. So I will be init if I initiate a mandate execution at now at 6:00 at 12 the end day ends and the grace day also ends over there. So if a merchant executes a mandate at this time then we allow them to go for one more day otherwise it will be a zero day. So we have option of zero day which means only current day retry is allowed. We have option of one day which means okay you can go for one one One more day that is tomorrow also you can go for retry that is for technical error because most uh not all the gateways will be supporting the supporting to use the same notification for multiple days.
+Okay.
+Huh?
+Huh?
+Uh
+correct
+and it failed. How will I will my retry happen? I g the time gap as like 4 hours or something and it has crossed 12:00 that for that particular day. Will the retry happen?
+If if the grace day is zero then retry will not happen.
+Okay.
+Okay.
+So this is number of attempts and this initial retry like after you how many how much time I should be waiting. waiting for that to happen from the the T2 execution and after that let's say I have opted for uh three retries my T2 will happen after 2 hours so 6:00 means 8:00 my T2 will happen after that T3 and T4 will happen at 9:00 and 10:00 respectively provided in all the execution I got the same error response
+okay okay So that is technical uh business retry we have given one more option of selecting the error messages. So like I said okay insufficient balance transaction limit and we have notification not approved also. So all these cases like merchant can opt these cases according to their uh requirement and they can select how many days they want to do for retry and how many attempts and the initial attempt for business business retry I we have to wait for 24 hours because how many retries we do within 24 hours for the use cases of insufficient balance or transaction limit or count exceeded it won't get successful. So for that reason we have to wait for 24 hours and then we have to perform the transaction.
+Uh when not approved
+notification not approved is like uh uh for For the case of uh more than 15k for UPI uh whenever notification is sent customer has to approve that either he has to open the app and approve it or he has to open the link which is provided in the notification and approve it.
+So if the customer not approves that notification thing but it's like notification is sent successfully. So I will be receiving a success response for the notification but the exec will not happen.
+Huh.
+Huh.
+Okay.
+Okay. So after that like for auto revoke as I said earlier uh there is also its configuration like based on the response which we receive know receive from the gateway whether to move to like whether to mark the mandate to revoke or not. I should be receiving the explicit uh uh confirmation. from the explicit consent from the merchant. So that is for uh autoreoke and the third configuration is for retargeting. So before going for the configuration let's I'll explain what retarget does. So uh we have this category right error category. Now let's say uh the insufficient fund or let's say the credit card itself like he has set up a mandate using credit card and his credit limit for the month is exceeded. So in that case even though like how many business retry I do over that mandate for the maximum of 7 days also the chances of getting the balance back or the limit back for that credit card is very less. So for that reason what we will do is we will be sending okay we will call our another system uh smart convert. So that will verify whether the merchant has enabled all these configurations are done or not. So once all these configurations like once all these things are done they will be uh setting a process tracker to retarget those transactions and uh at oiler side okay let since two systems are involved I'll first explain the oiler side information so for oiler side it is kind of external API call which we will do uh okay I I did the execution execution API call I got failure response that failure error code and message category falls under retarget bucket. So now I opted the transaction for retarget. I will first go make a call ex uh sorry external API call for my smart convert system. So if the smart convert system uh accept that order for retarget he will give me the success response. Else he will give me failure response. If I receive a failure response I will mark my transaction as as well as order to failure and send failure webbook to merchant. If I receive a success response from my external system then I will be marking my transaction to failure I will keep my order in pending and I will update my system saying that this order is opted for smart convert that is retarget. So once my order is marked as retarget any sync happening on that transaction the T1 transaction will go to retarget system. We will not go to PG. So we'll go to retarget system. So all the web books okay after that uh webbooks okay we won't receive any webbook receiving also will be moved to retarget system because once I mark my transaction as retargeted I won't accept any of the PG information. So okay that is at side uh at retarget side how it will work is We have the payment page link which is generated in order status. So what they will do at retarget system. So based on the configuration which merchant set okay they he can set uh the based on the ticket size also. Okay only if my execution amount is greater than 10,000 or greater than 5,000 you go for retarget or he can set the amount range and uh he can set how many uh retry attempts like retarget atoms. he has to do and uh same configuration as how we we did for retry. How many like initial time uh gap he has to wait and what will be the gap between each ret retarget and these are the category of retarget errors based on that they have different SMS templates or WhatsApp message templates. So once the order is opted for retargeting uh the retarget system will uh uh use merchants's uh uh SMS templates and other information and he will invoke a WhatsApp message and a SMS message based on the configuration uh to the customer and that SMS message will be having a link that will redirect to our payment page. So once customer is in the payment page he can opt out opt for any of the payment it's it need not be a mandate payment. He can opt for card, UPI, net banking, any of the payment and he can complete the transaction for that month's subscription.
+Okay.
+Okay.
+So,
+how will the merchant get the WhatsApp? Notify the merchants is it?
+No, not we notify the merch. We will notify the customer itself like we will directly send the customer this WhatsApp notification.
+You will you will use number that the execute call or
+uh yes we will use the number which is provided in the execution call. Basically it is like mandate setup call. Whatever mobile number has been used in mandate setup call that we will be using.
+So for the mandate
+sorry for the merchant
+uh what is the status of this mandate transaction? Will it be pending VBB and will they know that this has been returned? target.
+Yes. Uh like how we were sending for retry. Now we will also send the information about retarget. So merchant will be knowing that okay this mandate okay this transaction is retargeted transaction and uh the status of the order okay overall order status will be in pending VBB until all the retries are ex exceeded or one of the retry will move to success. Uh till then the order status will not be moved to success. Sorry. failure. Uh it will be in pending and transaction status. Each and every retries like each and every time the customer loads the payment page tries to make a transaction a new trans if the new transaction is created and if that transaction went to failure we will make keep the transaction status as failure but we won't update the order status.
+Retarget also has retry or it is just one attempt that we send because can use multiple times or right.
+Huh. So we have uh a retry kind of feature in retarget also. So since it's kind of uh let's say uh if someone opens a message and they didn't open the link and the chances of them coming back to the same message and tries to make a payment is very less. So we will try to notify them multiple times and we have kept uh uh like it is completely must based if merchant opts then we will be keeping expiry for each and every link which we'll send let's say the first retry retarget link I will be sending at 6:00 and the second link I supposed to send at 8 7:00 or 8:00 then the first link will get expires at the time of second link will be sent so it's kind of the first link will get expired at 8:00 and the then the second link will be sent or if merchant doesn't want this kind of expiry he can Keep that expiry of all the links same like how muchever time okay the what is the maximum frequency what maximum time which we need to retarget no so that expiry we will keep so that is depends on uh this configuration let's say he wanted for three attempts and each attempts at 6 hours interval which means uh 18 hours we will keep the first expiry of all the links till 18 hours Okay. But then but then of multiple payment would be higher. No.
+Uh no. Uh even if he tries to open all the links like the same same transaction same order it it will be linked to the same order. So multiple successful transaction happening like that chance is very less. So if any one transaction or if the order is success then the PP will not load. the payment page options for that uh link. Uh and we also will not accept it. Like other side also we if the transaction if the order is success we won't accept the second transaction.
+But these late success cases could be auto refunded then there could be process
+late success cases because this is not a mandate register transaction. So over here yeah we can go for late success rate uh success can go for uh uh auto refund. But we are like we will ask them to opt out this uh thing the conflict conflicted case because the order create will happen uh at okay uh today order create will happen the late success uh window there will be uh kept at like 10 minutes or 15 minutes but that is not uh it will it will not be uh sufficient for us because retry it can happen for 24 hours retarget can happen for uh uh few days. So we have opted out this complete uh thing from the late success wall thing late success refund auto refund
+on that Sorry.
+We have this
+agent. Yes. So enable agent assisted is like uh these are for the high ticket size merchants. So let's say uh uh insurance agent is there like uh insurance per month or year subscription is around like more than a lakh then they can go for this agent assisted retarget. There will be another dashboard which will be provided for those merchants. So there the agents will be notified that okay I uh oiler did three retries or retargets for that mandate execution but all three retarget customer didn't open the link or he tried to open the link but he he didn't complete the transaction then the the order or the transaction will be moved to the agent-driven system. So in agent-driven system, they will be calling the customer. They will explain the scenario to the customer over the call and they will give a information of that uh whether they can uh choose the payment links or they they themselves al also can send the payment links to the customer. Uh let me search for a video for it. Uh we have a business video. I'll just search and present that. Where is it? Where is it? Where is it? Where is it? Where is it? Where is it? Where is it? Okay. So, So this is the video we have made for uh merchant onboarding. So this is the first retry case. Okay, the bank server is down. It doesn't tell us that okay whether it's business retry or technical retry. So this is the overall retry that okay bank is down and I I won't I I couldn't able to complete the transaction. So I'm going for a retry So these were like uh the business the same error category can fall under two different use case also let's say the insufficient balance can be we can go for retry for 24 hours if that balance is not uh like top up then we can go for retarget after 24 hours so that feature is also available so I can do three different three retries for 24 hours or for 48 hours to silently execute the mandate. If that doesn't happen, then I'll go for retarget.
+Ah, retarget can go for it.
+And what is the window for rec?
+Rec is within a day. Within a day. So this like uh once he clicks the link which is provided We will be showing the payment page our payment page. So there he can make a payment or he can opt out. So the case of agent driven will come over here. So the agent driven can happen in two ways. Either he can collect that month subscription amount and he can fulfill that the transaction. or he can create a new mandate and he can uh uh completely revoke the older mandate. So both options are available. So in case a new mandate is created then we will be sending the old order id and old mandate information in the new order response order status response. So over here we have another block right previous mandate retarget information. So in this block we will be sending what is the previous mandate ID and what is the previous order ID. So that was uh okay in the if this one comes then this information will not come because that is a fresh transaction. So this this will come in case of a new mandate is set up for the retargeted uh older mandate older order.
+So uh for this customer like this is the previous mandated and this is the previous order ID for that customer.
+Yes. So that information will be sent in the new orders order status and once the new order uh mandate is moved to active or order is getting got charged then we will be revoking the older mandate for that customer. Is there any merchant who is using all the three features retry, retarget, agent, retarget.
+Uh all the three features. Yes, I think so. I'll give the mas in just a second. Um just ask your city. Sorry, I lost your voice.
+No. Will all the three features work seamlessly like how we showed just now in the video?
+Yes. All these have happened like we have the transaction which went to retry then retarget But uh customer like agent driven I'm not sure but we have cases of retry move to retarget and getting successful. Uh I'll present the analytics of that also.
+One question here. So when target to agent in case somebody is using agent retarget also will he be sending the same link that was sent in retarget or he will have to create a new order like how will the the order which was when you initiated it to the retarget system he'll you agent retarget also will have the same order or he he will supposed to create a new order
+okay agent driven also can happen in two ways right one he can fulfill the existing mandate payment so in that case the same link which we sent in the first SMS or WhatsApp to the customer the same link will be sent again uh over there like the only thing is there will kind of assistant who will be available to uh ensure that the payment will be done. Otherwise, if he wanted to opt for a new mandate, then he can create a new order, fresh order and it's kind of a payment form. So the payment form feature we have right so that is integrated over here. So he'll create a new order and he'll generate a new payment link and that will be sent. So over there if a new order has been generated Then the new order will be having the information about old order and old mandate ID.
+So this new order can be a mandate again can be a mandate or it can be a one time also.
+Uh if it is a new order then it should be a mandate because we are uh replacing the existing mandate. If it is one time then it is the older uh order itself like the payment link which we have provided. No the same link will be given again. Okay.
+Okay.
+So Kan like merchants right they will be actually passing for in execution when they are calling our execution API they will be passing mandated execution date. So let's say a merchant has passed mandated execution date of 21st uh at 6:30 p.m. let's say right now he has called that execution and he has passed execution date in EOS of 6:30 21st Feb. So we will be actually when when initiating the recurring transaction right notification will be sent In notification we will send the execution date uh like we will send the execution date to gateway. So when we are trying out the execution it got failed with some technical error. However like merchant has enabled this mandate retry until 2 days or 3 days. So when we initiate like on 21st we have initiated a mandate retry. However again it got failed on 22nd as merchant has set a configuration on dashboard. On 22nd we again try to retry. Then ideally the gateway will reject the transaction that you are paying the execution out of the execution date which you have passed right. So we need to make make sure that merchants like how merchants can like we should not ask even merchants to pass the execution date because you remember right if merchants don't pass execution date we will by default at 25% we will pass the same to gateways so all gateways will
+but all gateways were not accepting this execution date also right so it is that okay few gateways will be accepting this execution date and for them we will be sending it otherwise we won't be sending this execution date to all the gateways
+but n gateways ptm and uh build we will be sending right build
+uh apart from that also we have other gateways available
+hd this retrive for one day for these particular gateways where gateways are accepting this mandated execution Huh? That is like while onboarding we have to educate them that these are the limitations and these are the cases of gateways.
+Okay. And uh this mandate retry or mandate retargeting or autorevoke like uh while apart from enabling on the dashboard like do we need to enable that merchant ID or any config of back end needs to be enabled for that merchant after closing?
+No. Uh only dashboard enablement is enough. Okay.
+Okay.
+And also like the list of error messages uh like it it was not updated like if possible uh like can can you get it updated because uh merchants will be looking into the list of error messages for mandate releases and those those are actually redirecting us to just the check out p of chess pay docs.
+Oh that uh front end this one now the hyperlink of that uh dashboard.
+Okay. that we have asked them to pro update it. We will again verify it.
+Sure.
+Thank you.
+I remember this we are bringing this M notification retray also right like uh uh in one thread pra has mentioned.
+Yes. Yes, we are bringing the notification retray also. Okay. Like like any
+uh it's it the code and everything is available in production. Only thing that we need to add the GSMs. So we have even categorize the error codes. We will uh revisit reverify everything and then we will enable.
+Sure. Thanks. Kan like one out here. So some merchants wants to handle this retry feature from their end itself.
+So they're asking they're asking us to share the list of the error messages and error codes. Is it possible to download this from from somewhere like from dashboard or how can we get this list? As of now, I don't think so it is available for download uh we have the list available in gateway status map table and there also the source subtype of e-manded payment or mandate payment that you can give but uh the whatever we are maintaining no so some gateways We can't okay if some gateways gives us a response and that response has three different fields let's say error code error message and status. So we have to consume all three status all three parameters to uh come to a decision or conclusion. So in that case we will be concatenating the error message part of this GSM.
+Okay. Okay.
+So uh that we won't be actually showing them in uh um order state this order status PGR block or somewhere. So whatever response let's say uh some gateway says uh okay u success as code and uh sorry failure as code and uh status says uh transaction failure and error message says okay transaction failure because of this reason like insufficient balance or something. So what we will do is in our GSM we have only two columns gateway code and gateway message. So we will store failure in gateway code and in gateway message we will concatenate both transaction failed and transaction failed because of insufficient balance. These two parameters we will uh concatenate and we will store it in gateway message. So if you give our GSM dump to the merchant then uh again he has to uh write his own other logic for uh uh handling the other cases like handling uh go inside the GSM uh go inside PGR and uh write logic for each and every gateway.
+Got it.
+Got it. So
+or else he can rely on our just pay error message and error code. In order status we also give justpay error message right uh response code and response message. color huh
+that he can rely on. So in case of retargeting order or retry order we will try to populate the just error code and message not for all the older entries of failure but retry or retarget we try to populate it. So he can rely on that or he can even rely on bank error code and bank error messages. Sure. Thanks. Thanks. Sure. And Danjali, I didn't find the merchant like analytics information. I will search and I'll send it to you.
+Sure. Sure. Sure.
+Yeah.
+Do we have any other uh questions? Sorry, what about enh? uh like at back end side it is available but uh the PP I don't think so it is built for it because there you have to accept two different options of payment because like it it it works as a split transaction. So in split also you can uh send two different payment methods and information. So the similar principle applies here also but uh the front end changes uh will be like more he has to either uh send card information as well as account information. So both has to be collected and then both has to be sent in the request just in case of card and en setup. So that is that is not done actually. I think uh
+I think this will be a good stopping point. Uh any more questions? Maybe we can take it in the next session or maybe we can uh get together oneon one for that.
+Sure. Rahul, do we have a dog?
+Hello. Sorry. Can you repeat?
+Do we have any documentation for all these flows which Gibson just explained right? Is there a way uh is there a place where we can read or visualize things? Is there one place where we have all this information?
+Uh we'll search and we'll send. Meanwhile, I was also creating a document uh uh for this video. I'll share that as well. And uh some videos which u u just shared, I will add that. also in the same dock. Maybe that can help.
+Yeah, sure.
+And Anali uh the merchant list you can check for Hoy Choi and Nova Wellness, they were using both retry and retarget.
+Oh, sure. Sure. Okay.
+Analytics and if you see the dashboard also
+in the smart convert section, we have a smart convert analytics also available. So that analytics uh will be I'll I'll present the screen.
+So uh as of now it's a sandbox merchant uh it is just a dummy data. So in smart convert we have overview of like what the feature is uh uh how are we handling it. Okay. So just to reconfirm if somebody wants the smart convert they can directly go to dashboard and enable it. No backend configuration.
+Huh.
+Okay.
+And then we have configurator. And then we have analytics. So analytics includes both retry as well as retarget analytics.
+So these are the this is a test merchant the mandate test. So it uh the information is zero. I'll uh Uh switch to that merchant and verify once. together. Speech. Speech. Does anyone know the exact spell of this merchant ID? Nova
+I think it's a spell small N. No w Ns. Yeah. Okay. Change first to 20. We tried uh 13 transaction for retry and one success and 388 transaction for retarget out of which 78 successful. So this is an key order when to retry retry failure to success is very less and uh retry failure to retarget the use case which I have explained like single error message can go from uh can perform both action like try also retarget. So retry to retarget and then retarget to retarget failure and success overall success. So I think even Namayatra uses retry model they have good number they like the overall transaction retry is around 44,000 and out of it 13,000 will get successful amount of around 2.45 lakhs and this a retarget Yeah, sure K then we'll explore this from the dashboard.
+Yeah, sure.
+Okay. So, sorry, one last question. Uh, it is not necessary that if a retry is enabled, retarget will happen and if retarget is enabled, retry will happen. No,
+it is not necessary. Both are independent.
+Okay. All three are mutually exclusive. If we want all three to happen, we'll have to enable all three separately.
+Without I can directly go to retarget also.
+Uh without retry you can directly opt for retarget. Recue is like it is completely uh merchant independent. So if he is in workflow we will try to do req but retarget and retry is uh depends on the merchant configuration.
+Do we have configuration for req also or we do it by default for all uh workflow enabled merchants?
+One sec. I don't know how it is a service configuration based enablement. Can you give the config name if you are aware?
+Okay. So, just ask.
+Yeah. One second. Uh I'll paste this in the same thread. Sorry, new chart.
+Uhhuh. Sure.
+It's implicit mandatory Q cut over. Uh it is depends on the gateway and merchant enablement. Okay, sure. I think then we can close this session.
+Thanks. Thanks.
+Thanks, S. It was really helpful. Thanks, Keith. Thanks,

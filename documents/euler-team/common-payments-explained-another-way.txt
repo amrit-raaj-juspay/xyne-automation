@@ -1,0 +1,294 @@
+Context - The video "Parth Part 01.mp4" provides a comprehensive overview of the evolution of transaction systems, from ancient barter systems to modern digital payments. The speaker explains the inherent problems with barter, leading to the standardization of value through coins and eventually currency. This historical journey highlights the shift from bearer tokens to a system where banks maintain a balance for customer funds.
+
+The discussion then moves to the development of checks as a solution for inter-bank transactions, introducing the concept of a clearing house as a central network for trust and standardization between banks. This network facilitates authentication, authorization, and settlement of funds. The transition to digital payments is explained, emphasizing the role of APIs in enabling seamless communication between banking software and networks.
+
+The context also differentiates between regular bank accounts and merchant accounts, introducing the terms acquirer and issuer to define the roles of banks in merchant transactions. The emergence of payment gateways as software solutions for acquirers to handle various payment methods is discussed, leading to the development of payment aggregators that simplify integration for merchants. Finally, the role of payment facilitators (PayFacs) or payment aggregators (PAs) in India is clarified as extensions of acquirers, outsourcing business operations to manage the growing scale of digital transactions.
+
+
+
+Transcript 
+
+
+[00:00:00] Yeah. Okay. Maybe like, let's, let's go back to see what is the oldest thing we remember in terms of a transaction, right? So we were generally like, uh, taught this thing that at older times there used to be a barter system where you have something by any means, like maybe you did farming or whatsoever you acquired some resources, I acquired mine.
+
+[00:00:23] But then we have different necessities and we say that like, okay, I probably like, I have this in excess. I'll give you. You give me something else. And that ultimately became a transaction, right? So that, that was basically about a system. The obvious problem to the system was, see, not every time, whatever you are willing to give me, right?
+
+[00:00:43] It's not something that I would want in written. Uh, maybe that's not my requirement. Then I have to go and find someone else who says that, like, okay, I will give you whatever you need in that. Right? So it's a costly affair ultimately. So. There was a requirement where we say that like, let's actually like, you know, standardize this to say that like, we need a value that, is there some representation where I say that K like, oh, two goats are request to how many cows?
+
+[00:01:09] Something like that. Right? Uh, so that's where I think, uh, probably the first standardization that came into picture. It, it, like probably from the King's time it happened. Buy some sort of coins maybe right? As a, and let, let's say like, okay, like when I go and say them like, here are my two cows. They gimme like five coins.
+
+[00:01:31] Someone then says that, okay, here are my 10 goods. They gimme 10 coins of that. And then we can actually do an exchange or a transaction within some entity to say that like, okay, I give you coins now using this coins, you can actually go and buy somewhere else, something, whatever the vendor is. So that's the physical form of transaction that we go up.
+
+[00:01:51] Back to the old age right now, essentially what happened is, uh, see the, the guys who actually issued the coins, right, let it be Kings or some Department of Kings, uh, they, they didn't maintain a balance as such, like as in like K okay, I tell you saying that KI give you five coins and I write it down saying that like, okay, so there has five some value, right?
+
+[00:02:17] Uh, it was more of a bearer token. Where you say that like, okay, I'm giving you this coin, and this coin itself is a value. If you hold it, it you hold it. If you don't hold it, it's gone. Right? So, so I don't have to prove saying that like, Hey, this fire rupees belongs to me. It's, it was more of like, whoever holds it, that's the value, right?
+
+[00:02:39] So I don't have a balance. If you come with the same five rupees, I'll probably give you back the same amount of five rupees or something equivalent to that right at, at that point of time. So. In the newer form of this, right? It ultimately boiled down to currency, currency, node coins still, still going on, right?
+
+[00:02:56] Instead of kings. Now there are actually banks who does this where you say that like, okay, some currency I deposited, some currency you deposited. They give you cash on on top of the, and we can still transact in terms of cash. So that's cash transaction happening now. Later it comes to, uh, sort of not even a digital, but a better way of doing it because it, it's, think of it as what's the problem in cash handling, right?
+
+[00:03:22] If there are truly like. Yeah. Let's say if your amount is bigger, right? First of all, it can get stolen. Like somebody can just take away your cash, right? Uh, another is if the amount is bigger, then how much cash will you carry? And like, transfer. Like, if you want to transfer it from let's say, like a to Delhi, it's a problem.
+
+[00:03:40] You'll have to take that much of cash there, right? So then came a method of check system, right? Where even, even before going to check probably, right? Like, let's understand that what happened. Uh, the difference, like what happened now after cash, right? So now what happens is when I go to a bank, bank issues cash, that is okay, but now what happens is if I have, if I go to bank and say, that key here is my one lack rupees, right?
+
+[00:04:08] You keep it right. He maintains a balance saying that like, okay, I owe rupees. I don't give you anything else in written. It's just that key if you want to use it any point of time. You can come back to me and I'll give you that money I own. I mean, you own your money, right? I'm just keeping it so I maintain a balance somewhere as a, now think of it as Q1 Bank is there and there are two customers to that bank, and we say that QKI have a balance path, has a balance of a hundred rupees.
+
+[00:04:39] So there has a balance of a hundred rupees, but part wants to transfer 10 rupees to suther and for any reason, right? Like buying a service, let's say. In that case, what I can do is I can go to my bank and say that, Hey, I don't want cash out. Like one, one thing is like, okay, I cash out my 10 rupees, I give it to you.
+
+[00:04:59] And you again go and cash into your bank, right? Your bank as in like same in in your account, the same bank. Now you could ideally do that, but versus simpler method was, yeah, I just go tell to bank and say that like, Hey, can you actually decrease my amount by 10 and like increase his amount by 10. And that's ultimately a transaction, right?
+
+[00:05:18] So that that's how like the balance maintaining theme happened. And on top of that transaction was like just a debit in credit Somewhere you debit somewhere, you credit it's a transaction, this is usual transaction, or this is the whole concept of transaction. If you look at a little bit further, right?
+
+[00:05:38] When there were more than one banks now, so currently we saw that, okay, if there is one bank, that bank, I can go and say that you debit and he'll credit into your customer. That's okay. Think of a case where there are multiple banks, like in, in your city, let's say if there are two banks, right? Then what I have to do is like one customer, oh, let's say sender is actually in bank A and the reserve is in bank B.
+
+[00:06:01] Then this sender has to actually cash out, give it to that guy, he'll cash it into that account. That's how transaction will happen, right? But again, why to do all this again and again, right? How do we do it in a simplified order? So that's where the check were invented See, to to, to enable this, right?
+
+[00:06:18] Ultimately, there has to be some way where the bank says that, okay, because of something, a third party or something, some standardization, right? I actually trust the other bank when he says that, like, okay, I'm decreasing the account there, I can increase, right? There has to be money settlement also. We'll go get into that later, but that trust has to be created, right?
+
+[00:06:41] That I understand this as a bank. What if third guy tomorrow just comes up and says that ki, I am a bank, I'm issuing some something, right? You just go and probably like give it hill credit. That doesn't happen that way, right? So. In the history when this check systems were developed, right? Ultimately a clearing house, which acts as a network for the check system that came into picture that said that like, Hey, I standardized what this check look like.
+
+[00:07:06] What are the original checks? Who are all the banks in the country that can actually say that? Like, Hey, this all can issue the checks to the customer and one check given to any of the other bank, which participates in this check system, right? They have to accept that check. To say that like, okay, you will save me debit, then I'll do the credit part of it, right?
+
+[00:07:27] So that's where like this network formed, which says that, okay, standardized check, everyone has to issue and I give you right to issue the checks and like I will help you do the debit and credit part of that. So now what happens is a person from a bank goes and writes a check to the another person, right in the another bank.
+
+[00:07:46] He goes to that bank and submits that check saying that I want this check to be deposited in that account. Ultimately, what happens is. That bank has to send this check to the original bank, meaning the sender's bank, right? Because now, now what will happen when that check goes to the original bank, right?
+
+[00:08:04] He will know that his customer signature is what? So he'll authenticate key, my customer only signing this check, right? Or is it, is it even his check? That's the first thing he'll do authenticate, right? That's, that's when a big step of, uh, any, any transaction today in a digital form. So that happens. Then it says that like, oh, he's writing a check for 500 rupees, but does he have the balance of 500 rupees?
+
+[00:08:30] So that check, right? And if that check is valid, it says that qk, let me actually deduct 500 rupees from his account. Right. So that is authorization where you say that, okay, okay. I checked, he's my customer, right? Signature. He has a balance. I debited. And then he says the receiver bank saying that, okay, I debited, you can credit.
+
+[00:08:50] I'll give you the money. Right? So this happens. Now how does this happen? Is it's not a messed apology where we say that like every bank, for example, let's say here in this case, bank B received a check, right? Think of it as at the end of the day, he might receive a thousand customers check and those might be a hundred different banks.
+
+[00:09:10] Right. Does he actually go and courier 200 different banks? Probably. No. Right. He goes to one central place and say that like I always have to, I. Deliver all these a hundred checks into one area, right? Or let's say like, let's call it as a clearing house, one quarter, uh, a headquarter, right? Let's say it goes there and then they see that key, like, okay, this will actually go to, it's a typical network, right?
+
+[00:09:36] So you go to one guy, he sends all checks here, and they say that QK, these are a hundred banks. They're distributed to a hundred banks. Now this day, a hundred banks will do authentication authorization. And come with a message to the central guy to say that like, I have debited it successfully. Right? This guy will tell this guy to say that ki like all your hundred banks, man, all these transactions are debited and you can credit, right?
+
+[00:09:59] But you can credit to customer part. But now what? How settlement happens within this two banks, right? The central part, like who was acting as a network, right? He also takes care of settlement between banks. The current settlement, what we were talking about was within a customer, like, okay, I got debited.
+
+[00:10:17] So they gets credited how? Right? So that bank credits, but even before crediting, when your bank credits to you, this bank has to pay him truly right. A money. In that sense. What happens is now the network which was formed in between, right? They say that like, here, let's create an account of banks. So it's a bank account of banks.
+
+[00:10:37] Where he has saying that Q-H-D-F-C has this much money, SBI has this much money. Now let's assume that Q-H-D-F-C was supposed to, at the end of the day, like everyone aggregated, if HDFC owes thousand rupees to the SBI right in this bank account, he goes and does like thousand minus in HDFC and SBI plus a hundred and thousand in uh, SBI.
+
+[00:11:00] So that's how the bank settlement works and once that is done. Like he can actually take money to say that. Like, okay, I've got money in this account. I'll actually deliver it to the customer. So that's how the settlement works right now. This is a check system. The important part was I. It was not a messed top apology where every bank was actually sending the checks to hundred different banks.
+
+[00:11:22] It was still like, people have to talk to one guy and this guy ensure saying that like, I talk to a hundred guys, get answer and then give you back. Right? So everyone actually integrated only one guy, he, I get details from this guy, I give details to that guy so that I don't worry about tomorrow if a new bank gets added.
+
+[00:11:42] Right. Then all those existing hundred people doesn't worry saying that I'll have to do some new integration. That hundred will just integrate to the network and everyone will work as it is. Right? So that's the, that's the beauty of network as I, and they, they basically solve the communication and also the money movement ultimately.
+
+[00:12:00] And then it also becomes a trust network in a way, technically. So what happens is, let's say. Let's, let's assume that, okay, like your check was gone to this bank, right? That bank owed you money, but overnight something happens and that banks just get sued or something, some runaway kind of happens, right?
+
+[00:12:22] Then who will get money as a, because this guy actually. So debit happened, right? And then this guy also credited something. Ideally, like they'll not credit once this settlement doesn't happen in this system, but if you look at the digital world where the payment has to happen and the goods are supposed to be delivered now, right?
+
+[00:12:40] In that case, generally it could be that like before the actual money is moved, right, the goods are actually delivered, the service is delivered, right? In that case, if that bank goes off, who pays the money? The network also takes care of that part. They have their own insurance and they ask them to submit money here to say that, like, I'll ensure that if I give you a promise key, you'll get your money, you'll get your money so that goods can be delivered.
+
+[00:13:05] So network solves that portion a bit, right? Um, now this, were, this, were still a check system, but if you truly move to the digital system, right, as a and in that network. It's, it's all now API based rather than check based where all the banks are technically connected to the network. Network is, again, one big software running here somewhere, and then bank software connect to those network and they say that ki okay, he wants to make a payment, right?
+
+[00:13:33] Let's, let's think of it as some sort of NFT or MPS payment, right? Where user goes to his bank cap. First thing he proves saying that by logging in or a transaction password, he proves saying that like, I am the right guy. So he does the authentication. Second thing he says that, okay, I want to transfer it to some customer off this particular bank.
+
+[00:13:55] Right? But he says, amount I want to transfer 500. So bank sees that QK 500, you have the balance. He authorizes and he debits, right? So that also happened as now he tells network to say that like, Hey, I debited. Now this telling, right? This is by A-P-I-A-P-I, as in it's a technical term, but in a, when software wants to talk to another software, right?
+
+[00:14:17] The way it talks it like, that's called an API in technical terms, right? So this software is just telling, saying that, okay, I did authentication, I did authorization. Now you go and just credit. So it tells network, and network tells that bank like, okay, like I can actually, you can credit money to the customer, right?
+
+[00:14:36] Between settlements between banks, what will happen is, again, same fund has old, this network will hold bank of bank accounts off banks where it says that KI Igo, at the end of the day, this is much SDFC owes to SBI. So let me minus here and do plus here. So that's how settlement takes care of, right? So there's three parts of a transaction where you see authentication, authorization, and settlement.
+
+[00:15:00] These are the three general parts for a transaction. Uh. In any form, even in check, even in digital, right? Authentication happens. Authorization happens, which is a debit, and the settlement happens, which is ultimately the credit to the guy. So till now, what we understood was now there are, there are banks, right?
+
+[00:15:20] Uh, banks say there is a network to just enable how do different banks talks to each other and how money moves between banks, right? So there's two parties now. And, and the customer is likely, like whoever has the bank account in those bank accounts are your customer right? Now what happens is if you, if you look at this sort of payments, right?
+
+[00:15:43] As a, like, isn't that as simple as like, oh, even having a bank account can actually do a digital transaction, right? If bank gives you this as a, but think of it as a business. See, in older time if you have a business, right? Business can also create a bank account in a bank. So he has a bank account now.
+
+[00:16:01] Ideally when a customer is actually sending it to a business, right? They can actually move money. Same like sending it to it. There is no difference me sending it to you or I am sending it to Amazon. Flip card. Right. Anyway, because you both have bank accounts. If I have the destination details, I can just send money.
+
+[00:16:19] Right? So that's, that's valid as well. Like earlier, maybe before few years, right? This sort of payments are actually happening like that. Now. Now what happens is if you go back to, I'll again take you to the flashback Torah. Sure. Ask to write more. Oh, do you want me to write esa? What? No, no, it's fine. Sure.
+
+[00:16:43] It's okay. Yeah. Okay. T maybe tke. Maybe in the actual version we can see how do we write, but there's more of explaining him like, okay. How the story and use the board, you ha ha. Sure, sure. Okay. So. Hmm. If we go back, right, like, okay, why were the merchants seem, okay, t let's go back to a problem. When the cards were invented, right?
+
+[00:17:09] Banks had a check system where you say that like, okay, I give you, I go to a restaurant. Restaurant Bill comes as like, let's say 2000 rupees. I write a check to the customer and I go off. Right Now this is again like the elevated society at that point of time. Who merchant also trusts saying that key, his check won't be bounced.
+
+[00:17:28] Chea. Right? And then he says that, fine, I trust you. I will go back to my bank and get it deposited and get your money done. As a so actual system was working like this. One fine day. This guy who is anyways like, um, a wealthy person, right? He goes to a, a restaurant and he forgets his checkbook. And now at that point of time he thinks saying that like.
+
+[00:17:54] Why for every transaction, right? I have to carry a checkbook and give you a check to say that qk, this much transaction rupees you go and charge. Right? It should be such a way that key, like I carry a small thing, one thing across transactions, meaning checks were something that was dedicated, a single leaf of check, right?
+
+[00:18:14] That is dedicated for a transaction. So I have to like keep writing that and issue different, different, for different transactions. So if I. Do 10 transactions, I have to write 10 checks, right? Versus this guy gets an idea to say that there has to be one thing that I carry always a smaller thing, which is easy to carry, right?
+
+[00:18:32] But if I show you that, then you can actually say that like a transaction can happen by that. Okay? Meaning like a money should move or you should get your money. If I show you this as a, and that's where the cards were formed. So that's actually the story of Diner's Card, where the very first card in the world, right?
+
+[00:18:51] So. Uh, so what they did was ultimately they created this card, which has imposing right, which has a card number and all, and, uh, they, they basically like merchants who are some businesses, right? Who, so they actually like take that card and there were a card imprints. So they put a card when you visit them, right?
+
+[00:19:13] They put a card and they like do as a, with a carbon copy paper on top of that. And that's how you have that the card was actually there. Now that print, they take it to your bank, like their bank, and say that like, see, your customer came in with your card, right? And you should now pay me this much as a, here is a proof that he came in.
+
+[00:19:32] So that's ultimately a way of authenticating. But that print was a proof key, or customer came in authentication. It was also like, because it was an elevated, uh, society, right? As a, like, they were generally running on credit, so that doesn't get bounced. So like the authorization will happen, they'll have money and this merchant will ultimately get cash out of it or, or in their bank account.
+
+[00:19:54] Right now, if you look at this particular example, right, that's where the merchant were from. How is merchant different than a regular customer now? So the bank, which was giving an account to the business, right? He had this extra things where he says that like, Hey, I have to go to that merchant guy, give him the card.
+
+[00:20:16] Imprinter saying that, Kio, you take it right? Uh, you, whenever my customer comes, you do this extra SOP, and then you come to me. I will get you money as a. So I have to give you imprinter. I'll have to also charge you for this service, right? How will I get money from you? Those things have to be figured out as a, so these were some things extra that banks had to do for a particular business, right?
+
+[00:20:40] But in a regular check thing, right? They didn't have to do anything as a, so there was no extra thing as a, but because banks got an extra responsibility skill, like, oh, I have to keep doing this. Thing for every business, right? Whoever I onboard them onto discard world, right? Then we had to call this business something saying that, what is this business?
+
+[00:21:02] And they call that as a acquirer to say that like, oh, now there is a difference between a regular customer whom you get a bank account, but there is also a difference between who gets a card and then this imprinter, and then the whole MDR thing, how the money is exchanged or the billing happens, and all those things.
+
+[00:21:20] Right? So I am the acquirer. If I go to that particular merchant or business and say that like, I am giving you this service, I'll bill you for that, right? I become your acquirer. You become a merchant, okay? So that's how merchant and a regular guy, which is a person, they were differentiated, right? So that now that concept of acquirer is like til date going on and on to say that like, oh, why is merchant, in fact, see when UPI started.
+
+[00:21:48] Yeah, technically, like if you look at the vendors, let's say like if you look at some small shop here, he can actually go to his B map and just get a QR and paste it right as a, they don't have to be merchant. That will, that was like a person only, how did that matter? They know KYC, nothing. They have a bank account.
+
+[00:22:06] You do this, it works, right? It was actually like that only even earlier as a, but all these things gets, uh, complicated because the extra things have to be delivered and money has to be. God for that, right? So that extra services, what they give to merchant, that was ultimately creating a merchant as an entity and an acquirer as an entity.
+
+[00:22:28] So that's where these two terminologies came in. Uh, now because we had something as acquirer, we now also tend to leverage that saying that Ki Igo, who ensures what business he does, et cetera, is he like the money he is getting from customer, is it involved in some money laundering or something. So we just give those liabilities to the acquirer saying that whenever you on onboard him as a merchant, because you are earning out of him, you do all those.
+
+[00:22:53] Checks as I, and that's how world has moved towards that key has acquirer concept is good. And we want to as like, keep going on that as I like. So merchant is now differentiated from a regular person or ideally it was just a two bank account, money going from one to another. Right? So that's how we have merchant and acquirers, uh, where it's person to person.
+
+[00:23:16] Just moving from one bank account to another. It's from person to merchant. The nuances. The merchants bank account does things that helps the merchant accept payments easily. Those pieces also get involved this, correct? Yes. Ultimately, money will move from one bank account to another only. It's still a typical transaction, but, but generally the bank who is giving account to the merchants, right, they, they'll end up giving more services to the business because.
+
+[00:23:47] Even before the e-commerce started, right? The online digital payments started, I mean, not digital. The online world started the website and apps before that. You see this card where, what I was saying, you that imprinter thing. Right after that it started saying that. Okay. Okay. Now there is some sort of like a machine that a merchant gets and you can actually swipe your card.
+
+[00:24:07] So earlier card was actually by printing, it was all manual. Then the card became advanced and said that like, oh, now you, you have a machine that you swipe a card and transaction will happen, right? So all those, now who gives that machine to the merchant? Right? So those all liabilities fall under acquirer.
+
+[00:24:25] Like, I'll give you those machines for this machine. I'll build you. So for that, he'll negotiate on M-D-R-M-D-R was just a way to say that. How do I build you? How do I charge you? But, but that's how this were formed, right? So that's why acquirer was needed and the merchant has something different than a regular person was needed.
+
+[00:24:44] So that's how now we understand terminologies in terms of like, we understand what's a regular person, customer. We understand bank, we understand merchant, we understand acquirer. Right now, if you look at it, um, see when, when acquirers were giving this. Um, when this happened, right? For example, the pause machine came into picture where you can swipe your cards.
+
+[00:25:09] At that point of time, there were multiple parties who can give you that to say that like, here, take my pause machine. It is somehow technically better or something extra. Maybe look and feel of that is better, right? So there were people who compete saying that like, okay, I build a device, I build the software.
+
+[00:25:28] Why don't you use me as a right. So. So that eventually become the gateway where it says that acquirer as in like, I am a business, I'm supposed to take care of the KYC, the money settlement, the customer acquisition part, and all right. But ultimately, like I, as a bank, I am not well versed to create a pause machine and say that like, here is a software inside that which can actually do a swipe of card and take your payment.
+
+[00:25:56] Right. So you wanted some tech players there. Now these tech players were ideally like not something that the network understand network said that I only understand banks because I'm a network of banks, right? And some bank is actually saying that like, oh, I go and do all this thing with merchants, so I'm the acquirer, right?
+
+[00:26:13] Just a name. But I'm the acquirer, but I'm not well versed with the technology who will power the technology of me as a, so that happened as, and that was being called as a gateway. A payment gateway. So when you hear about a payment gateway is just a software to the acquirer. Okay? So ultimately a merchant gets acquired by the acquirer to say that Ki Igo, we will do the business and I will charge you, I will give you the money.
+
+[00:26:41] Here is my software, which they, an acquirer can have multiple gateways and they say that can like, okay, you use this for some gateway or, or some for some business merchant. You can actually give an acquiring of something. I mean, sorry, the gateway of something else to say that like, oh, here is a, and in the current context, maybe it is like, oh, here is a pine labs, uh, this thing for you.
+
+[00:27:04] Pause mission for you to someone else. I might say like, here is a cash freeze, uh, pause mission for you. Right? So that, those are different gateways that net, I mean, acquirers generally use. Now. Now what? Okay, so let's understand this because this will get expanded. And like I said, so ultimately I think we have banks here, right?
+
+[00:27:26] But because there were multiple banks, right? SDFC, let's say SBI, and then I-C-I-C-I, things like that, how do they all talk to each other? Was by networks. Networks actually like did saying that Q Visa is there. Then I actually connect to all of them so that when this guy actually talks to this guy, right?
+
+[00:27:48] He only talks to me and he goes on behalf of me to talk to him and then vice versa. So that's how like networks were actually aggregating or like orchestrating all the banks. Now this line was actually not even when now. If you see this, right, when I say visa, that's mostly a network for card instrument, right?
+
+[00:28:09] But you can think of it as the earlier example I gave you was actually a clearing house that is nothing but an A CH, right? Visa, a clearing house. This also has connection to all banks, right? But this is a different payment method. Like this is for by check saying that like, okay, I, in my network or in my payment form, you issue a check, and then I'll take the checks to them.
+
+[00:28:32] So this is more digital, this like as a clearing houses more onto like check system. Then you have any F-T-I-M-P-S, all those sort of things, right? You can actually IMPS, or maybe the latest is UPI, where you can do all this and these are again, like connected to that part. So whatever payment forms are there, you do that.
+
+[00:28:53] Now, payment on this wrapper, right there was payment gateways. So payment gateways, as I said, they were the software for the acquirers. So technically if you see, like ideally see when a transaction is happening from a customer to the merchant, one of the bank, let's say like, okay, merchant has an account here and a customer has an account here.
+
+[00:29:15] So he is taking a form of acquirer here and he is taking a form of issuer. Issuer is just a terminology to say that who is the customer's bank, right? So only the terminologies, but ultimately a bank account to the merchant, a bank account to the customer, right? Now this acquirer who gave you this, right, said like he also gave a software for the merchant to say that like, okay, talk to this software for taking a payment, right?
+
+[00:29:41] It could be in post form or in today's world, it was actually a website form where you can say that, KI go from this website, you direct redirect it to my page. I'll take the card details and then take a payment and tell you saying that this is how. So the speech is where the software, so what happened is.
+
+[00:29:58] Ultimately, let's say like they, they said that key, like, okay, for example, let's say like current example is pay you is a pg, right? Pay. You can say that key like, okay, I support card payments, right? For this. A particular thing, ideally. See, think of it as like, okay, when it was actually, okay, let's say a PG is there, right?
+
+[00:30:22] If a PG is actually doing one sort of payment method, like only cards, a PG will actually do this. For example, pay you pay. You will say that Ki like, oh, I have a connection with Visa. I also have a connection with MasterCard, right? So this is what I am aggregating on. So PG becomes a wrapper on top of network.
+
+[00:30:43] It's still a software, but it says that like I support all the networks because someone has to talk to all the networks. Right? So PG does that for you as a like card. May I talk to this guy? It could be someone, another pg. Let's say like for example, just pay as a pg, which is yes, B, right? That actually talks to UPI switch.
+
+[00:31:04] This UPI switch also could be ideally multiple. And that says that like I am the UPI switch so that that becomes a PG ultimately. Then what happens is, now think of it as a merchant ki like, oh, if some customer is coming with the card, some customer is coming with a QR to say that I want to do UPI, some might be coming with some, another payment method.
+
+[00:31:24] Like, okay, maybe some way of, let's say that check is also there just for an argument, right? Then merchant has to still do all those complications. If card is there, then go to this pg. If UPI is there, then go to this pg. Right? Then came aggregators, which are ultimately ps. So it, it would still be the stake of the banks, right?
+
+[00:31:48] The acquire should be able to support any payment method that comes, correct. They should, uh, be integrated with different fees. That's very well correct. So, so what happens is still, let's assume that like this is all actually who is there, right? So in a, in a customer or in, in this payment journey, right?
+
+[00:32:09] Let's understand that there is a merchant. Right, which is ultimately having a bank account. And who gave this? This? The acquirer who gave the bank account. Then there is a customer who gave this bank account, we call it as issuer. Right? And there is this network. This network could be like something as Visa.
+
+[00:32:29] If it's a Visa card, it could be MasterCard or it could be UPI, right? Which is NPCI again. So. These people talk via this network. So these are the only true entities who will actually do your things right? But now if you look at gateways, they are a software that just says that like, Hey, this could be multiple networks, truly.
+
+[00:32:51] So this has to happen ultimately, right, to handle this scenario, right? Gateway said that like, let me write it for all gateways for a particular payment method, right? Then it was natural that they said that Ki Igo, but my merchant wants multiple things, so acquirer will ask this software provider. To say that like, can you actually not put in, you know, net banking support?
+
+[00:33:15] Also, can you put in UPI support also? Right? So ultimately they become aggregators. So let's not even call, see this term right as a, like, forget this term as of now. So this pgs are actually doing all those for acquirers. So PG as a software, they say that KI I, acquirer has asked me to integrate all this different payment method.
+
+[00:33:35] I'll do that. So right now it's only banks. Then there is a network. Two banks, there is a network and the software of this particular bank to which actually merchant will talk, right? Because merchant will say that key customer has come to me. If he is physical, how do we talk to a gateway? It is like the pause machine belongs to that payment gateway, which is a software of that particular require.
+
+[00:33:57] If it's a website. He will have an endpoint and an API to say that like, okay, from this API merchant can call to payment gateway and that gateway will take care of it. That that gateway is representing acquirer again. Right? So these are the only entities can who are critical or who can actually make your transaction go through.
+
+[00:34:16] You don't need truly anything else, right? In a, in a most basic scenario. Now. Now what happens is, like, think of it as, okay. So this acquirers, right? They are ultimately banks. They are, see, banks are actually into the business of money movement, right? They cannot scale. So when probably as like in, after 2000 and all right, when they actually, the.com boom happened, right?
+
+[00:34:46] Where so many businesses came into essence, software companies came up and uh, so many businesses were having their own website and they wanted to say that like. I accept payments. Right? So now banks were not, banks were truly as in that scale, they were like lesser, right? To say that like, oh, I cannot handle this sort of scale.
+
+[00:35:04] Scale as in like too many people coming to me and asking, saying that key I need bank account is okay, opening bank account. That was sort sorted. But the operations of. As a acquirer, right? That part where we say that like, oh, you gimme the software, you do my K-Y-C-A-M-L, all those things. Plus like if something goes wrong, who will gimme that support saying that, oh, this software is not working.
+
+[00:35:30] This thing is not working. Right? Those things, so that acquiring liability, right? It was like merchants are, or banks are not able to scale the way merchants remanded, right? It's just too much. So they wanted to outsource this to someone and say that like, Hey. I dictate the rules. This is, these are my policies.
+
+[00:35:49] You do all these checks, right? But on behalf of me, can someone take care of like onboarding a merchant where you say that key, okay, you talk to him, you only give them, uh, customer support. You only settle your money. I'll just give it to you. You settle the money to them, right? You give pricing to them. So they were ultimately called SPFX.
+
+[00:36:10] So PFX, this is a international term. In India, they are actually called as PAs, indeed as a right. So these people are the one now who are saying that ki I am just working on behalf of an acquirer to say that ki like truly on paper, he's the guy who has done your KYC. But I am helping him out to say that.
+
+[00:36:35] Can I go? I did your all based on what he said to me. I did all the checks and I'm providing you an account. But account was ultimately with this guy only. Money will come in the acquirer's bank only. Right? So that's, that's the thing. Like this guy is now saying that like, I give you pricing, I give you customer support, I do your onboarding, and I give you the money also at the end of the day.
+
+[00:36:59] But this is all on behalf of acquirer. So this guy is nothing but an extension of acquirer to say that like, Hey, something that I was not able to do, I'm just outsourcing it. Right? So truly in a transaction. There is no pay effect. It's only acquirer. But the way acquirers outsource the software part, and we call it as pg, they also outsource the business operations part.
+
+[00:37:25] And they called it as in PEX or PAs in India. Right? So that, yeah, so that, that happened. So this is what the PAs are ultimately. Now, if you, if you look at the PAs, right, how naturally these people evolved was like. They were saying, I'm doing it for one particular bank as an outsource entity. Right? But why should I be exclusive to them?
+
+[00:37:49] I will also do it for this guy, right? Some other bank. So if they are in market two course, let's say SDFC and SBI, then they'll say any anyways. I do it for SDFC, the same process, only, almost similar process. If I do it for SBA also, right? Then maybe like I can give a better service to my customer saying that like, okay, if you are this sort of merchant.
+
+[00:38:11] And this acquirer is charging more ultimately to even me, and then I charge you more. Eventually this acquirer is better to say that key, like it's actually his domain where he can give me a better rate. So I, I open your account with him rather than on him. Right? So that aggregation happens. So today, if you actually look at, for example, let's say if you consider pay as an acquirer or pay as a pay FAC or PA in India, right?
+
+[00:38:37] It is not necessary that he'll be only working with B acquirer. He is working for multiple acquirers there as a, and sometimes in a practical scenario, what happens is when a merchant actually goes, gets service from the payer, right? They even hide saying that key. You don't have to get in into who your acquirer is.
+
+[00:38:56] Ultimately they are like, like you just worry about me. I am your customer facing, right? I am. You face, me and pj. I might actually like. You know, say that like I onboarded in your two or two this thing. But then I say like a transaction might go to this acquirer also and this acquirer also. So I might be, as a pay, I might be splitting it to multiple things.
+
+[00:39:19] So eventually I'll get your half money here and half money here. But end the end of the day, I will get from both accounts, I'll get money and I'll give you in one account. So that also happens, but. Fundamentally, what we have to understand is these are bank providers, right? The merchant acquirer, we know like, uh, it's just a, again, a bank only, but just a form of saying that like why you are merchant versus why you are a person.
+
+[00:39:44] That liability I take networks, are actually solving the problem of talking multiple banks and money movement. Pgs are the software pay effects or PAs are actually the extension of acquirers to say that like the business operations are now outsourced to them. These are the things that actually goes through a transaction journey right now.
+
+[00:40:07] On top of they say what happened is, again, uh, if we go to practicality here, if you have examples like, okay, pay is there, then raise pay is there, then phone pay is there, things like that. Right? Now what happens is. Merchant again. See, think of it as like phone pay is okay. Some merchants believe that, okay, phone pay is better in UPI, right?
+
+[00:40:30] It gives me the UP ID or, or the MID for UPI. But something like I said, like Build Desk could be there, which like Build Desk is doing an amazing job for the net banking sort ofs. Uh, transactions, like when we talked about NFD, right? So net banking. So if you want to accept net banking payments, right?
+
+[00:40:50] Generally merchants will choose to go with SK as a, like you give me an acquirer ID and then I can actually do that. So, okay. For various reasons, merchant could see that, okay, I want to work with multiple payment factors, meaning multiple acquire is there, but multiple payment aggregators I want to work with.
+
+[00:41:09] So in this case, what happens is. Merchant ultimately has to, let's say like here, for example, if you say flip card, right? Flip card has to integrate this API. He has to also integrate this. API has to also integrate this A P. If he has to work, he wants to work with three of them. Right? Now, this is a practical thing that will happen.
+
+[00:41:31] So if you actually look from the right to left, right? Generally, all these people were solving for that network says that like. The left side of me shouldn't, you know, talk to all these things. You only talk to me. So I aggregate. I become a network. This guy also like created multiple layers. So he say he actually aggregates again.
+
+[00:41:52] He says that, okay, I can actually do this pipeline for you. Then there is another thing now comes into picture, which is orchestration. So orchestration is again the guy, he says that, oh, okay. Why do you have to do all this? Forget doing all this. Right. So think of it as there is something called a express checkout of JPay.
+
+[00:42:12] He actually does this as a software and then we say Merchant key. You only do this. Now. He is actually the orchestration. Basically, he's again, becoming a network of PAs. You say that all the complexities of. Uh, talking to multiple people and all. I'll take care of it. You only talk, talk to me. I'll, I will do those all technical integrations on that behalf.
+
+[00:42:35] Right? So that is just a network of PAs. So they will have, now, now if you actually, let's take an example. After this understanding, let's, a customer comes to and gives his card details, right? This flip card goes to something like an orchestrator of just pay, right? Like express checkout. Says that like, Hey, here is my card details.
+
+[00:42:58] I want to, okay, here is my card details. It says to flip card. This guy says that ki Hey, here is a card detail and I want you to charge 500 rupees to this guy. This person might go to pay you and say that here is the card details and I want you to charge. 500. This goes to, let's say like again to pay you, um, to another pg.
+
+[00:43:17] This could be in-house also, or it could be external also. Like generally what happens is the person who is here, right, they tend to create this service also, this people also tend to create this service also. So there is an overlap as so now. Now you can think of it as like if you understand these entities are different, right?
+
+[00:43:36] We can imagine saying that they're playing the same role again. Well, um, they're just playing different role, but it's truly the same entity. So they pay internally route to the po and then it goes to the, if this card is off Visa, it goes to the Visa saying that I want to charge 500 Visa, identifies that this card is off SBI bank.
+
+[00:43:55] So let me, uh, in case this case, I-C-I-C-A bank, so it actually goes to I-C-I-C-A bank and says that I want to charge you 500 rupees right now. SBI bank is, or all this, I-C-I-C-A bank is supposed to do. Three things, right? Ultimately, eventually three things will happen. We talked about, one is like authentication, right?
+
+[00:44:15] Where he has to verify that, Hey, you are getting me card details, but how do I verify that this guy is my, my customer is actually saying that, like, charge 500 out of this. So not getting into too much details, but now what will happen is you, if you have transaction digitally, like. You would know that there is an OTP flow that happens, right?
+
+[00:44:38] He sends you an OTP and he says that, can you get me? He again tells flip card, can you get me an OTP? Right? So here again, like OTP comes, he says that, oh wow, I sent, I knew the mobile number of customer, I sent a random number to that mobile number, and if same mobile, same random number, if you are able to produce.
+
+[00:44:57] Then I understand that that mobile number is present in a transaction, then I understand that that customer is present in a transaction. So that's how we verify, seeing that my customer in the check we were signing, right, he was understanding the signature, but now he understands this OTP, my customer is there.
+
+[00:45:14] So authentication is taken care of. The charge was for 500 rupees. So that 500 rupees, he checks saying that, oh, do uh, do my customer have a balance? If he has a balance, he debits. Yeah, that's the authorization he does, right? And I, and when that success message ultimately travels to this guy flip card saying that like, Hey, the odds is successful, right?
+
+[00:45:38] He delivers the service to the customer. Now, at the end of the day, what happens is at the end of the day, this network, right, who saw the money movement, he sees that key ultimately like, okay, this customer was paying, let's assume there is only one transaction in this particular day. So he understands saying that key, like, okay, he, this guy debited 500 rupees and ultimately the merchant was actually, the flipkart's merchant was actually, so the receiving party was HDFC.
+
+[00:46:08] So let me go to, so remember our bank accounts where accounts was of HDFC and some I-C-I-C-I, right? They open it. So if this has, let's say like one Legg rupees, and this also has one leg rupees, right? What he does is he does here plus a hundred here, minus a hundred, and that's how the money is moved. So this is a regular, typical transactional journey and that, and that is basically called settlement.
+
+[00:46:39] This is the transaction journey. Yes.
+
+[00:46:56] Cool. So basically for a transaction to actually happen, you just need to be acquire in the network to be there. Correct. Acquire a issuer and network. The only core parts, meaning no ac. Okay. When we say acquire A and network, right, meaning key two banks account. Ideally it could be same bank and two different accounts in that, but let's assume that there are multiple banks, so two banks are needed and to make a communication possible between two banks when network is needed.
+
+[00:47:27] These are the only. And it is this, a must in the payment was easier. Yes. At scale we have other entities like Fiji PFA Market, correct? Yes. And irrespective of what all are involved or the three things that happened or the authorizing treatment, that doesnt change, correct? Yes. Okay. You'll find that three things happening in across all the payment methods, like any payment methods, be it digital or even in the physical world.
+
+[00:47:58] Where you go and distribute a check or maybe like even at that point where you actually cashed out and cashed in. So that also has the same mechanism, right? Hmm. The good was it is for sort. Nah, this is, so we understood the major entities. Now we haven't gone into details as in like what orchestration does more and all things like that, but I, I think like.
+
+[00:48:28] If you understand the entities fundamentally right, then the picture is very clear. Yes. Like, okay, what are they actually solving? Right. What was also thinking when you were explaining like if we have to do it like episode, sorry. So first we introduce what, uh, easy. This is a good framer. We can convert it to good video and then we can, okay, now all the entities are clear.
+
+[00:48:51] Now three main things that need to happen. Authentication and author means. We can have one dedicated video that goes into the depth of that aspect link. And then we can go more into, okay, how did the pgs also like each of these entities, what all does an orchestra does? What all does, the play factors, all those things.
+
+[00:49:11] And the main thing that comes across us, it is to handle that complexity, right? Yeah. So how it has become complex and what complexity, each of the things. That way we can keep building on this. Yes. But it's good. I will do a thing maybe, uh, so I will watch it again, collate everything and maybe come up with topics that we can do ha, for the episodes.
+
+[00:49:35] Sure. And then we'll do the record these and keep the material so that we pick it up for one, one video after that, that works. Sure, sure. Wednesday weekend, Hong, we can generally, I say like, I don't know, generally when do you leave? Most of the time we are free after evening and do it in the Sure. Okay.
+
+[00:50:01] What, uh, how we can start restaurant. So this was casual, right? I said like, do we want to do it this way? Like what is it? Because right now we didn't have any, uh, for me. I see. I'm not going to post this anywhere or do anything. I recorded it only because I can watch later and we can convert this transcripts.
+
+[00:50:22] It can be used for making the proper script hands. We do it in this fashion week. In fact require call more people so that more questions come up and sure. Each like whatever I correct, I think. So if you are anyways understanding payments right then this. Then this is something that like, okay, you might not have doubts on.
+
+[00:50:43] Yeah. But maybe we can call people who are new to payments. They may have more questions. Huh. And then we have to probably, our goal should be like, like he or she should be understanding after this like, oh, what are these all terminologist, what is happening in payments, ultimately. Right, right. That's what I said.
+
+[00:51:03] That would be validation. Yeah. As if someone likes that. Understands, yeah. I have some design folks in my team, I can call them also for the next thing. And that we keep doing these kind of shoots. Ah, as in when, like I'll just keep collecting what to talk for sure. Next episodes. And we will do these shoots here and apparently we start working on making them into Correct, correct.
+
+[00:51:24] Sure, sure. So next, maybe we can go into details about this also, uh, if you further wrestle like author, so generally like this is called processing in. But this is as a settlement. So two parts. There's like first mates, a zoomed version of this, and this also has like clearing and settlement two parts to it, but I just called it a settlement.
+
+[00:51:48] So yeah. Cool. Sure. And let you know. Yes.
+
+

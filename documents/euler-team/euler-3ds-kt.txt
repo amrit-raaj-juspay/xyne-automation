@@ -1,0 +1,217 @@
+# 3DS 2.0 Knowledge Transfer Guide
+
+• **3DS 2.0 Protocol Overview**: Explains the migration from 3DS 1.0 to 3DS 2.0 for enhanced card transaction security, requiring additional device and browser information collection while maintaining the same user experience (no changes for customers during OTP flow).
+
+• **Configuration & Gateway Management**: Covers gateway-level and card brand-specific configurations for enabling 3DS 2.0, including specific requirements for different payment gateways (PayU S2S flag migration, Razorpay JSON v2 integration, Cybersource enrollment APIs, and PTM automated handling).
+
+• **Technical Implementation & Device Collection**: Details the V2 TXNS device information URL that collects browser data before redirecting to pay start URL, handling of device parameters for different gateways, SDK vs non-SDK flows, and integration requirements for merchants wanting native OTP experiences.
+
+---
+
+the onboarding configs to be enabled from our end.
+This seems fine
+and also
+uh DOTP support that will complete whether it's
+features associated with uh 3DS like will it work with this these these flows
+and SDK like payu has given an SDK whether we are going with that or cyber source also I know gave an SDK are we doing that changes or it's just uh whatever remain
+like what all changes we have to do in that case merchant comes up with that requirement those things also.
+Sure.
+Sure. Let's start. Yeah.
+Yeah. Okay. You can take it forward.
+Uh so uh we have a few configs. First of all, I'll start with those. And we have uh two levels of configs. One is gateway level and then we have gateway and then specific to card brands. So I'll just share the config name in the Sure. Uh Adnab can we start with the uh basics itself?
+One is uh this one having the gateway name. So this will basically take care of all the card brand transactions that is supported via that gateway. And then we also have another one which specifies the underscore gateway and then the card brand also. I'll share that also. So we can check in sandbox or in production. We have a few gateways which are live with this. Can we start with the basics? What is 3DS 2.2?
+Yeah. So these are the two configs that we have to enable. This is PG- wise and then card brand wise. Then coming to flow-wise uh normally for card transactions we would get the TXNS and we would get the pay start URL which we load and we redirect to the ACS page of the bank. Instead here we will give a new URL uh which is like the device collection URL. This is basically to capture the browser data. That URL will capture all the browser information, the device information and post collecting that it redirects to the pay start URL and the bank page loads. So instead of the V2 pay URL what uh we'll give is this one. Yeah. So this URL I posted in the chat. So this URL uh similar in the similar fashion this URL needs to be loaded in the browser and from there on the rest of the flow remains pretty much the same. So this is the flow for
+we give this URL like any transaction that comes in will the response of DXN TXNS device information.
+Uh Yes. Uh sandbox didn't get you.
+Yeah. Aneli, can you come again? I didn't get you. Your your question.
+Is it like for every car transaction instead of V2 pasta do we give V2 TXNS?
+Yeah. Moving forward we will give that uh as of now we have some conditions right.
+Yeah. So uh we check basically that if this is a proper 3 days to transaction or not and yeah for some we have some dummy uh dummy device information already handled in the code but for some gateways where we have to fetch it we give this URL
+and also
+what do you mean by is it a proper 3DS 2.0 transaction like how do you know that this is a 3DS or non 3DS
+the out should be 3ds2 in the ts
+yeah can we start from the basics because if we directly go to config and the transaction flow we might not be able to capture or get the complete journey. So if we can start with the basics of what is 3DS 2.0, why is it required, how does the transaction journey change, what is a change at merchant oiler uh for a customer, how does it different, then we can go into this uh technical details. Sure, just checking if we have a talk for that. Sure. Uh so Aneli uh so if you take a car transaction it is of 3DS 1.0 protocol before but uh like near back we got a requirement of moving this to 3DS 2.0. So 2.0 is the uh new protocol where all the car transaction has to you know update to the new uh new set of rules as in like all issuers has to enable their car transession previous 2.0. So when we take 1.2 2.0 for 2.2 there is only uh I mean from the merchant from our uh side we have to send uh extra information that's the device information so now to the issuer will basically validate the customer and the card number and also device the mobile device or the browser which the customer is using. So that is the extra that they have added for extra for adding some securityities on top of that. So that is on the very high level that is that's what 3DS 2.0 is rest everything same for 3DS 1.0 plus this extra device informations so we have to send extra device informations to all the PGs that is the first record we got from our end so to do that uh the there are two ways to get information to send information
+um sorry to interrupt so um is there any change for a user will when it goes to 3DS uh 1.0 or 2.0 for a normal user when he does a transaction is there any change for him
+see from the customer user experience there is no changes
+okay so user enters the car details go to OTP he enters the OTP that he receives authorization authentication etc etc completes transaction becomes successful super user no changes.
+Yes. Yes, that's correct.
+Okay. Uh right. So uh to send a new extra device parameters, we introduced a new uh redirection URL that is the V2 TXS device information which Arnab has posted in the uh chat. Okay. So instead of V2 paste, we provide this V2 TXS device information in the authentication. URL of the TXNS response. When when the when this URL gets loaded to the browser, we basically collect the ush browser informations and send that browse information to the respective downstream PG. So whenever when the PG receive this extra parameters now they will that is this is mandated for 3DS 2.0. So those transaction they will treat it as 3DS 2.0.
+So is it like only the these parameters are passed they will consider it as 32 or if I don't pass any of these uh will it go through 1.0 see for now as of now there is nothing like 1.0 almost everybody is moved to 2.0 I mean all the visa master cards rupees still in 1.0 they are not coming under this category but all the visa master cards are moved to 3 days 2.0 so it is mandatory for us to send this parameters Angela uh in TXness are we expecting something to give this URL or how?
+No no no we don't so we have a internal logic that so we were enabling gateway by gateway so and each gateways will have a different set of formats right but we have a standard format I'm collecting information and we send to the gateways as per their own formats
+okay
+so that uh so all the logic handling And the effort we did in the back end we didn't put you know uh give the effort to the merchants. So and whatever logic we it is the fallback logic of which basically adds the extra hop that is this particular redirection B2X device informations. But if a mer reduce this extra hop then they can send the device informations in txns request.
+Okay.
+So in such case we will not load the uh we will not do extra redirections. So if merchant is passing that metadata like device information we will uh uh if that device information is already there in the metadata we will straight away give V2 pay start instead of V2 plus device information.
+Yes that's right
+this is applicable across gateways or like
+it is applicable across gateways the structure is same. Okay. uh and for all gateways we do pass these device informations also
+right see uh PGs like cyersource uh they wanted this informations okay uh but some aggregators like CC Avenue they said they will take care of sorry not CC Avenue initially we had PTM payu and they initially said they will take care of it as in like whatever we are doing that the extra hop that the aggregators or PGs they were doing it. So there are a combination of these two where we calc and those differentiation you can find from the sheet which shogni so has it she has clearly uh uh explain
+can you share that like share that with me uh very well
+um Maybe we can check
+in case say for example it was pay you which was selected
+and is doing a transaction we have given v2/txns device information one hop and we initiate this transaction to pay you where they said they will take care of the um device parameters they will add one more so is it not like for pay.
+Yeah, I'm coming to the point. So you see for payu use case uh I believe we have to uh migrate all the merchants from S2S2 to S2S4. So payU has their own way of upgrading the transaction. So they asked us to do this change. So they have a S2S flag in the transaction request of payu. So in that we are we have to send the value as four. So which means they will consider that as the you know the latest version and they do their all the additional work which they wanted to do. So for pay you pay you PG this device information is not necessary
+okay okay continue sorry
+yeah done I'm done go on
+okay for changing uh the uh transaction S2S flow from two to four is there any uh what is the like process like we need to add in a There's a flag. Um, uh, recently we did a bulk migration for the cards only for the cards PMG. Uh, you need a flag, right?
+I mean config.
+Yeah. Just a minute. Huh? This is the one has shared it.
+So any changes required a end also like before enabling this any changes required like before enabling this
+pay before enabling all the cards and those activ
+all this migration we did with the help of PGs only and clearly for cyber source before like four five months back cyber has to enable the MI first then only we can able to enable it or else it was breaking so that's why we couldn't able to migrate the bulk migration of from 3D 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 rad 3 radius one to 3ds 2. So there were certain set of flags at the pg level also. So we went with that flow first they will enable it then we have to you know move the traffic. So we had a page and every pg and we were doing the migration before
+sa has shared that link. Can you open it and Share your screen any Here as mentioned PG
+and PG is ready and we are ready and merchant she clearly explained here the merchant has to in order to take any action we have to enable the config and that is the config which arab has sent in the Google chat that meet chat
+okay okay
+yeah and we can differentiate using this 3DS2 and 3ds with the o type okay and for
+they they are sending this identifier cyber source itself
+no so No. So for they won't send sign. So basically whenever we start a transaction the default type is 3DS. Okay.
+Okay.
+But for cyber source P the first API we hit is the enrollment API. So in the enrollment API if the message is 2.0
+and if we have the step up URL and access token we mark it as 3DS2. We update we do a type updation at that moment only when we get when we get the expected response from cyber source. So if we fail to get the expected response from cyber source, it remains as 3DS2. Sorry, it remds not 3DS2.
+But in uh like I have okay not going to okay sure
+okay any other doubts in this talk? like pay also there is DOTP non SDK and SDK support. Do we have SDK support via pay also?
+See SDK support that is native OTP I would like to name it differently not DOTP. DOTP is something which which has a S2S uh API call to complete the transaction but where SDK involves we call it as native OTP support. Uh for that uh master has to to you know integrate our payment page and payment page has 3DS SDK which is provided by PU but we highly recommend not I mean you can check with Sony since we are building our own 3DS SDK we don't want to give this to any merchants and those details you can get from Aditya uh and so let's forget SDKU okay
+yeah so we are coming up with our own 3DS SDK and our own 3DS server. So in such case it will like a native flow we can uh we can give a native experience to the customer and it is faster than the redirection flow that is that we are building now it's almost ready and if it is a dop flow without a SDK uh I hope that also pay you don't want the change they want only that flag has to be passed Krishna correct me if I'm wrong but dop use case of payu quad changes has to be needed for 3ds2 I don't think they need the device parameters right
+no uh only tress v4 should be enough
+yeah
+yeah
+correct
+and for razor pay changes were done uh Uh okay. U if you have any questions regarding the sheet then we can answer that.
+We also can uh and there is a JSON v2 something right.
+Okay. Uh see okay you go on the question. Uh no for Razer Pay we have this migration again right JSON V2. Is there any config or at our end.
+Uh yes. So with razor pay right wanted uh us to move all the mod their JSON v2 integration that was the first communication. So there's a config also um Krishna do you have that with you for uh razor pay
+JSON V2 migration?
+Yeah sharing it. Hello.
+So these folks like for Razer Pay uh there are two requirement. We have to migrate the merchant to JSON B2 and also we have to send the device parameters.
+Share it in the chat. Okay. Uh, any other questions?
+Uh, any other features say like EMI, mandate, uh, does it have anything to do with 3DS or these will work irrespective of this?
+Those should work irrespective of 3DS or 3DS. 2.0.
+Okay. So the only uh difference would be for uh DOTP or native OTP other card related flows tokenization EMI uh uh say mandate everything will work as is no changes.
+Yes. Yes.
+Um so in the transaction journey uh Is is there a because we have seen cases where v2 pay start is uh not loaded. So do we have uh or will we know that this uh v2 txns was opened we collected the information and then we gave v2 and then it got redirected to v2 past or if there was any drop in between. Is there a way for us to know that?
+Uh
+no actually when we did the uh you know release and monitoring now we couldn't find even a single for V2 device collection to V2 pay that so it was uh smooth but but it should be there I mean as in like we have locks in place now so we if there is a gap between V2 device sorry
+uh uh so if V2 pay start is not loaded we have this uh table in second factor or status which says in it and if it is loaded it states pending right so do we have any other uh metrics or something which will tell whether this V2 TXNS was opened or not opened
+uh no no
+okay no thing is that if we see uh uh V2 pay is not loaded so uh can that mean that uh okay it did not get redirected from TXNS uh V2 TXNS to V2 paste or it is possible that merchant has not even opened this V2 TXNS
+uh I would say mer has not even loaded that particular authentication URL in the browser
+okay but we will not know we don't have any metrics which says whether this was opened or not opened
+no
+okay
+but it is like 100% like if device information URL gets loaded, it will redirect to paste that. But like you said, there is no you know identifier in our system to to identify that this particular URL is loaded or not device information.
+For uh V2 start we generally update that challenge attempted uh field in second factor
+that that should be same almost for device information count.
+Okay.
+Yeah, that my question if if I say that in odd status it says init. Okay. Does it mean that uh v2 txns is not even called or it is also possible that v2 txns is not redirected to v2 pay start. Right? There are two possibilities. So that's why I just wanted to know okay if we have an information for this also which will say okay this was opened this was redirected.
+Uh no can we don't store regarding that information. that this was loaded at that point of time but we just update the count that how much how many times it was loaded that's it
+okay
+yeah
+uh and this device information which we collect is also not getting stored anywhere right we just pass it to uh the gateways or we persist it somewhere
+no no we are not storing it anywhere just pass it uh to the gateway
+it's just a session info and we just give it to V2 pasted and that's it we are not storing it anywhere Okay. Okay. Sure.
+Uh any uh particular to cyber source uh you said in enrollment call if we receive stepup uh URL and AC is right then only we will mark it to 3DS2 right but in enrollment URL they simply the specification version right if we get 2 we can mark it as
+yes yes but that's correct so initially we had a tight restrictions on that because 3DS2 was new to the ecosystem right but right now 3DS2 is everywhere 3DS one is completely replicated at least for cyersource use case because cyberus is deliberately failing all 3DS 1.0. So we have to you know treat everything as previous 2.0 whenever we get the version message version is 2.0 from cyber envmentment and that is a development change from RN.
+Yeah because it's created confusion because uh there was one ticket wherein data team raised all 3DS uh 3DS with 3DS was failing
+right
+so when we checked in enrollment all were 2
+that will fail respect of 3DS one or two those are the cases where cards are not enrolled for authentication.
+But for while data team querying right they query for all 3DS and it is zero SR so it's creating bit confusion.
+Sure sure we will add a change whenever we get a message version 2.0 2.x from cyersource we'll update the 3DS too that we will take in the coming changes release. Okay
+and one more requirement this is from first cry they are already using our API do DP but uh they wanted pay use SDK to be integrated but they are not our payment page
+SDK SDK
+pay you SDK
+uh they want pay you SDK
+pay SDK uh please discuss with okay because we don't want to give it to anybody else pay SDK we want to give our own SDK it's from hyper trident you can check the details with Rahuland from the SDK team let's don't uh I mean give the information to any of our model that we have PU SDK integrated we don't want to
+since Swiggy went with PU SDK but that's it we don't want to any other
+sure and yeah so all this details by default RTP will have uh this hyper on SDK so the information about that you can get from the SDK team
+yes
+okay
+sure sure yeah uh anything else Yeah,
+one question. So since you mentioned that right now all are going through 3DS uh 2.0 right initially what my understanding was that uh when the transaction goes through uh if it is eligible for 3DS 2.0 then there will be no uh uh authentication or something. But if uh it can step down to 3DS 1.2 then there will be some additional uh um what was it uh additional charges that merchant will have to bear. But I could also see that all the 3DS 1.2 transactions are failing. So is there a change in the industry that all non 3DS 2.2 will fail or it is still that 3DS 1.2 will go but there will be additional char charges on the merchant.
+Okay. So the transformation was first they gave a deadline before that we have to migrate all the merchants to 3 2.0. Okay. Then they said uh there a penalty adder you still you know don't send the extra parameters. Now I think from uh November 16th I believe uh cyber stopped accepting all the cards. Let's say if you don't set the device parameters in the request now they'll clear fail the transaction. They don't even hold the Okay, sure.
+Yeah.
+Another Oh, also I get getting this information uh that it is uh um 3DS 2.0 or not from aggregators also cuz I remember only few aggregators were giving it uh later like did are we receiving it for all or it is only like cyersource MPGs we have right
+no Angeli yeah for PGs like cyersource MPGs we they are giving the message versions message a 3DS version of the car like 2.1 or 2.2 like that But these aggregators now like payu, razor pay, paym we had started the discussion long back but still just now pay started giving the identifier other people are still not sending us.
+Okay. So how do we mark it as 2.0 at our end based on uh like every transaction will get mapped as 2.0.
+No we don't. So for payu whenever the identifier comes to us we will update to uh 3DS 2.0 but for PTM and RA pay uh Uh I don't think so we update to 3DS too.
+So it will be avenue to 3DS. Yeah. Krishna can you confirm for Razer P are we updating to 3DS2 or not?
+And uh for Yeah. And for CC Avenue they said like u they also asked to send send parameters and they said if we send extra parame we only mark as 3DS2. So for CC avenue we are updating all the transition to 3DS2. We only doing that identify from CC Avenue
+basically. because we are passing these additional parameters.
+Yeah. Yeah. So these these updation is completely depend upon the downstream PGR aggregators how to how and when to update the 3DS the O types
+but since now the you know it has changed I mean all the cards are 3DS 2.0 maybe we can have a different understanding and change the logic also but again for this change we have taken reach out to all the aggregators and the PGs to make additional you know we can maybe keep uh for visa master the default type is radius too but again this I can have a long communication with all the PGs and aggregators
+currently for Razer V2 whenever it is in a V2 flow we try to do a 3-2 transaction
+in the starting itself
+uh otherwise we fall back to the 3DS normal flow
+this not even the error
+no Krishna are we updating the O type to 3DS2 for Razer KG We are not doing that. We are not. Yeah. So for an for also we are not doing because we are still asking them to send identify here because they only know this is radius to or not because sending device information is our job but how the transmission handled by the aggregator they only knows it uh depends on their downstream PD which they have with them. So so once they provide the identifier then we will update it in our oiler also application as well. Okay. Sure. Same holes. Good for PTM also.
+Yes. Yes.
+Okay. So Annie, even for PTM there is no config right for all message processing it as 3DS 2.0.
+PM there is no change I believe. Let me open the sh once
+they said they will come up with the changes but uh I I don't think so you'll see this record form they would have automatically migrated all the trans
+okay we not passing device params also this information
+no they're handling
+yeah
+okay Uh any any else anything else or we can wrap this session?
+Nothing from my side. Okay. Was having doubts. Uh
+one second. One second. Sure.
+I'm just typing here. Just check if this is fine. And we do not pass any uh device parameter. PayU we need to enable S2S equal to 4 and we do not pass any parameter. PTM no config change. We do not pass device parameter. Cyber source no configs but we pass device parameter. MPGs also no configs to be enabled but we pass the device parameters.
+Uh no for race we have to migrate to merchant JSON v2 and also we have to pass the parameters
+and pass the device parameters
+and it's both okay yes on beta plus device parameters and payu we have to enable to S2S4 and do not pass the that is correct pay you is correct pm is correct but cyersource we have to add the mer in the config which arnab has sent at the very beginning at 3:10 p.m. we have to add add mer in that config is there for cyersource and mgs
+okay so this enable merchant for 3ds2 to unh this gateway this is specifically for cyber source and MPGs.
+Huh. Huh. Yes. So, so once you enable the contract then they will automatically collect information and send it.
+Okay.
+Uh no I did not get that.
+So if you enable the config right that enable merchant for 3DS2 that gateway that config if you enable the merch in that config we we do a extra hop that is B2X the right information and we collect the information we send it to gateways.
+No, then for gateways uh then does it mean that uh we should enable all merchant for these two configs or this is required only for cyber source because when txms is coming we will not know okay we will check if this config is enabled then for cyber source we give this if it is non other we don't give this is it something like that.
+I didn't get the question please.
+Um so this config is required for cyber source.
+Correct.
+Yeah. Config is for cyber source. Yes.
+So for gateways like paytm payu razor pay it is not required that merchant should be present in this particular configs.
+No this config is again gateway specific. That's a gateway right? So it's
+my question. So if I have say for example first cry they have cyersos ptm mpgs and razer pay which means that this mid should be present in enabled merchant for 3DS2_ mpgs_ cyersus_ ptm_razer pay so for all these four configs this merchant should be added
+ah correct but not ptm because pm don't want to information okay so uh but uh in our response we will still give E2TXNS if PTM is decided we just don't pass it to PTM see for PTM since we don't want the parameters no need to add this config no need to have such config like_ PTM okay so that we if the config is not there and if the merchant is not there in the config then we will give V2 past directly Okay. So this config is basically required for the gateways where we need to send the device parameters.
+Right. Right.
+Okay. Whichever gateway is expecting the device parameters to be sent then that gateway and merchant should be added here. For others uh for other gateways then it is not required.
+Right.
+Okay. How about buildes
+and for Razer Pay we have to enable them in this config because we are passing device information right?
+Yes. Yes. Very well. We have to we have to add the merch in J1 D2 and also this radius too.
+Okay.
+Uh there is uh let me check just a minute.
+Yeah. Uh one more question and adding merchant to say enable merchant for 3DS2_razer pay does not add by default to razer pay v2 enabled merchants right both should be added separately. No. Yeah, it has because the condition is like that only. So you have to add two. If they want radius 2 then both should be enabled.
+Enabled. Yes.
+Want only v2 then enable razor pay v2.
+Correct.
+Updated versions of uh integration type of razor pay uh And it is believed that it has higher SR. So Razor Pay was pushing us to migrate all the MS to JSON V2. And if they want 3DS2 then we have to enable the machines on the 3DS to cut over as well.
+Yeah. Then uh currently is all the merchants live on this uh V2 like do you see any issues by Okay. Razer Pay will have to enable at their end.
+There is yes of course Razer Pay has to enable and only we can migrate. So this activity happen is still happening. and push from integration to handling that.
+Yeah. Yeah, sure.
+Yeah, sure.
+Will this uh Yeah, build uh we send the device parameters to build and then they uh say that in the enroll enrollment response saying that it is a 3-2 challenge flow. Then post that we update the step to 32 and complete the transaction.
+Build in config then since we are passing.
+So the same yeah so the same config the enable merchant to build that's supposed to be there. Krishna
+so for build is also the first that config has been enabled right?
+Yes that config is needed.
+Yeah only that
+yeah only that single config post that we will start sending device information tok enrollment API then post that they will bas on the 3 days to challenge.
+Sure. Sure.
+Yeah.
+So, build desk cypes MBJS are of same format variable.
+Okay. Okay. For CC also we have to enable the config since we are passing the u device information Krishna was Cuz CCM also we have to enable the same config, right?
+Yes. Very well. Uh checking if there are any other configs or not.
+Sure. Variable there is only one config that's that uh the common config we have apart from there's no config needed
+sure Krishna thanks
+um also for CC Avenue no config changes at our end right but we pass the device parameters
+no actually we need to enable in that common config
+uh that same uh this one
+yes yes
+yeah We can check this cypes MPGs pay you tell us that this is 3DS 2.2 razor paym do not give us the o type CC Avenue we mark o type as 3DS2 right
+okay sure See for previous two when we did the integration the requirement was mostly for the international merchants not for domestic merchants. I think we did lens cut uh lens cut for CC Avenue.
+Yeah.
+Okay. For domestic they'll take care.
+Huh. But if we want to enable the domestic now let's get a P from CC Avenue. Then we can enable uh CC Avenue. But or else I I believe CCM is handling everything by themselves only for domestic cases. But yeah, please let's confirm CC.
+Oh, sure. Sure. Uh let's then end this call. Uh if we have more doubts, maybe we can connect in a s another session or maybe we can connect offline for that.
+Yeah.
+Uh there seem to be one call which Mala wants us to join. Uh she'll share the link. Please do.

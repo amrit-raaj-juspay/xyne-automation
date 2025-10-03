@@ -1,0 +1,138 @@
+Overview - 
+
+Software Reliability: Principles from First Experience
+
+The source discusses the evolution of understanding software reliability, emphasizing its critical importance for large-scale, distributed systems. Initially, the author believed reliability was a solved problem, but learned through experience that it requires continuous innovation and a deep, bottom-up understanding rather than relying on standard solutions. A key realization was the omnipresence of single points of failure in systems and the need to design for these vulnerabilities creatively. The text introduces the "pipes" abstraction as a simplified way to conceptualize system components, their properties (transfer, transform, break, latency, capacity), and the strategic placement of "valves" (proxies) to manage flow and improve resilience. Ultimately, the author advocates for a principles-based approach to building robust, reliable software, moving beyond simple redundancy to truly understand and mitigate critical path weaknesses.
+
+
+
+Transcript 
+
+[00:00:00] We are recording this video to talk about our reliability principles. Uh, I want to emphasize why reliability in software and especially big software, big. Reliable distributed systems and services that we are building is super important and why everybody should embrace concern for reliability of what we built.
+
+[00:00:27] We are 12 years into JPay and we are still innovating, still finding bothered about, you know, this, this kind of a thing should not happen, and worried and solving things and. Still, we are keeping on moving forward, but we have come a long way. And, uh, one major innovation that we have done is, uh, coming up with some essence of the principles that we have to follow, which could give us almost a completeness towards building quite reliable systems.
+
+[00:00:54] You build a building, it should not fall down, right? Your building is standing because of the reinforced concrete and the pillars which are created. And, uh, you can do. A lot of other things wrongly. The people who are building are not careful about every small detail. Still that building is holding right.
+
+[00:01:11] You want that guarantee. The software that we are building, I'm not able to have that confidence. I used to drive at that time to work and I used to wonder how is this car even working? Why is this tire not falling down? How? How a brake is working. A brake always has to work in a vehicle, right? I've been driving this for many years.
+
+[00:01:29] How can somebody give that guarantee? So that, that was my, uh, first time firsthand experience, fascination into reliability. I started appreciating a lot of small things, which are very creative solutions, which greatly increase the reliability. The way I was doing tech till that time, I don't think I had that, uh, way of thinking, like, okay, uh, it's done.
+
+[00:01:53] It has to always work. Um, maybe some level we might have encountered even in school and college where, uh, you do a mathematical proof and you know that it's solved, solved for all cases. It's a generalized solution. It's too infinity. It works, right? So yes, there are. Such experiences that we would've had.
+
+[00:02:15] Uh, but putting that to reality in messy systems, uh, was something that I had not found the relationship with that yet. Right. So a lot of my, uh, interest at that time was about how some simple creative solutions are greatly increasing reliability of systems. So some creative approaches have been found out, which is greatly giving you so much buffer to just go build things and still they're reliable.
+
+[00:02:44] Uh, so this kind of reliability has not yet come to software. So this is, uh, this was, uh, fascinating and uh, also a realization that happened to me that, oh, this is like, I don't know, and maybe the industry is also not knowing. Actually speaking at that time, I didn't know enough of that. That industry also doesn't know.
+
+[00:03:05] Uh, I thought every time I found a solution, I thought I found it. Well, at the time, just pay started. I thought distributed systems, all these are figured out problems, right? There are distributed databases, there are uh, containers, orchestration, cloud is there and all of that. I thought all these liabilities have figured out problem and uh, we should just go and.
+
+[00:03:26] Build use cases on top and not bother about it? Well, we bothered about when we built Just Pay Safe. We had, uh, this thing called safe mode and, uh, various creative solutions such that it'll never break because we are pushing software to millions of devices inside other apps. Uh, but always. Some of these newer technologies, like, like building a browser, which is embedded in those areas.
+
+[00:03:51] I used to think a lot about reliability. I thought backend reliability is reasonably a solved problem. True to an extent, but not at the scale at which we are operating right now. Uh, so more and more our scale increased. And also as a startup, uh, you don't invest in every small detail of worrying about every small detail of, uh, you know, have we created a.
+
+[00:04:14] At some point we have, we should have sh our database. We didn't chart it because many other things are uncertain. Why should we think about charting a database? And as a startup we had to hire a lot of interns and freshers and, uh, they're all excited about building new features and products, which you can touch and feel and see it.
+
+[00:04:32] Reliability issues happens once in a while and, uh, at that time, very few people are. People didn't have a clue why something is going wrong. And we had to learn some of the things the hard way. But one thing I learned from Amazon, in fact, is taking care of production. So engineers taking care of production.
+
+[00:04:53] So we didn't outsource that to saying, uh, well, uh, production is a different kind of a maintenance activity. Uh, we. Had this culture of being always ready that some issue could go wrong, and this whole incidence management was a part of our everyday life. Uh, our team had that. So yes, we would be able to catch issues fast and debug things and uh, get it back to online, but definitely you don't want to keep doing that.
+
+[00:05:26] And it's both stressful for the team. And, uh, uh, more and more the system gets larger. It should be like, it should never go down. It should not be like, okay, it went down in 10 minutes, 15 minutes, we brought it back up again. It's like 10 minute, 15 minute is totally unacceptable for larger systems, right?
+
+[00:05:43] So, well, we thought we will take some standard solutions, uh. Maybe take a distributed database because, uh, most of the problems are about databases. Uh, but even that, we saw that even that can go down. We have to really go inside and understand it, uh, to use it properly. Uh, and it was also always not about complex systems like database, even application server could have issues.
+
+[00:06:10] The code that we pushed could have certain bugs, uh, which could be causing not small issues, even reliability. Uh, overarching system wide reliability issues. Uh, we wanted the freedom of people being able to develop freely and still have a very, uh, reliable system running right. Uh, rather than just being worried and being careful.
+
+[00:06:34] That's not the solution. So that has to be a solution which gives us a lot of buffer to be creative and have a very high velocity for changes. Should give us the buffer to say, send us any amount of traffic. No problem. Right. There will be merchants for us who would have a huge amount of traffic spike, uh, like within few minutes.
+
+[00:06:55] Like, like for ex, for example, I-R-C-T-C, Al Booking or some of the, uh, games that people are playing where, uh, for a short period there is a huge spike of payments, which could happen. So how do we handle such kind of peak load and also another dimension, keep the cost low. You can just. Keep, you know, huge amount of capacity and also solve it to some extent, but you had to also bring cost to the equation.
+
+[00:07:24] So all this more and more, the realization happened that it is not a solved problem, and Google would've solved it in a way. Amazon would've solved it in a way Facebook would've solved it. In a way, all the big companies have solved reliability. There are common learnings from. Those two, any of the new applications that we built.
+
+[00:07:42] But any new application also has its own architecture and its own domain specific, uh, critical points and certain areas where we can relax. So if we don't custom build it with our own full understanding from bottom up, from from first principles, uh, it became clearer and clearer that reliability is not going to be sought.
+
+[00:08:05] There is no standard solution. Because the typical culture also is, okay, how has Netflix solved it? How has some other company solved it? Okay, let's take it and use it. We realize more and more that you know that is not going to be just taking an existing solution and just implementing it is not going to solve it.
+
+[00:08:22] So we have to know it in and out. We have to have that confidence that our system will never go down, and such a confidence was very hard to build in people. I used to ask our people like. Will our database go down today? They will say, don't know. Might happen. Will this building go down today? They will say no.
+
+[00:08:40] So a lot of systems that we use are so reliable, but how can we build a system which could go down? Right? So then I would ask people, this is not okay, right? But then, uh, in some way, since there was not enough education about this, the typical response would be. You know, well, who knows? Like all these issues are there.
+
+[00:09:04] Like, uh, world is uncertain, uh, which is true. Uh, there are many things which are uncertain, but for the narrow problem that we are solving, we can really, really increase the certainty. So to bring that confidence, uh, for our initial team, we had a lot of, uh. First principles, discussions and first principles, experiments, and going and unpacking how systems work, how our Kafka works, how our edis works, how T-C-P-I-P works, uh, how, uh, in nature many other things are reliable.
+
+[00:09:38] A lot of, a lot of broad discussions. Uh, we used to have, uh, which again took a lot of time, uh, in terms of discussions also, and in terms of doing something and. Making a, making a change in our system and learning from it, making another change in our system and learning to the next, next, next. So is there a better approach?
+
+[00:09:59] Is there a better approach in which we can get more people understand reliability much, much faster? Can that experience of learning by debates and by doing be compressed and given to people as principles? So that has been a quest. Yeah, we, we were just exploring concepts more broadly. Not in a very principled way, but very broadly, like, you know, we have to go after a lot of strength and abundance.
+
+[00:10:28] I. Like when we need reliability, one of the general things is like, where is, where do we get the strength, uh, is, is there any concept which will give us a lot of strength? Uh, is there any resource which is available a lot? Because reliability means like you have to anchor on something strong, right? So strength comes from something which is very stable and never changes.
+
+[00:10:47] That kind of a strength is there. Uh, there is another kind of a strength, which is like lot of capacities there. So we will discuss things like, uh, yeah, we are dependent on something like oxygen and we don't need to worry about at all, right? Always it works. So just understand how we are being dependent on abundance.
+
+[00:11:08] Whereas at that time, we used to have a single database and like, you know, always it used to be like anytime. It's like, what if oxygen is not available, like the COVID situation. Maybe your lungs are having issues like. Uh, though oxygen is available, something else is coming in the middle. Like that kind of a feeling used to be there for us with our, uh, systems.
+
+[00:11:25] Anytime it could have issues at as it's scaling and when we are getting customers to whom we can never be down. Right. So we, we were looking at how to go after abundance. Uh, I think this was around 2018, 19. We were having discussions like this. So our, our approach to reliability at that time was. Not that formalized.
+
+[00:11:49] If we put our logical thought into, to, thought to our system and think about anything new that we are building, we will kind of get it right, but we were not able to extract the essence of what we are doing and give it to somebody else. So I used to do interviews in which, uh, I thought I knew reliability by these discussions.
+
+[00:12:08] We have improved. And I would ask people, uh, okay, how do you build a reliable distributor database, et cetera. But I myself will start finding. Okay, you distribute the nodes and then your load balances or switches will become a single point of failure. Okay? Then we will say, okay, let's distribute that.
+
+[00:12:26] Then how does the network work? Uh, which is, which doesn't have a single point of failure. So will you have, uh, multiple pathways from the client itself in the network and in the switches? Uh, so always use, keep transferring the single point of failure to some other place. So I started seeing that pattern, which I didn't know before.
+
+[00:12:48] Sometimes we, uh, get some of these things as ready made, like network is some level ready made load, balancers are ready made, and they're reliable, and we take it for granted. Your DNS is ready made. But I realized in my interview questions, I am myself not knowing some of these things, how they are working, right?
+
+[00:13:05] So then it became a concept like, well, there will be single points of failure in the system. You can't fully avoid it. Which I initially thought maybe a single point of failure, we should just avoid it. We'll somehow do it. But actually there are single points of failures and we are depending on somebody else, system or software that is solving it.
+
+[00:13:25] But when our system gets even bigger, sometimes we bring a, that single point of failure inside our system because we might innovate something new without recognizing that it is a single point of failure that we are introducing. So, so if you take a classic example of a simple, uh, system in which you have a load balancer, your load balancer could become a single point of failure if you just have a single Gin X uh, well then you say, I will have multiple gin Xes, right?
+
+[00:13:52] Then who else is going to load balance across gin Xes? Well, typical engineers will have a master, uh, or a primary and a replica. Uh, then a lot of times we used to have this heartbeat system, which will become a single point of failure, which won't work. Uh, that could be network partitions, uh, because of that heartbeat might not work.
+
+[00:14:11] The typical art architecture then went into, well, you have multiple engine Xes or these days en voice. Uh. In front of which you have the cloud provider load balancer. Uh, but how's the cloud provider load balancer working? They do have multiple load balances, but then, uh, well then who is, uh, routing between these load balances?
+
+[00:14:34] Uh, they do DNS switching. So round robin IP address switches. Uh, then the system, which is doing IP address switches, could become a single point of failure, like a Route 53 in AWS. So now all these are abstracted out, but we started questioning, okay, how will route 53 be really, really reliable? Well, it should have something like A-E-T-Z-D or a.
+
+[00:14:56] Like a consistent database inside it, from which it might have a cache of, uh, multiple domain lookups, but still the consistent database will be a single point of failure. Uh, now it has to have maybe raft or paxos. Uh, well, what if the implementation of, uh, this algorithm is wrong and that system goes down?
+
+[00:15:17] What if the algorithm itself is wrong? So more and more we realize that. The single point of failure is going to be present, and we have to recognize it. And finally, somebody is saying it'll work, right? Uh, maybe the creator of Raft is saying that it'll work, or we understand raft, or we understand the implementation of the critical parts and we know it works, right?
+
+[00:15:45] So we can either go by trust that, uh, what others are giving is working, uh, or it has been working for many years. But well, when our system gets more complex, more bigger, scalable, more, when it becomes even bigger and diverse, uh, you can't depend on just some of these competencies are already made. You can't just depend on what others are saying because you don't have that skill to say it'll work a hundred percent.
+
+[00:16:12] It'll work that kind of confidence. Or 99 point. Some big number. Nine, nine, whatever, 9, 9, 9, 9. So this skill to one, isolate, single point of failures and design something which is really, really strong, which doesn't have redundancy, but it still works, uh, started becoming something of interest. Um, first of all, even recognizing that.
+
+[00:16:40] This kind of a pattern is there used to then call it in the path to abundance, there is scarcity because some of, sometimes these solutions for the single point of failures, uh, is not, uh, straightforward. It has to be creative, but it is always simple. Maybe initially it is not clear, but once you found it out, it is very simple because for somebody to say it'll definitely work, it has to be obvious, it has to be, uh, something that you can tell children.
+
+[00:17:11] And children will also say, oh yeah, it'll work. Uh, that has been our approach. Uh, another approach to get surety is also sometimes, uh, mathematical proofs, et cetera. But, uh, the first one is a bit more intuitive and scalable. So from this, we have been over time learning and deriving principles and multiple ways of saying these principles.
+
+[00:17:34] Also, there is sometimes no one way to say this. There was one exercise that we did again in 2018, 19, uh, at that time when Korea two idea came in. When we look at our system. The logic, the business logic, we always have this concept of flows. Our whole system is nothing but workflows, which are flowing step by step.
+
+[00:17:59] And there is a user who's taken through those steps. And, uh, if you think about how these flows are going through, through the system, okay, it is going through your phone, it is going through the network, uh, it is going through your load balance. It is going through your app server. It is going through the database.
+
+[00:18:20] So if you can look at how flows are going, uh, through a system, uh, well, you'll start thinking about, well, when the flow is going, there could be something which could be broken in the path. So how flows are in code theoretical and abstract. Once you put that into the system, it could have various issues.
+
+[00:18:44] Uh, so we then came up with an abstraction called Pipes. Uh, your entire system is nothing but a combination of pipes. You look at any resource, any component has a pipe. The flow is going through the pipe. Uh, your flow is going through CPU, it is going through your, uh, some small component, which is a small router in your SDK, it is going through the internet router, uh, it is going through your load balancer, et cetera.
+
+[00:19:10] Right. Uh. So all of this can be looked at as pipes. So there are two properties of pipes. A pipe can transfer or transform, and network is a pipe which just transfers. Uh, A CPU is a pipe which transforms A CPU or a function. Also, you can look at even a function as o, your control is going through the function.
+
+[00:19:32] Your flow is going through the function. So which is actually CPU, which can transform your database, also can be looked at as something that transforms. So. Your flow is going through pipes and each of these pipes can transfer or transform. Now comes the interesting reliability part. Uh, pipes can break like naturally.
+
+[00:19:53] I've been used to, you know, when JPay started, I used to do plumbing and all of that. Like we are office pipes will break and all of that. We have to go. We will try to fix it temporarily. And, uh, all these reliability problems were there in the physical world also we used to solve. So we, uh. It's natural for us to understand these things, physical things, right?
+
+[00:20:12] So we look at, uh, entire system as pipes, and these pipes can transfer or transform, and these pipes can break. These pipes can introduce latency. These pipes have capacity limitations, right? So pretty much these three itself covers, uh, some of the critical aspects of systems. Which relate to reliability and pipes.
+
+[00:20:41] Also, sometimes, uh, four can join, so you can have, you know, a big pipe coming in, which goes through many pipes and many pipes coming together, uh, to a big pipe. Uh, so it was very easy to tell product managers that, you know, our entire system, you just draw it as pipes and, uh. Now you think about, you know, where are the points, where are the critical points?
+
+[00:21:06] Okay, what if this pipe breaks? What is the latency introduced in this pipe? Right? Oh, is this pipe big enough? Right. And interestingly, what we saw is, uh, the most important part to increase reliability, where the valves in the right places in front of the pipes. So if you're able to. Limit what is going into the pipe.
+
+[00:21:30] If you're able to, uh, switch from one pipe to another if you're not able to send from one pipe to another, and that valve is able to switch. Um, and that pipe can also have, uh, um, monitoring. So you just like how pipelines will have meters and you can monitor things at the right places in the pipes. So interestingly, it felt like we have found a generic way to understand reliability.
+
+[00:21:57] That's when we understood the importance of proxies and we started heavily investing in, uh, right places in our system where we introduced proxies, which helped us in giving this flexibility of retries and switching and, uh, generic monitoring, et cetera. Well, we did this in many years ago, and it give, gave us buffer, but I think we again, forgot these things like that.
+
+[00:22:23] We thought that is done and it's solved. Until the time when, you know, we scaled even further and we built many other systems, many stacks are running, and how can we make everybody create these, right? Because pipes are abstract. It was good for us to understand when we were all together thinking about this.
+
+[00:22:43] But it was not detailed enough to take a lot of practical decisions to just give this as a learning to somebody. Uh, why redundancy gives so much abundance and strength. So just by designing a very well, uh, isolated, redundant system gives you that much of abundance in reliability, failure, probability has really, really gone down.
+
+[00:23:04] But again, the second principle of critical path comes in Who is going to do the switching? Critical path has to be designed from first principles. And the main attribute of first principles is direct experience and direct understanding. Anybody should be able to see this and say, oh, this will work. A small part of the system when it breaks, the entire system should not get affected.
+
+[00:23:24] So systems also go down because of running out of capacity. The things in critical path ideally should have much, much more capacity, like your proxy itself. If you have to bother about capacity allocation, maybe then our proxy is not fast enough or we are doing something wrong in the proxy. Critical parts should be not changing that much, but even that changes principles are also more open-ended.
+
+[00:23:43] So we, under these principles, we will keep innovating, have the strong operational principles in managing reliability. So we call it our RCA and COE process. I.
+
+
+

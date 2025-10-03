@@ -1,0 +1,67 @@
+Overview - 
+
+Engineering Reliable Systems: Core Principles
+
+
+The provided text, "Engineering Reliable Systems: Principles and Practice," outlines ten core principles for building robust and reliable systems. It emphasizes the importance of active-active redundancy for significant strength against failures, contrasting this "abundance" with the "scarcity" of critical paths, which are single points of failure requiring extreme simplicity and resilience. The document also discusses reducing blast radius through system isolation to prevent cascading failures and highlights the need for abundant and dynamically allocated capacity to handle varying loads. Finally, it addresses the necessity of staggering changes to prevent self-inflicted outages, establishing sacred root cause analysis processes, early detection of issues, maintaining high performance standards, and fostering a culture of reliability where everyone contributes to system robustness.
+
+
+
+
+Transcript 
+
+[00:00:00] We are recording this video to talk about our reliability principles. We created these 10 principles for reliability. The first is about redundancy, and it focuses on really good redundancy, which is like run things. Active. Active, run your system. Active, active, uh, and have instant monitoring of simple metrics and switch it.
+
+[00:00:22] And it also gave us clarity that it should not be even, uh, just inside parts of the system. It has to be the entire system. Uh, why ancy gives so much abundance and strength, how just putting two separate systems, which are clearly isolated and redundant, uh, give us so much strength. Let's say if one of the systems, a system a, uh, could fail one in thousand days, right?
+
+[00:00:52] Uh, which is not okay for us. One in thousand is not okay. That is not reliable enough. If you have a system B of the same attribute or same, same system, replicated, uh, it's a failover system. Both are isolated. So both failing together, the probabilities. One by a thousand into one by a thousand. It's one by million.
+
+[00:01:16] So it's not like something like one by 2000. So just by designing a very well, uh, isolated, uh, redundant system, uh, gives you that much of abundance and reliability. Failure, probability has really, really gone down. But again, the second principle of critical path comes and who is going to do the switching?
+
+[00:01:36] So the second principle is these. Single points of failure and we call it critical path. So some parts of your system have to be identified as critical path, and it has to be 10 x or a hundred x stronger and critical path should be providing that buffer for the rest of the system to even fail and recover.
+
+[00:01:56] Uh, critical path has to be super simple. So critical path has to be designed from first principles and the. Main attribute of first principles is direct experience and direct understanding that anybody should be able to see this and say, oh, this will work. Right? So that is the simplicity is the attribute of critical path, and that will give it abundance, strength, uh, and to find such solutions.
+
+[00:02:24] It's not easy. And, uh, that is like the scarcity, like how our first principle of active, active and redundancy is a kind of abundance, uh, critical path, uh, is a place of scarcity. Uh, now the switch has to be really reliable and sometimes these switch, switch kind of systems are a single point of failure, and that by itself should be, uh, one in million times reliable.
+
+[00:02:51] The third principle is about. Reducing the blast radius or creating, um, a lot of isolated pieces in the system, which are independent. Different kind of isolation, may be functional isolation, customer level, isolation, et cetera. Uh, a small part of the system when it breaks, the entire system should not get affected.
+
+[00:03:14] So the blast radius should be small. Uh, so the entire system should not go down because of an issue. Right? Uh, it also shows that the single point of failures should be clearly taken out, um, or, or the interconnectedness of the system should be reviewed, uh, that we might think to. Some places are isolated, but they might be connected.
+
+[00:03:39] Uh, the fourth principle is about capacity. Uh, so systems also go down because of. Um, running out of capacity. Uh, so yes, we have to have abundant capacity, but cost also comes into consideration. So in the current systems, we typically allocate capacity to the needs and in very diverse, complex systems with a lot of microservices, uh, there is a lot of times we miss out on scaling up everything, rightly, proportionally.
+
+[00:04:12] So this rightly scaling capacity. With a, in a automated way is very important. And also when we make changes, when we push new software, something could be slower. We might have written code, which could, uh, make, uh, you take more CPU per a PA call, and the same proportion in which we increase capacity for a new need.
+
+[00:04:38] Uh. It is not going to be true before and after the release. So you have to keep accounting for your current performance characteristics of your system in production. So that has to be clearly understood, and that has to be a systematic process. That can't be a manual process. And one part about capacity and critical path, the things in critical path ideally, uh, should have much, much more capacity, high capacity limits.
+
+[00:05:07] Like, so that we don't even need to mostly worry about it. Right? Uh, like your proxy itself, if you have to bother about capacity allocation, maybe then our proxy is not fast enough or we are doing something wrong in the proxy. So the critical path components have to have the ability to swallow a lot of load.
+
+[00:05:26] Uh, we, I think we have to consider, uh, the critical parts capacity differently. Uh. Whereas the rest of the system's capacity different, the critical parts capacity should be, uh, allocated multiple times the need. The third reason for reliability issues change our own changes so we can make code changes, config changes, and uh, how can we, uh, guard against her own changes.
+
+[00:05:54] So that's where, how staggering changes become such a big important thing. Let's say we build our own system, which is a config update system. Um, now we have to build it ourselves. Maybe there is no readymade solution. Uh, there are changes that we could do for infrastructure, uh, which might not be by default staggered, right?
+
+[00:06:14] Uh, so we have to, a lot of times we keep innovating case by case basis, uh, staggering approaches. Uh, but we are also evolving. Ability to stagger any kind of change in the system in a very systematic manner so that we don't need to, uh, think about case by case basis. We are looking at how can we do even infras changes in a very standardized way with staggering and doing architectural innovations for that.
+
+[00:06:41] Critical parts should be not changing that much, but even that changes, we have to have the strong, um, operational principles in managing reliability. So one of the. Processes that we rigorously follow. Um, and while Amazon talks about it, is following rigorous process in root causing when an issue happens.
+
+[00:07:03] So we call it our RC and COE process. Um, so this principle is about the RC and COE process should be considered sacred as much as engineers. We like to build systems and just forget about it, and it should just work. At least in my experience, we are not able to build. As much as we have to, we have to build such systems.
+
+[00:07:24] The other side is also that, you know, they break, so our R-C-S-U-O-E process is about analyzing an issue which happens in a system and then following the principles that I talked about so far and constantly making the system better. Principles are also more open-ended, so we, under these principles, we will keep innovating.
+
+[00:07:43] Yeah. One more principle, we just talked about detecting early. Uh, so we need to have. Approaches in which, uh, any issue happens inside the system, it should not get missed. It has to get bubbled up and it has to be detected and it has to be detected early or even, let's say, calling us automatically. Our engineering team will, uh, immediately know that some issues there and at any point of time, maybe 3:00 AM in the morning also, we engage and, uh, before the issue really becomes bigger and starts affecting customers, we are able to.
+
+[00:08:18] Detect and act on it at early stages itself. When the issue is smaller itself, uh, if you're able to detect and, uh, do a first aid, uh, that is called incident response. Uh, even that is man, that is even acceptable in the world. So large issues should not happen. Small issues happening, we detecting and fixing it and constantly doing RC and CYE to even not have that happen because, uh, any manual process is not, uh, very reliable.
+
+[00:08:47] See the next principle I think is about, uh, keep high bar for these metrics. Keep high bar for what it means for a system to operate really healthily. So have high bar SLAs and keep even high bar SLOs. Our own internal metrics because SLAs is something that you can promise externally for you to promise externally.
+
+[00:09:09] A good SLAs you have to have even higher bar SLOs. Uh, within the team. The next principle I realized is, uh, reliability is not just an engineering problem. Uh, it's also a culture. It is, it is something that everybody should understand and be part of in solving. And there again, we have to do innovation in, uh, making this accessible to more people to come and participate, uh, in the reliability work.
+
+[00:09:40] Um, well one, one of the things is also chaos testing and reliability testing, testing to the limits, et cetera, which actually a lot of people can participate. People can try to break the system, right? I think it almost covers our 10 principles. Uh, one more anecdote about why redundancy is abundant. Why active, active, or redundancy in fact is abundant.
+
+[00:10:04] To appreciate this, I had to understand it myself this way. Otherwise, we always. Like, just say, oh, put a backup. What's the big deal? Uh, it's just a standard. Everybody does it. We will also do it kind of a thing, versus how can you give assurance that it is really, really strong, because it's really, really simple.
+
+[00:10:24] So it has to be like, how can this even fail something so obvious? It has to be that, uh, it has to feel like it should never fail. That feeling has to come in rather than, you know, who knows what will happen. Right. So for any of us, in fact, that confidence comes from when we really know it's obvious, or it's proven many times that it doesn't fail.
+
+[00:10:46] But I still, uh, I'm not in favor of, you know, just by history that it has not happened. Next time, it'll, uh, still be reliable because we have not seen that much history in our lives and we have not seen the kind of scale that digital systems will get to. Right.
+
+
