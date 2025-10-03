@@ -24,8 +24,12 @@ if [ ! -x "$SCRIPT_PATH" ]; then
     chmod +x "$SCRIPT_PATH"
 fi
 
-# Create the cron job entry
-CRON_ENTRY="0 0,6,12,18 * * * cd $PROJECT_DIR && ./run-staggered-tests-server.sh >> $LOG_PATH 2>&1"
+# Get the directory containing Node.js and npm (needed for cron environment)
+NODE_DIR=$(dirname $(which node))
+NVM_DIR="$HOME/.nvm"
+
+# Create the cron job entry with proper environment setup
+CRON_ENTRY="0 0,6,12,18 * * * export PATH=$NODE_DIR:\$PATH && export NVM_DIR=$NVM_DIR && cd $PROJECT_DIR && ./run-staggered-tests-server.sh >> $LOG_PATH 2>&1"
 
 echo "Current cron jobs:"
 crontab -l 2>/dev/null || echo "No existing cron jobs found."

@@ -6,9 +6,10 @@
 import { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/reporter';
 import { dependencyManager } from './dependency-manager';
 import { PriorityExecutionStats, TestPriority, TestMetadata } from '@/types';
-import { slackNotifier, SlackNotificationData } from '../utils/slack-notifier';
+import { slackNotifier, SlackNotificationData, SlackNotificationResult } from '../utils/slack-notifier';
 import { createZipArchive } from '../utils/zip-utils';
 import { configManager } from './config-manager';
+import { databaseService } from '../utils/database-service';
 import fs from 'fs';
 import path from 'path';
 
@@ -306,9 +307,50 @@ export default class EnhancedReporter implements Reporter {
         }
       };
 
-      await slackNotifier.sendTestCompletionNotification(slackData);
+      const slackResult = await slackNotifier.sendTestCompletionNotification(slackData);
+
+      // Store test results in database after Slack notification
+      await this.storeTestResultsInDatabase(slackData, slackResult);
     } catch (error) {
       console.error('❌ Error sending Slack notification:', error);
+    }
+  }
+
+  /**
+   * Store test results in database
+   */
+  private async storeTestResultsInDatabase(slackData: SlackNotificationData, slackResult: SlackNotificationResult): Promise<void> {
+    try {
+      if (!this.stats) {
+        console.log('📊 No stats available for database storage');
+        return;
+      }
+
+      console.log('💾 Attempting to store test results in database...');
+
+      // Prepare summary data for database service
+      const summary = {
+        totalTests: slackData.totalTests,
+        totalPassed: slackData.totalPassed,
+        totalFailed: slackData.totalFailed,
+        totalSkipped: slackData.totalSkipped
+      };
+
+      // Get actual Slack message URL if available, otherwise fallback to generic message
+      const slackReportLink = slackResult.success && slackResult.messageUrl ? 
+        slackResult.messageUrl : 
+        (slackData.htmlReportPath ? `Slack notification sent for ${slackData.moduleName}` : undefined);
+
+      // Store in database
+      await databaseService.storeTestResults(
+        this.stats,
+        summary,
+        slackReportLink
+      );
+
+    } catch (error) {
+      // Database storage is non-critical, so we log but don't throw
+      console.warn('⚠️ Database storage encountered an issue:', error);
     }
   }
 

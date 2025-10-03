@@ -40,7 +40,9 @@
     "src/**/*",
     "tests/**/*",
     "config/**/*",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "server.ts",
+    "server-with-ngrok.ts"
   ],
   "exclude": [
     "node_modules",
