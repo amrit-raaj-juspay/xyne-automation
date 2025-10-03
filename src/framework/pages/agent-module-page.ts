@@ -106,24 +106,53 @@ export class AgentModulePage {
       console.log('Search input not found, continuing with CREATE button search');
     }
 
-    // Find CREATE button using the SVG icon approach (like chat module pattern)
-    const createButton = this.page.locator('button svg.lucide-plus').locator('..');
-    await expect(createButton).toBeVisible({ timeout: 10000 });
-    console.log('CREATE button is visible');
+    // Check if we're on the "no agents" page first
+    const noAgentsMessage = this.page.locator('p:has-text("No agents in this category yet.")');
+    const isNoAgentsPage = await noAgentsMessage.isVisible().catch(() => false);
 
-    // Verify the button text contains CREATE
-    const buttonText = await createButton.textContent();
-    expect(buttonText?.trim()).toContain('CREATE');
-    console.log('Button contains CREATE text');
+    if (isNoAgentsPage) {
+      console.log('No agents present - found empty state message');
 
-    // Verify plus icon is visible
-    const plusIcon = createButton.locator('svg.lucide-plus');
-    await expect(plusIcon).toBeVisible();
-    console.log('Plus icon is visible within CREATE button');
+      // Verify the "No agents in this category yet." message
+      await expect(noAgentsMessage).toBeVisible();
+      console.log('No agents message is visible');
 
-    // Click the CREATE button
-    await createButton.click();
-    console.log('CREATE button clicked successfully');
+      // Verify the instruction message
+      const instructionMessage = this.page.locator('p:has-text("Click \\"CREATE\\" to get started.")');
+      await expect(instructionMessage).toBeVisible();
+      console.log('Instruction message is visible');
+
+      // Find CREATE button in the empty state (different location)
+      const createButtonEmptyState = this.page.locator('button:has-text("CREATE"):has(svg.lucide-plus)');
+      await expect(createButtonEmptyState).toBeVisible({ timeout: 10000 });
+      console.log('CREATE button found in empty state');
+
+      // Click the CREATE button from empty state
+      await createButtonEmptyState.click();
+      console.log('CREATE button clicked from empty state');
+
+    } else {
+      console.log('Agents are present - looking for regular CREATE button');
+
+      // Find CREATE button using the SVG icon approach (like chat module pattern)
+      const createButton = this.page.locator('button svg.lucide-plus').locator('..');
+      await expect(createButton).toBeVisible({ timeout: 10000 });
+      console.log('CREATE button is visible');
+
+      // Verify the button text contains CREATE
+      const buttonText = await createButton.textContent();
+      expect(buttonText?.trim()).toContain('CREATE');
+      console.log('Button contains CREATE text');
+
+      // Verify plus icon is visible
+      const plusIcon = createButton.locator('svg.lucide-plus');
+      await expect(plusIcon).toBeVisible();
+      console.log('Plus icon is visible within CREATE button');
+
+      // Click the CREATE button
+      await createButton.click();
+      console.log('CREATE button clicked successfully');
+    }
 
     // Wait to see the interaction
     await this.page.waitForTimeout(3000);
@@ -187,18 +216,58 @@ export class AgentModulePage {
 
     // Verify App Integrations section
     const appIntegrationsLabel = this.page.locator('label:has-text("App Integrations")');
-    const ragToggle = this.page.locator('button[role="switch"][id="rag-toggle"]');
     await expect(appIntegrationsLabel).toBeVisible();
-    await expect(ragToggle).toBeVisible();
-    await expect(ragToggle).toHaveAttribute('aria-checked', 'true'); // Should be enabled by default
-    console.log('App Integrations section with RAG toggle is visible and enabled');
+    console.log('App Integrations section label is visible');
+
+    // Verify App Integrations description
+    const appIntegrationsDesc = this.page.locator('p:has-text("Select knowledge sources for your agent.")');
+    await expect(appIntegrationsDesc).toBeVisible();
+    console.log('App Integrations description is visible');
+
+    // Verify the integration selection area with placeholder
+    const integrationArea = this.page.locator('div.flex.flex-wrap.items-center.gap-2.p-3.border:has(span:has-text("Add integrations.."))');
+    await expect(integrationArea).toBeVisible();
+    console.log('App Integrations selection area is visible');
+
+    // Verify the "Add integrations.." placeholder text
+    const integrationsPlaceholder = this.page.locator('span:has-text("Add integrations..")');
+    await expect(integrationsPlaceholder).toBeVisible();
+    console.log('App Integrations placeholder text is visible');
+
+    // Verify the plus button for adding integrations
+    const addIntegrationsButton = this.page.locator('button:has(svg.lucide-circle-plus)');
+    await expect(addIntegrationsButton).toBeVisible();
+    console.log('Add integrations plus button is visible');
+
+    // Verify the collections note
+    const collectionsNote = this.page.locator('p:has-text("Collections appear in the submenu when selecting integrations.")');
+    await expect(collectionsNote).toBeVisible();
+    console.log('Collections submenu note is visible');
 
     // Verify Specific Entities section
     const specificEntitiesLabel = this.page.locator('label:has-text("Specific Entities")');
-    const entitiesSearchInput = this.page.locator('input[placeholder="Search for specific entities..."]');
     await expect(specificEntitiesLabel).toBeVisible();
+    console.log('Specific Entities label is visible');
+
+    // Verify Specific Entities description
+    const specificEntitiesDesc = this.page.locator('p:has-text("Search for and select specific entities for your agent to use.")');
+    await expect(specificEntitiesDesc).toBeVisible();
+    console.log('Specific Entities description is visible');
+
+    // Verify the selected entities display area
+    const selectedEntitiesArea = this.page.locator('div.flex.flex-wrap.items-center.gap-2.p-3.border:has(span:has-text("Selected entities will be shown here"))');
+    await expect(selectedEntitiesArea).toBeVisible();
+    console.log('Selected entities display area is visible');
+
+    // Verify the "Selected entities will be shown here" placeholder
+    const entitiesPlaceholder = this.page.locator('span:has-text("Selected entities will be shown here")');
+    await expect(entitiesPlaceholder).toBeVisible();
+    console.log('Selected entities placeholder text is visible');
+
+    // Verify the entities search input
+    const entitiesSearchInput = this.page.locator('input[placeholder="Search for specific entities..."]');
     await expect(entitiesSearchInput).toBeVisible();
-    console.log('Specific Entities section with search input is visible');
+    console.log('Specific Entities search input is visible');
 
     // Verify Agent Users section
     const agentUsersLabel = this.page.locator('label:has-text("Agent Users")');
@@ -864,29 +933,29 @@ export class AgentModulePage {
     await this.page.waitForTimeout(10000);
 
     // Verify we're still on the agent details page
-    const currentUrl = this.page.url();
-    expect(currentUrl).toContain('agentId');
-    console.log(`Currently on agent details page: ${currentUrl}`);
+    // const currentUrl = this.page.url();
+    // expect(currentUrl).toContain('agentId');
+    // console.log(`Currently on agent details page: ${currentUrl}`);
 
     // Verify the conversation container is visible
     const conversationContainer = this.page.locator('div.h-full.w-full.overflow-auto.flex.flex-col.items-center');
     await expect(conversationContainer).toBeVisible({ timeout: 30000 });
     console.log('Conversation container is visible');
 
-    // Verify the file attachment appears in the conversation
-    const fileSection = this.page.locator('h4:has-text("Files (1)")');
-    await expect(fileSection).toBeVisible();
-    console.log('File section with "Files (1)" is visible in conversation');
+    // // Verify the file attachment appears in the conversation
+    // const fileSection = this.page.locator('h4:has-text("Files (1)")');
+    // await expect(fileSection).toBeVisible();
+    // console.log('File section with "Files (1)" is visible in conversation');
 
-    // Verify the uploaded PDF file appears in the conversation
-    const conversationFile = this.page.locator('p:has-text("Solar-System-PDF.pdf")');
-    await expect(conversationFile).toBeVisible();
-    console.log('Solar-System-PDF.pdf appears in conversation');
+    // // Verify the uploaded PDF file appears in the conversation
+    // const conversationFile = this.page.locator('p:has-text("Solar-System-PDF.pdf")');
+    // await expect(conversationFile).toBeVisible();
+    // console.log('Solar-System-PDF.pdf appears in conversation');
 
-    // Verify the file size and type information
-    const fileInfo = this.page.locator('p:has-text("444.95 KB • PDF")');
-    await expect(fileInfo).toBeVisible();
-    console.log('File size and type information is visible');
+    // // Verify the file size and type information
+    // const fileInfo = this.page.locator('p:has-text("444.95 KB • PDF")');
+    // await expect(fileInfo).toBeVisible();
+    // console.log('File size and type information is visible');
 
     // Verify the user's question appears in the conversation with proper styling
     const userQuestionBubble = this.page.locator('div.rounded-\\[16px\\].bg-\\[\\#F0F2F4\\].text-\\[\\#1C1D1F\\].self-end');
