@@ -31,6 +31,14 @@ export interface SlackNotificationData {
   };
 }
 
+export interface SlackNotificationResult {
+  success: boolean;
+  messageUrl?: string;
+  threadTs?: string;
+  channelId?: string;
+  error?: string;
+}
+
 export class SlackNotifier {
   private client: WebClient | null = null;
   private channelId: string;
@@ -53,10 +61,10 @@ export class SlackNotifier {
   /**
    * Send test execution completion notification to Slack
    */
-  async sendTestCompletionNotification(data: SlackNotificationData): Promise<void> {
+  async sendTestCompletionNotification(data: SlackNotificationData): Promise<SlackNotificationResult> {
     if (!this.isEnabled || !this.client) {
       console.log('📱 Slack notification skipped: Not configured');
-      return;
+      return { success: false, error: 'Slack not configured' };
     }
 
     try {
@@ -69,8 +77,11 @@ export class SlackNotifier {
         mrkdwn: true // Enable markdown formatting for attachments
       });
 
-      if (result.ok) {
+      if (result.ok && result.ts && result.channel) {
         console.log('✅ Slack notification sent successfully');
+        
+        // Generate the Slack message URL
+        const messageUrl = await this.generateSlackMessageUrl(result.channel, result.ts);
         
         // Send thread reply with priority breakdown if available
         if (data.priorityStats && result.ts) {
@@ -89,18 +100,39 @@ export class SlackNotifier {
           // Auto-discover and upload API calls files
           await this.uploadLatestAPICallsFiles(result.ts);
         }
+
+        return {
+          success: true,
+          messageUrl: messageUrl,
+          threadTs: result.ts,
+          channelId: result.channel
+        };
       } else {
         console.error('❌ Failed to send Slack notification:', result.error);
+        return { success: false, error: result.error || 'Unknown error' };
       }
     } catch (error: any) {
       // Handle specific Slack API errors
       if (error.code === 'slack_webapi_platform_error' && error.data?.error === 'account_inactive') {
         console.log('⚠️  Slack notification skipped: Account inactive. Please update SLACK_BOT_TOKEN in .env file.');
         this.isEnabled = false; // Disable further attempts
-        return;
+        return { success: false, error: 'Account inactive' };
       }
       console.error('❌ Error sending Slack notification:', error);
+      return { success: false, error: error.message || 'Unknown error' };
     }
+  }
+
+  /**
+   * Generate Slack message URL from channel and timestamp
+   */
+  private async generateSlackMessageUrl(channelId: string, messageTs: string): Promise<string> {
+    // Convert timestamp to Slack's URL format (remove decimal point)
+    const urlTimestamp = messageTs.replace('.', '');
+    
+    // Use Juspay team domain directly since we know it
+    const teamDomain = 'juspay';
+    return `https://${teamDomain}.slack.com/archives/${channelId}/p${urlTimestamp}`;
   }
 
   /**

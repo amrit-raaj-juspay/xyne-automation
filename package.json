@@ -46,7 +46,12 @@
     "setup": "npm install && npm run install-browsers && npm run build",
     "setup:complete": "node setup-complete.js",
     "test:timeout": "node test-timeout-functionality.js",
-    "test:api-key": "node test-api-key-input.js"
+    "test:api-key": "node test-api-key-input.js",
+    "server": "npm run build && node dist/server.js",
+    "server:dev": "tsc && node dist/server.js",
+    "server:watch": "tsc --watch & nodemon dist/server.js",
+    "server:public": "npm run build && node dist/server-with-ngrok.js",
+    "server:public:dev": "tsc && node dist/server-with-ngrok.js"
   },
   "keywords": [
     "playwright",
@@ -62,6 +67,7 @@
     "@playwright/test": "^1.40.0",
     "@types/archiver": "^6.0.3",
     "@types/cheerio": "^0.22.35",
+    "@types/express": "^5.0.3",
     "@types/node": "^20.19.13",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
@@ -76,7 +82,9 @@
     "axios": "^1.5.0",
     "compromise": "^14.10.0",
     "dotenv": "^16.3.0",
+    "express": "^5.1.0",
     "ml-distance": "^4.0.1",
+    "ngrok": "^5.0.0-beta.2",
     "openai": "^4.20.0",
     "winston": "^3.10.0",
     "yaml": "^2.3.0"
