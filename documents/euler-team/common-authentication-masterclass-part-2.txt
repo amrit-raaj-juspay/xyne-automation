@@ -1,0 +1,66 @@
+Juspay Xplore _ Authentication Masterclass - Part 2
+https://www.youtube.com/watch?v=H3fr64q_smg
+
+
+Overview - Inherence Factors: Revolutionizing Payment Authentication
+
+The source discusses three primary authentication factors: knowledge factors (like passwords), possession factors (like physical tokens), and inherence factors (biometrics such as iris or fingerprints). It highlights that while inherence factors are widely used for unlocking devices and apps, their integration into the payment ecosystem has been limited. The text suggests that the evolution of smartphones, particularly the inclusion of secure enclave chips designed to store secrets, will drive the adoption of inherence for payments. This shift promises increased security through a chain of trust established via a user's SIM and reduced transaction friction, leading to a significant improvement in authentication success rates.
+
+
+
+Transcript 
+
+
+[00:00:00] Essentially the authentication factors are of three types. It is what you know, which means the knowledge factors. Mm-hmm. It, it includes like passwords, spins and things like that. The second is a mode of you are, which is the internet factor. This can be your iris, like other hard users, Iris. It can be a biometric and things like that.
+
+[00:00:20] And the third thing is what you have. What you have is also called position factor. And world uses a concept of a risk-based mitigation means that the authentication is not being used, but a risk-based framework is used. Second part is a friction, which means that whenever you are trying to authenticate, not all the user will be successful.
+
+[00:00:38] Because the hardware world and the sort of world is not perfect.
+
+[00:00:54] One thing that, uh, you know, something that has been a lot in discussion these days, uh, even there were draft guidelines by the regulator, uh, and something that, uh, you know, we are just, we keep thinking about as well. Hmm. One thing that has not happened in payments that much in authentication is that, uh, inherit is a factor.
+
+[00:01:14] Like we discussed, three factors of authentication or three concept frameworks of application inheritance as a factor has not been explored that much in payments. Yeah. Whereas in, uh. Uh, you know, we use that. Otherwise we use that, that otherwise, almost like every day it's our smartphones. Yeah. Uh, even unlocking a lot of apps, et cetera, we use it.
+
+[00:01:34] So, and, and even invest, you know, apple Pay, Google Pay, you know, there has been a lot of focus on this. Uh, so what do you think, you know, will be the next evolution or how will inheritance be used, do you think? First of all, let me ask you this. Do you think inheritance will become a. Critical factor in the coming, uh, few months, if not years.
+
+[00:01:57] Yeah. Right. And how do you think it, uh, will evolve? Yeah, so very important point was right now almost all my asset unlocking is by my face ID or my biometric, right? So you unlock your phone, you unlock your, uh, favorite UPA app, and you unlock your favorite bank app all by actually fingerprints and face IDs.
+
+[00:02:18] However, the payments are still not being done by that. So we obviously see a evolution in that. The second factor, why I think that'll rise, right, is that the smartphone evolution, so unlike the big manufacturers like Google and Apple have invested a lot in the actual hardware of the mobile, which means that now in the mobile, there is a extra chip.
+
+[00:02:40] It's called by various names in different worlds, like Secure enclave, secure element, but this chip is a extra security chip, which is inside in your mobile. Almost 95% of the mobiles now carry that. Mm-hmm. This chip ensures that a secret once given to the. Chip never goes out. Only the essence of it goes out.
+
+[00:03:01] Okay. So this secure element and all will, these two factors will actually lead to this innovation factor, you rightly said. Right. In months we'll see that by next year a lot of payment will be happening by this in returns factor. Got it. But let's go a little deeper into this subject because this is something which is, which will be of interest, correct.
+
+[00:03:22] To the ecosystem, our audience as well. Yeah. So when you talk about. Chip on a device. Sure. You know, people will have question on how secure is this? Yeah. Uh, you know, um, what happened if someone hacks my phone, et cetera. These are the general questions. Right? Yeah. So if you can explain that how does, maybe in a simple way, but how does it.
+
+[00:03:45] Mean that your, uh, data is secure, your, because in payment there is some transmission happening to the outside world, right? Correct. Um, there are so many players involved in processing a transaction. So what happens, uh, behind the scenes if you can give some, uh, information on that? Yeah, exactly. So, um. Like I talked, right?
+
+[00:04:03] So your mobile phone has this extra chip inside it, and you are simply at the same time, your phone has also has a sim, right? So first we'll talk about this concept software. When we, uh, talked earlier, this concept of chain of trust, which means that you will use your existing sim to establish and onboard this new chip or to make payments on your behalf.
+
+[00:04:25] Okay? Now the first factor of that, how will somebody onboard onto this new form of when he already has a sim? Like it will not happen that I have, like, I don't have any access to your SIM or anything, and I can onboard and do my payments via my biometric. So that is one factor of authentication when, uh, one concept that we covered.
+
+[00:04:44] The other concept is that how is this chip. Itself is secure, right? Like can somebody steal data from this? Mm-hmm. No. So the hardware manufacturers have ensured that the data inside it never goes out. And even when a transition is happening, only the essence of it, which means that the transaction payload goes into that chip and only a 15 min signature comes to away, which means that after 15, 15 minutes or any x number of X minutes of time, this is actually invalid.
+
+[00:05:13] So, which makes sure that this payment will be always. Uh, secure. And this trust can never, uh, this trust can never be admissibly used as such. So, so, uh, to summarize, uh, you, you're saying that one there would be. You know, de facto controls, which are being built by the hardware provided itself, which, uh, which make it very secure.
+
+[00:05:34] Yeah. And second, uh, there are some, uh, velocity checks in terms of time, in terms of value, et cetera, that the ecosystem will also put in into minimize any exposure. As such, that's making it so, so the RBA draft Yeah. Uh, actually talks about it that there'll be various risk factors in judging that what should be type of authentication for this transaction?
+
+[00:05:55] Assets, right? Yeah. So all these controls and, uh, information to the user will be always given that whenever a fact of authentication is set up, he's an intimate about it or whenever it is used. You are intimate about it. So all these things will evolve with the industry. But one thing is sure that Indian returns as a factor will come inside the merchant payment ecosystem.
+
+[00:06:15] Okay. Which was only, right now consolidated onto, let's say a app or to a bank level ecosystem. Okay? So, uh, have you done any early POC onto this? Yeah. Yeah. And, uh, how have been the results when, um, you know? Yeah. And that is why we are excited about it, right? Like. Um, see, first of all, we have to realize that.
+
+[00:06:37] This inance is a factor, right? It's very efficient, which means that it, it does not depend on your, you having the uh, right connection, like your optic network connection, right? It doesn't require a lot of data, right? It is just one small message that will go, it's altering things that, that drop offs, which we're talking about, the friction, right, is really reduced now.
+
+[00:06:57] So there is only one data packet that has to reach to your, um, your issuer, which means that the user's bank and the transition will be done. And we see that from our very early, um, POCs, um, there will be a massive jump in the authentication success rate. Um, uh, and, and we see, we feel that this benefit will be translated to.
+
+[00:07:18] All the users, uh, who are transacting on their favorite apps, ah, yeah. It'll make the payment product managers very happy as well as the marketing folks because a lot of dollars being spec percent on spent on a user acquisition and finally dropping out at the final of payment is they would. Analyze all the funnels.
+
+[00:07:36] They'll put in so many dollars to get new, new users. And he has come to the pain page he wants to actually pay now. Right. He's saying that I want to pay money and then he's not able to pay. Yeah. So, so this is almost, uh, criminal to not let that user pay. Absolutely. And I think that this evolution of new factor of authentication will, will absolutely remove that friction out of it.
+
+[00:07:56] Yeah. That's great to hear. I think, uh, a lot of interesting things coming up in authentication. Yeah. Especially in payments and, uh. It'll benefit both the merchants and the payment ecosystem in general. And as JPay, we have been, uh, working on various forms of authentication for long that has been our, uh, you know, uh, hero products.
+
+[00:08:17] Yeah. Right. And, uh, we look, we are looking forward to this. Eh, this is gonna be interest like the next few months will be very exciting for us. Yeah. Yeah. Thank you everyone. Hope you had some insight into what is happening in the areas of authentication. Uh, what is authentication in payments? And if you have any questions, please feel free to get in touch with us.
+
+[00:08:39] Thank you.
+
+

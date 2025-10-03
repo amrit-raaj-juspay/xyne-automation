@@ -1,0 +1,115 @@
+# Euler Onboarding Resources
+
+This file contains all resource URLs organized by module and concept for the Euler team onboarding process.
+
+## Module 0: Prerequisites
+
+### Concept 0.3: Express Checkout and Payment Orchestration
+- Euler Flow Explained: https://juspay.io/in/docs/
+- Euler Flow Diagram: https://drive.google.com/file/d/1lXmaVgQXCsiMXeJRHHh9wDmqlVrS1nCX/view?usp=sharing
+
+### Concept 0.4: Key Terminology and Concepts
+- Payment Flow Diagrams: https://medium.com/authncapture/transaction-3f31e7b94bb8
+
+## Module A: Getting Ready with Tools
+
+### Concept A.1: Setting Up Euler PS Bitbucket
+- Setup Guide: https://docs.google.com/document/d/1fneB6xXZ4B4lNJaIXRIG-vMe-mb8_dk8W1_f_sxn7pY/edit
+- Bitbucket: https://bitbucket.org/juspay/euler-ps/src/master/
+
+### Concept A.3: Dashboard Access
+- Grafana: https://grafana.internal.svc.k8s.mum.juspay.net/d/bADyth3iz/2d-merchant-gateway-cutover?orgId=1&refresh=5m
+- EC Ops Production: https://dashboard.expresscheckout.juspay.in/
+- EC Ops Sandbox: https://dashboard.sandbox.juspay.in/
+- Kibana: https://kibana.sso.internal.svc.k8s.mum.juspay.net/app/kibana#/home?_g=()
+
+### Concept A.4: SQL and Data Access Tools
+- MySQL Web: https://mysqlweb.sso.internal.svc.k8s.mum.juspay.net/
+- BigQuery: https://bigquery.cloud.google.com/project/godel-big-q
+
+### Concept A.5: Postman Collection Setup
+- Postman Download: https://www.getpostman.com/downloads/
+- Euler API Collection: https://www.getpostman.com/collections/83502743906bb7e1c4ac
+- Environment File: https://drive.google.com/file/d/1lPDmVDzM4n2-UHnnFeuTxShY_mfsAlMW/view?usp=sharing
+- Using Postman Guide: https://drive.google.com/file/d/1sZV4qHwFnwbpYV-5twgq4jHDhwLMI22q/view?usp=sharing
+
+## Module B: Euler Platform Fundamentals
+
+### Concept B.1: Euler Architecture Overview
+- Structure of Euler Core Flow: https://docs.google.com/spreadsheets/d/1NCxT8WactLJ6E6xS8i5b6B-Zh1bXjXSNEAn8JKATkvg/edit?pli=1#gid=1006181837
+
+### Concept B.2: Core API Flows
+- Order Create Flow: https://drive.google.com/open?id=1KQ1O6jl9Hd1-BIlcyMur5sTSxa6gjIxS
+- Transaction Flow: https://www.figma.com/file/ZtZbwee1haRFuAxYXabSgsQx/Euler?node-id=0%3A1
+- Refund Flow: https://drive.google.com/open?id=1z-e4SokVV9SLpk_cDAF1xLgxiF7M694s
+
+### Concept B.3: Payment Method Flow Diagrams
+- UPI Collect: https://drive.google.com/open?id=1oJvnstlRnz6xpJqkt0LYdfqv3_9ebEi3
+- Various PMT Flows: https://medium.com/authncapture/transaction-3f31e7b94bb8
+
+### Concept B.4: Merchant Integration Patterns
+- Developer Docs: https://developer.juspay.in/
+- Integration Guide: https://developer.juspay.in/docs/integration
+
+### Concept B.5: Code Structure and Organization
+- Walkthrough Part 1: https://drive.google.com/file/d/1LTNq31vOzKsvDP1KHYczqeE3eHUlbil7/view?usp=sharing
+- Walkthrough Part 2: https://drive.google.com/file/d/1jDQPcZYTDwEjFfpddMVYz9fjGDL53mPX/view?usp=sharing
+- Euler Core Flow: https://docs.google.com/spreadsheets/d/1NCxT8WactLJ6E6xS8i5b6B-Zh1bXjXSNEAn8JKATkvg/edit?pli=1#gid=1006181837
+
+## Module C: Payment Orchestration
+
+### Concept C.1: Gateway Integration Framework
+- PG Integration Docs: https://drive.google.com/drive/folders/0ByObWURB_5BcWmMxZWV2VVFxS3c?usp=sharing
+
+### Concept C.5: Multi-Provider Management
+- Configured Gateways Overview: https://docs.google.com/spreadsheets/d/1-uSYBQg3A-qYgcnJ9cy6qMJ5aDaa1i2f_iBsRbMHwvo/edit#gid=0
+- AU Type: https://docs.google.com/spreadsheets/d/1wnvEjIBqD9LLjYSyFuYTbzXc4gMaOG-4Ws8dW3BYvBk/edit#gid=1469513697
+
+## Module D: System Operations
+
+### Concept D.1: Monitoring with Grafana and EC Ops Dashboard
+- Grafana: https://grafana.internal.svc.k8s.mum.juspay.net/d/bADyth3iz/2d-merchant-gateway-cutover?orgId=1&refresh=5m
+- EC Ops: https://dashboard.expresscheckout.juspay.in/
+
+### Concept D.2: Log Analysis with Kibana
+- Kibana: https://kibana.sso.internal.svc.k8s.mum.juspay.net/app/kibana#/home?_g=()
+- Log Viewer: https://log-viewer.sso.internal.svc.k8s.mum.juspay.net/
+
+### Concept D.3: Debugging Transaction Issues
+- Process Tracker: https://pgw-lambda.sso.internal.svc.k8s.mum.juspay.net/
+- Sentry: https://sentry.io/auth/login/
+
+## Module E: Domain-Specific Flows
+
+### Concept E.1: UPI Variants (Intent, Collect)
+- UPI Collect Flow: https://drive.google.com/open?id=1oJvnstlRnz6xpJqkt0LYdfqv3_9ebEi3
+
+## Module F: Code Architecture
+
+### Concept F.2: PureScript and Haskell Introduction
+- PureScript Docs: https://pursuit.purescript.org/
+- PureScript Guide: https://leanpub.com/purescript/read
+- Haskell Guide: https://drive.google.com/file/d/1NxbbkYTIOZL-KpUXDwjR5jQptaIcAAXE/view
+- 24 Days of PureScript: https://github.com/paf31/24-days-of-purescript-2016
+
+### Concept F.3: Domain Core Types
+- Documentation: https://docs.google.com/document/d/1RpBN8uefDBtgJ2mHoGyC_5TBRvBCDcYYw1kukxbuZV8/edit?copiedFromTrash#heading=h.t533piv8tx1
+
+### Concept F.5: Best Practices for Euler Codebase
+- Code Syntax Checklist: https://docs.google.com/document/d/1DBvD19lI_Pdd5mMzEZqXhHFiFhwJ6u9Yefu9w-vEJ_o/edit
+- Integration Checklist: https://docs.google.com/spreadsheets/d/16zK0Psqm6mOtHuR-85rcH8UaU2byZgPp8OzafTHnlhE/edit#gid=0
+
+## Module I: Infrastructure & Deployment
+
+### Concept I.1: Kubernetes Basics
+- Kubernetes 101: https://medium.com/google-cloud/kubernetes-101-pods-nodes-containers-and-clusters-c1509e409e16
+- Architecture: https://luludansmarue.github.io/kubernetes-docker-lab/k8s/architecture.html
+
+### Concept I.2: Istio and Service Mesh
+- Istio Documentation: https://istio.io/docs/concepts/what-is-istio/
+
+### Concept I.3: Deployment Process
+- Documentation: https://drive.google.com/file/d/1vTZL9a8Um0FjoNwJXo9lwNtJ4-GxCb5Z/view?usp=sharing
+
+### Concept I.5: Infrastructure Scaling
+- How to Deploy Guide: https://docs.google.com/document/d/1CoVrhXuvzzDLnhl6LlepTny7ZCGlUwVj1p4YUBxenWc/edit?usp=sharing 

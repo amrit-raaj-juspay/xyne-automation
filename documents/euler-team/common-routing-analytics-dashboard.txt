@@ -1,0 +1,63 @@
+Juspay's Routing Analytics Dashboard.mp4
+
+https://www.youtube.com/watch?v=UDHGxDhQUGY
+
+
+Overview - Dynamic Payment Routing: Visibility and Analysis
+
+
+The source discusses how dynamic payment routing functions, highlighting its ability to track real-time success rates for various payment gateways across multiple dimensions like card type and country of origin. It explains that a routing engine calculates scores to identify the optimal gateway for each transaction, and these scores are updated in real-time. The text then introduces a routing analytics dashboard, which provides visibility into these decisions, allowing users to analyze routing performance by specific date, payment instrument type, and granular dimensions. The source also emphasizes the importance of understanding time-based performance variations and gateway eligibility to avoid common analytical pitfalls, ultimately aiming to provide merchants with transparency and data-backed routing choices.
+
+
+Transcript 
+
+
+[00:00:00] Hi everyone. In today's video, let's look at how dynamic routing works in payment processing and how our routing analytics dashboard helps bring the visibility as to why ease routing decisions are being made by the engine. Dynamic routing tracks success rates in real time for payment gateways at multiple dimensions, such as payment instrument, card type network, country of origin, of a transactions, and so on.
+
+[00:00:22] To identify the optimal gateway for a transactions success rates are tracked by the routing engine in the form of scores, which are recomputed in real time. A score represents the success rate of a payment gateway for the last n transactions at the tracked routing dimensions. The payment gateway with the highest success rate score for routing dimension is identified as the optimal gateway for routing transactions for that dimension.
+
+[00:00:48] Now let's look at how routing analytics dashboard helps us in breaking this down. At the top, we have the ability to choose a particular date for which we want to analyze routing performance. And at this point in time, we have the ability to do per day analysis when you can select a specific day and the routing analytics data for that particular day will be pulled up.
+
+[00:01:12] For example, we have taken February 3rd as the day of choice for this example. We have a list of payment instrument types that are being listed here, which are essentially all the payment instrument types for which dynamic routing is in play. For this example, let's take the case of cards. Here you can see at top there are three metrics that are available.
+
+[00:01:34] One is the total volume, which is process for this particular payment instrument type, which is cards over the entire day period, which is 1.22 lakh. Of the total volume, 40.8% of the traffic is distributed based on dynamic routing, and the remaining are based on rule-based routing set by the merchant.
+
+[00:01:54] There are a combination of eight active dimensions at which decisions are being made for this particular merchant, and that information is also available up top. As you go down, you can see the exact dimensions at which routing distance are being made for the payment instrument type cards, the top five.
+
+[00:02:12] Dimension based on volume are listed in this particular chart. For example, you can see that the highest dimension is order payment card, visa and credit. How you read this particular information, the first part signifies the type of payment that is happening. For example, order payment signifies a normal payment, which is happening as compared to mandate register, which which kind of tracks to a mandate type of payment.
+
+[00:02:35] The second part is the payment method type, which in this case is cards. The next two granularities signify the network in which the routing distance are being made. For example, visa and the card type, which is credit card or debit card, to even drill down further, we can go to the next section, which gives the volume breakdown at each gateway level.
+
+[00:02:54] For each of these dimensions at specific time periods. For example, if you look at Gateway A here, it has almost 10.29 K of transaction that it had received over the days period, and there are multiple routing approaches that are in play while making this decision. For example, it could be due to dynamic routing as it's seen in the actual volume breakdown.
+
+[00:03:16] And there could be other approaches. The second breakdown is hedge volume, which is essentially the minimum amount of volume that the routing engine sends to each gateway to evaluate. Its Sr goodness. Another approach that is in play is the health-based routing, wherein for certain down times the routing would be made in favor of gateways.
+
+[00:03:34] Which is not facing downtime and a fallback would happen. Fourth is silent retry, where in case of initiation to a gateway, a particular request fails. We try with the second most preferred gateway, and in this case this, it was this gateway A, so the exact breakdown of volumes across multiple routing approaches are also available straight out of the box in this dashboard.
+
+[00:03:57] Let's even drill down further. If you want to look at the gateway performance at specific granularities. Say for example, we take the case of. Credit card for Visa, we can see that for this particular dimension there are specific time periods in which the gateway A, was performing better due to which volumes were routed in favor of that.
+
+[00:04:17] For example, if you see this particular time period, say from eight 50 to nine 15, so you can see that this gateway a had the highest score amongst all possible gateways due to its volumes are routed in favor of that gateway. For example, at 8 55 of the 1 65 transactions that are eligible at this particular dimension, 1 41 transactions were routed in favor of Gateway A, and the remaining volume was split between the other remaining gateways for evaluation of their SR goodness in case a gateway does not receive any transaction for a set amount of time, and you select that time period for analysis.
+
+[00:04:53] We provide the exact scores based on which routing decisions are being made so users can validate how the routing engine had made decisions in favor of another gateway as compared to the gateway in question.
+
+[00:05:07] Let's look at couple of the pitfalls that we have to avoid while analyzing routing performance. Dynamic routing is not just about selecting the best payment gateway overall. It's about making the best choice at the highly granular level based on multiple dimensions, such as merchant type cart, network cart, issuing bank, and so on and so forth.
+
+[00:05:26] For example, a gateway might perform well for credit cards but not for debit cards. And if you analyze performance at an aggregate level, you may think that this gateway is underperforming overall, and why? In fact, we sent a lot of volume to this gateway, but it's not the case in reality. The gateway was performing at specific levels or dimensions at which the routing engine had favored that gateway as compared to the others.
+
+[00:05:50] This dashboard shows the exact dimension at which routing is happening and the volumes that are routed per dimension across gateways. For the selected payment method, users can analyze this data to understand why routing decisions are being made at the most granular level possible. The second general pitfall that happens, it's understanding the exact time periods at which routing distance are being made.
+
+[00:06:15] Payment gateway performance at different routing dimensions may not be constant. It changes over time due to system updates, traffic variations, and other factors. If you analyze routing performance over an entire day, you might miss out on understanding the real time shifts that affect routing decisions.
+
+[00:06:33] Yeah. For example, at 10:00 AM Gateway A might have the highest success rate, but by 2:00 PM Gateway B could be performing much better. If you only look at an average data across a day's time period, you might think one gateway is better than the other, but in reality, performance varies over time. The routing analytics dashboard highlights the exact time periods at which payment gateways were preferred for routing transactions.
+
+[00:06:55] It helped bring visibility as to why a gateway was selected for a certain period of time. The third pitfall we have generally observed is understanding the eligibility of gateways while processing transactions. For example, merchant might have configured only specific gateways for specific payment method types and networks.
+
+[00:07:14] For example, for card visa only Gateway A, B, and C would've been preferred via up and another set of gateways. D and F would've been preferred for routing transactions. And it could also be the case that merchant has info, certain rules. Either we are priority logic or order create for specific payment flows, where even a small subset of gateways will only be eligible to bring out the visibility of eligibility of gateways based on each payment method type.
+
+[00:07:41] In our dashboard, we have listed down all the gateways that are eligible for a specific payment method type for each of the payment method types. And from this dashboard, you can analyze at the most granular level, which is dimension and time. Where routing decisions were made in favor of a gateway as compared to the others.
+
+[00:07:59] To summarize, our routing products are built to provide merchants with complete transparency and choice, and to make data backed routing decisions. The routing analytics dashboard, which is built in line with the same principles, provide merchants with a bird's eye view of the routing decisions and ability to do granular analysis.
+
+[00:08:19] We would love to hear what you think about our products and what we can do better. Until then, thank you.
+
+

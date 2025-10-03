@@ -1,0 +1,271 @@
+
+QC, Merchant Container & Lambda Migration Guide
+
+Quicks (QC) Gift Vouchers: Explains split payment functionality using gift vouchers combined with other payment methods, where two transactions are created (one for gift card amount, another for remaining balance) with pre-auth and settle flow for proper transaction handling.
+Merchant Container: Details payment method for merchant-specific virtual currencies like "solid coins" and "fit cash" that act as store credit, supporting single or multiple container transactions with terminal "to be charged" status requiring merchant fulfillment APIs.
+Lambda Service Migration: Covers the deprecation of Lambda service and migration of three key functionalities back to Oiler - saved payment methods (SPM), UPI gateway callbacks, and surcharge calculation - to streamline the payment processing architecture.
+
+
+Yeah. So for quicks. So it's basically quicks is a part of uh it's a g gift voucher. You guys have any idea about gift vouchers? Like have you guys ever used gift vouchers on Amazon? Flip card.
+Yes.
+Yeah. So it's similar to that thing only. So in this uh quicks it's part of split payments. So split payments is basically uh using two payments in one transaction. Apart from this we have split settlement which is different uh the difference between split payment and Split settlement is in split settlement there are multiple merchants used. In split payment there are multiple payment methods used. So quicks we generally use with split payments. Uh in this we have three APIs. Basically one is for balance check. So here we can check the balance of the card of or basically the gift card which we have and we have normal order create and transaction. So in order create uh We generally use two gateways for quicks. One will be the quicks gateway and the second will be uh any other gateway for doing a transaction. So suppose we are doing a payment of 1,1 rupees and uh we have a gift voucher of 5 500 rupees. So remaining 5.1 rupee will be paid through this second payment method or payment mode. You can use any card, wallet, net banking, UPI, anything can be used in this case. So when uh in this there are two things to be taken care of to be noted. One is when we create transaction. So we will get uh actually it's not working here. So when we create transaction we will get two uh let me check if I have something. We'll create two transactions in one thing. I not have an order.
+No, for processing quick set we have gateway because uh so he was telling if you have an order amount of,000 rupees and you have a vure of say from 6,000 something uh I mean sorry 600 something remaining 400 needs to be paid from some other mode right so that gift card.
+Uh that gift card can be processed using quicksa gateway. Quicks also
+quicks is a gateway.
+Hello. Yeah. So everyone can see my screen right?
+Yeah.
+So here you can see this transaction ID.
+So here it's the first is the merchant ID, merchant name. Second is the order ID. Third you can see here is there are two transactions created hyphen 1 - hy - 1. So here this hyphen 1 is the the first transaction and this second hyphen 1 denotes is the first part of the first transaction and here you might see one more thing this is the second one. So here we have in this manner we create two transactions in this and uh so what the the basic thing in this is like the Normal transaction which we do say suppose we are using razor pay gateway then that will go through o and settle this is the type of payment uh the this and the second will be pre-auth and settle for quicks we use pre-auth and settle so in this what we do when the money gets deducted from quicks so it will go to like say suppose my 500 rupees is directed from the quicks amount now that will be in the state of authorized when my second transaction gets charged. So that uh the then my quicks transaction will also get uh charged and captured. But if my first if my second transaction gets failed then my quicks transaction will get voided and my money will get back into that gift culture.
+Uh s can you mention this some what are the signal if the first one has failed and the one is the state of the second The second one
+what what what sorry your voice
+also whatever that you are telling right so that is bitusing kanga wants this to be like you to be no using a note card and write down like what are the scenarios possible scenarios
+that happen when we have an um uh pre-auth Mode of transaction transaction one mode of payment two. See you guys know that in transaction we have two things. One is o and settle. Second is
+free and settle. Correct. Now in this uh when we do like uh quicks is using this mode of transaction. So what will happen if I did the first scenario my first transaction gets first DXN gets success and second also gets success then my order status will be success.
+Okay. and my first rection. Now here in this case first TXN is quicks it gets success and second DX which is normal DX gets failed. So my order status will be failed but my first transaction status will be uh void. Uh first it will be in authorized state and when the second one gets failed now so it will change to this will change to uh voided as you can see here. in this scenario. Oh, this is authorization fail of the scenario. Just a second. Okay. Uh so for the first transaction will be authorized and then it will get to voided when second transaction gets failed. And if in the first scenario over here.
+Sorry. So, how we going to differentiate between the first first TXN response and second? Do we have any uh format of TXN ID?
+I showed you here right here we have this transaction ID, right?
+Huh?
+So, here you can see this is the second transaction and over here you can see is the first transaction.
+Okay, got it. Yeah.
+And here The order status you can see complete details like from with this is the card payment which is made and the second one is your uh quicks pay method. Yeah gateway will be quicks here the gateway will be razor pay or any other whichever you choose and uh apart from this we have one more thing uh like card check balance. So what happens uh when you do a transaction so first we internally call one uh card check balance API. Okay, this is the one which we call we'll check the balance of this. So now here the balance for this card is zero. But say suppose this is 500. So what it will do? It will deduct like it it will check all this uh balance check balance and uh in orders in internally it will assign the amount to the second transaction with the main hold complete transaction amount minus the check balance amount. Where is this? Ah, so here my net amount is 1,1 rupees. My check balance amount came as 500. So it will minus this. So it will becomes uh 5001. So that is the amount which I will be using for my card transaction. That's why we call card check balance API.
+Okay. Anything else you want to know in this? There's nothing much in this overall. So when the first transaction goes to void what will be the overall order status?
+It will be uh authoriz authorization failed only. Okay.
+Author it will be a failed transaction basically. It can be authentication or authorization failed.
+Sorry if first transaction got success and QC got failed then what will be order status? Success
+then it will be a success only now because your money has been debited uh completely. one transaction every
+yeah but see here the scenario is like uh in that scenario the case which you are saying so in that the quicks balance will be zero only right
+okay
+first only we will like first only it will check the check balance if the check balance is zero then it will directly go to null only I'll show you in where is this guy huh See here this is the exact same case which you're seeing. Now here balance is insufficient that means the balance in the it's a zero balance correct. So in this case the transaction got uh either it will get success or either it will get failed. So in this case it got failed. Payment is not initiated and authorization is failed because it didn't went through. But here transaction amount will be zero for this quicks and here the complete unknown will be there getting my point.
+Anything else?
+Uh s
+yeah
+is that always required to use with an another gateway or can we use only one
+like for quicks specific you're asking or like it depends
+specifically quicks if I want to do only see I have an order amount of 100 rupees and my is also 200
+so I can use only
+yes you can you can use only quicks as well in that scenario
+so in that case only the gateway whatever I'm passing it would be only quicks
+yeah
+transaction and I'll I'll get only that uh txn ids uh -1 will be there one will be there is it or because I'm not specifying another mode now
+huh
+what will happen it will take from you so when you create the order right
+when you create order you will pass only one gateway is what you are saying wait
+here you will not pass this.
+So still it will create the order and after that it will take your it take the details from you for both like card payment as well as this. If it's sufficient then it will take from you like it will debit only the quicks amount first. It won't go to the second transaction.
+So uh is it possible to uh do a transaction of quickseller without having this additional payment details?
+Um that actually I'm also not sure.
+Okay.
+Can we pass two?
+Uh yes, we can do that.
+So in that case uh we'll have this
+payment details only the separate payment/ transaction. Can you open the original payment details?
+If you see the format right everything is the same as what you pass in the
+correct.
+Yeah.
+Yeah. So you can make it as a separate call. No issues.
+No. Uh what I was asking is that if I don't pass this additional payment details right on your transaction, will that get considered for quicks or is it a consider how can it identify it's a quicks? You're not sending any details of the quicks in the uh primary.
+No, instead of here I'll send it in card number itself.
+Huh? That will work.
+It's a single call of silver. That's it.
+That in that case it will be a saved card transaction, right? Because here it will be passing card token, right?
+Which is card token.
+This in quicks
+is a name you have given as a card token. That's it. It's a number itself but will pass the parameter as card token.
+Okay. So it will be similar to store card but it will be quick like gift card only.
+Yeah,
+the curly will be similar to store card. Okay.
+Uh that uh so I can exclude this expiry month here name on card and then security only pass the card number and security code and have this quicks in one transaction right?
+Yeah can do that
+whatever parameter in The payment details you are passing right. Same thing you can construct as a U single
+normal transaction
+you can do the transaction.
+Okay.
+Uh so how to use two uh coupons uh inad like can we use it? Is it valid scenario?
+It's a valid scenario. Additional payment details is a and it has you can add multiple like this. So in that case how will our transaction ID looks? Uh is it hyphen one?
+Yeah it hyphen 1 hyphen
+and then hyphen 1 hyphen 2 - 1 hyphen 3 right
+no it won't be three because your amount will not be debited from the uh uh from other transaction right you're not doing a transaction from card or upr you're directly debiting from the two quicks transa cards uh Correct. So it be hyphen 1 and hyphen 2
+but it can go to more also right in
+say suppose I I have an amount of 2,00 2,5 rupees and I have two gift cards of rups 1,000,000 still my five rupees is pending
+and then it can go to more 500
+it can go yeah right
+you can split payment is that itself you are splitting the payment
+huh yeah so we can get any number of payments right yes Sorup. So with uh gift card we can use any other payment method is it?
+Yeah we can use wallet UPI net banking card
+anything
+it's the similar way you are using on Amazon and that no when you add the gift voucher and many amount you pay through anything.
+Uh but uh we also have a check right like we can't club two cards gift cards. So how That's
+in that is so that in some places you have that check but in some gateways allow you to some some merchants allow you to add multiple vouch multiple vouchers as well like this is a gift voucher not a offer code right there different in offer and
+gift vers like we can't club two ver based on merchant
+if merchant want to club two gift cards he can do it Any other doubts?
+No one has doubts on this uh saf.
+What about refund?
+Oh, refund. Uh what about refund? How does the refund block?
+Refund will be working as normal refund only in this case like the complete amount will be de deducted. degree will be refunded.
+Here we will use TX and based refund or not.
+Here we will be using uh TX and based
+and if if you want to check so
+what?
+So if you want to test for examp
+you can test in Picasso. and uh Anjel I have configured quick sorry can what is the next Hello Rahul.
+Yes Rahul is not here. I will start the merchant container.
+Okay.
+Okay. Let me share. It's good. So merchant container is also one of the split payments transaction. So one of what uh server of told like QC. So merchant container also similar kind of thing. So but here uh so QC also it's a gateway right so in order to create for QC also we will give like a QC gateway id and uh reference ID and all will give right so merchant container will act as payment method and gateway for that particular merchant so uh if you want to try like merchant container transaction with split for any merchant you just need to configure these grates in that merchant and uh you can use that reference ID and you can try and so in the order create you need to give is like this metadata merchant container list. So as of now we have uh two payment method like uh solid coins and fit cache. So either one of these you can use these are test scripts only in sandbox as of now and uh h
+so how we have QC mer is also kind of um like we'll have like in myra and all we have insider points right. So like that Q fit and all will have this fit cash solid coins. So for that we introduce this merchant container. So merchant will have some kind their coins will have right for for that we introduce this one merchant to support that
+huh kind of that
+so h so in we'll have inside point right. So how many points you have and it will show right. So like that for Q and all merchants we will have some solid coins and fit cash that those those merchants will have.
+Um no in order we'll give in metadata container list. So this um in container list how many this how many solid coins and fit cache we have. So as of now this is tested only. So we will solid coins and this one we have 50/50 50 and 40. and
+I will show and uh everything else will be same. So you so we will have in this split payments with merchant container we will have one parent transaction with anything either a card up UPI or NB and child transaction will be um like this uh with this merchant container either solid coins or fitcash and you can use both also like uh by passing these two coins also you can do the transaction Where do we define that these fit cash is equal to certain amount or solid coins?
+These are the like these are the test only. So in sandbox for our testing we have no eligible amount is 50/50 for each cash and solid coins the limit. So in order create we will give merchant will give
+in real time merchant will give that
+merchant will be fine and uh the whole logic they will send to us. H So I'll just create
+here it here each coin will cons.
+So here this is 50 rupees and 40 like that I'll do one.
+So here no no in this in this merchant container list it will show what are the eligible payment method for this merchant container. So here the eligible payment method are solid coins and fit cashache. You can either use like solid coins or fit cashache or both also you can use and so I will show one split payment with merchant container single merchant container also in so if you want to test for a particular mid you just need to configure this merchant container in the dashboard and You need to give that reference ID here and you can make the transaction like order and transaction. It is now configured in Azer test. I will show Some people This is the configuration. This is how it looks.
+You can just configure these credits in other m and you can use that.
+There is nothing right only. passing the
+I haven't configured this that other configured. Yeah, same like how you configure the gateway
+cash you will get the options like all the payment details payment method
+how we configure the cash right similar
+same thing separate gateways for the mach so all merchants would support this container
+uh once you enable like Once you configure that then you can make the split payments with merchant content with the particular merchant.
+Huh. Like in sandbox if you want to test for any particular merchant you just configure this merchant container in that particular merchant and you can do the split payment.
+Any payment method I can do. So this is the transaction call. So now here I'm doing parent transaction I'm taking as um card card transaction and uh so in additional payment how for QCV we given in additional payment details here you just need to give my payment method type as mentioned container and here I'm using solid coins you can use either solid coins or with cash anything and the our whole order amount is 3 rupees. So here I'm giving two here split amount is nothing but uh total order amount minus uh this merchant container amount value. The remaining we need to give it here the split amount that's everything will be same or customer.
+So customer only can select trade. That merchant only will cancel. like like coins only that fit cash and salt coins or merchants. Now every time when you do the transaction with machine container coins either fit cash or salt coins the status should be to be charged.
+It will be in to be charged status. So u in as of now in sandbox like for the merchant container when you do the transaction the status will be to be charged for that particular amount. So the parent amount here we given the card rate. I will tell first it will show. Uh so here parent transaction is called rate. So it got charged. You can see here the parent transaction and in split details we will get the in transaction rate it will be list. So if it is a single transaction it will be like one array right here is a list of arrays for split. So in transaction list in one thing you can see the parent transaction is got charged and here every time the This is um fixed if you use any solid coins or fit cashache. So that um status should be charged. This is the terminal state for that. Now as of now
+for solid coins it has to be charged
+solid coins or fit cash anything. If you use the merchant container coins
+no for solid coins and cash it is not go to charged as of now it is to be charged only. So it has to implement future. Huh?
+It will be partial charged. So because one transaction got charged and one more reason is in to be charged out. So merchant has to they will introduce one more API like fulfillment API. So when they call it will be got charged but as of now it will be to be charged only that is the terminator in the this one DB also you can see two for this order TX reaction and detail you can see the two entries one is to be charged and one will be the charged and should be partial charge. We have to market as and you can see all the gateway ID and all these details separately you can validate and if you want to do like only one with only the either fit cash or solid coins you can do that also for that then that status should be to be charged the order status should be
+huh
+in which case
+only coins
+yeah
+okay here amount in amount.
+No amount field whatever we passing the order create that amount only it will consider. So now what we are doing in TX and only one entry it will show like the solid coins.
+So okay
+no no no it will go as only one transaction. So here I'm giving order amount three and I will do solid coins with H see here payment method type should be merchant container. So payment method you can give either fit cash or solid coins that's it just a normal transaction how you do single transaction additional payment details and all not no need to pass
+only and you won't get any pay start and all you just uh it will go to directly to be charged and pay finish the status also should be in order status. it is to be charged and you will get only that u tx and details and in db also it will be on entry.
+So here we won't ask any pgranch
+no
+it won't fail as of now
+check whether the customer is having then will then they will check and they will share the like like eligible amount and all know in order create eligible amount we need to pass the amount and we need to do and uh we can do with the two QC also like uh sorry 2 MC also how we can do that is okay I'm creating already three rupees and and 211 rupee. So you have to just give like in additional payment details only one like solid coins and one more is with cash and each amount and here uh split amount you have to give zero. If you want to do only with solid coins and fit cash You can you need to give any like this one you give also it's not sure
+the last one last you did was single MCTX right
+is that only coins you use
+either either so there there you are using either fit cash or solid coins that's why there we pass payment method type as merchant container payment method is foot cash or solid coins here both we are using That's why uh so here if you want to use both then uh you just need to give any like payment parent method payment method as anything up anything you can give but split amount as zero only you need to give but it won't go to the other parent transaction it will consider these two only but if you want to test this scenario in sandbox you just need to mention uh in payment method type anything you pay anything and split amount you need to give as zero
+and it will go to will be charged. It will consider and in yeah you're asking something
+but here so okay here we given payment method type as visa but split amount we given zero only and additional details only we given right two solid coins and fit cash we given and we given split amount whole amount we given here only so it won't go to that flow itself pay transaction it will consider these two coins only and so that's why
+huh because uh that is mandatory fields that's why we need to give and it will go to to be charged you can see in order status this order status also to be charged and here also you can see for this also to list list of uh transactions we will see so one with uh this solid coins
+yeah But two MC's
+because if you give uh no so if you give payment method type as merchant container payment method also you need to give right. So there you can mention either fit cash or solid coins that way it will go to either one flow. So if you want to try both you need to mention in additional details. addition can yeah I can we can sh that try all that also that is also because if you give split amount it won't go to this flow itself the yeah
+it won't go that's why you can you can give anything
+so what not mention then still have entered our table method as it shows
+it will give them yeah it will yeah Uh it will give error wait. Show me it got access
+because here I'm passing both right.
+That's why check Okay. Speech. Speech. It shouldn't go to school. Okay. So if you here we not even passing the field. If you're not even passing the field then it's not not a mandatory. Then whatever we are passing here right uh here solid coins we mentioned two and uh So remaining will be 1 rupee right? So that one rupee it will consider from parent. If you are not passing split amount okay if I am passing the split amount field and I here I'm giving some invalid amount the split amount is not valid to you
+if we are not passing okay if we are passing the field this field split amount field
+and uh it will give the split amount validation see split detail validation field. If you're not passing anything here like this field itself if you're not passing so by default uh whatever the leftover money it will cut it from the parent transaction
+parent the card
+other the card or UPI anything
+if you but if you are passing split amount it will check the valid it will validate here then only it will go to transaction
+hm But you are not so
+No, I didn't get transction.
+Okay.
+Solid coins, solid cash.
+So,
+so we can Just in addition details you give whatever uh the amount you want to make the payment with solid coins or fit cash in this you can mention if you're not passing the split amount five rupees it will take from the parent transaction like card transaction but if you are giving the field split amount field and if you're giving
+no no this is the order amount means solid coins order amount means uh
+other payment uh the parent transaction want to pay
+uh like other than
+the card transaction or UK transaction
+other than these coins.
+Huh.
+Okay. First you
+that you have to mention here other than these this one that will be the split amount.
+We didn't have any offer. Offer also we can I think offer support. H offer also you can do
+then the amount will be applicable only to the right.
+Yeah offer also contract offer valid direct any UPI contract
+like if M giving five in spirit amount
+and we'll give only three rupees in cash or coins. Okay. So what happen in that case?
+That is also will fail. I will show that also that will show split amount validation field.
+So the I mean calculation will be like split amount plus solid coin is equal to this calculation doesn't uh like it's not equal then it will fail. It will fail. Don't go to the transaction itself.
+Giving split amount as zero and also bitcoin.
+Last time I haven't given the split amount field itself. If you're not mentioning the split amount field then it will it will only automatically do by default it will remaining amount it will consider as the parent transaction. It will do. But here if you if you're giving the split amount we are only mentioning okay this much amount only you take from the parent transaction. But here it will validate. Okay this amount plus this is equal to total. If it is not there then it will throw this error split valid details validation field. So this is pretty much about merchant container any queries. So same like how for normal transaction how you check the same thing you'll do. There won't be any to the gateway to gateway there won't be any call because we are not going to gateway itself. So merchant only will say no that is merchants cache. So we won't need to go to the gateway itself to validate and all
+for uh merchant thing you can't do solid coins you can't do the refund the other transaction like a parent transaction card or repay for that you can do transaction based refund you need to take the transaction ID and you need to do the refund as of now to be charged is a terminal state for the merchant container
+so nothing from
+these are the test like test caused an issues right.
+So the time what happened is like h so when we uh do the multiple transaction for the same order ID like so okay first you do the transaction it got failed authorization failed again for the same order ID you tried the transaction this time it has to update status to charge now but it is still in authorization field the status is not updating properly that is the issue the though the transaction is bought success and one more thing if the sometimes uh if you do uh for the same order multiple transactions okay uh then both are at a time got succeeded then one got need to be auto refunded the time also it is not getting auto refunded it both are showing as charged No, it's not a terminal state. Authentication is failed is a terminal state. So if it is auto refund, that status shouldn't show in the order status. It it will show in uh that table order reference table like refunded TX and detail table. But in order status, it has to show like either to be charged or other transaction like what got charged before previously. So if you do like car transaction and um Uh next one this one up pay transaction u both simultaneously for the same order then you pay got uh refunded then our card got charged so first card got charged second you pay got refunded then it has to show the uh txn detail which got charged first that is card order refunded you will see in detail but it shouldn't show in the order status and here I told right to be charged is a terminal state so for the if the Here you got the terminal status to be charged the order ID rate. If you do the transaction with the same order ID like whether it it has to be auto refunded if you're doing any card or you pay and it the status shouldn't change to charged or partial charge in order status. It should be to be charged because it is the terminal state.
+So there was a order I mean status in where they got partial sunk in that coin is to be charged
+and uh the transaction is Charged authorized
+charged charged both charged partial charge will have the status to be charged is charged uh the other merchant that transaction is to be charged then your status would be partial
+partially charged
+because
+why partial mean it is like said partial charge
+because to be char it is to be charged not charged no so merchant has to call so merchant has to verify it and merchant has to make it to charged Yeah, he will call some APS from his huh that's why it is to be charged.
+No, no, as of now it is terminal only.
+No, but as of now for merchant containers coins there is no refund. It is to be charged only charged concept not. So in future they will introduce one more API called fulfillment or something uh split H that I told no by using the TX and ID you can do different
+for that particular what because order ID because we have to know two TX9 ids it will th error you to use
+with that you need to do the refundction for that you can
+yeah we can do that is only take No only outgoing frequency like normal how you will see for
+that's it.
+So partial charged you will um see partial charged I think
+that flag we have to enable
+so if it is partially charged what what will be the order status it will be partial Charged
+status only
+partial charged in TX and detail you can see one is to be charged one is charged in order status it has to be partial charged
+after partial charge there's no
+state a merchant has approved and
+then it will be charged but as of now that concept is not at all
+so for the outgoing work of PS and
+uh we'll see two blocks or one block only we'll have two things like uh one transaction of parent will be charged. Another transaction of two two web books you can
+two web books only get separate blocks
+in order like a partial charge succeeded you will see the two blocks that order thing
+order
+in order succeeded or this one partial charge flag like with hook will be there no there you will you will see two txm details And for TX and charged that thing will be there. There you can see only one thing because TX and detail you will have two separate uh interest rate. So two separate way books will go but order succeeded or fail there you will see two.
+Order succeeded
+order succeeded won't be there like for single transaction will be there like partial charged we will see order partially charged book
+that will be only one order will have one t H no no in order partial charged web hook tx and detail list you will see in that list two TX and detail you have to see
+yes no I did not That's why she needs an empty because there are showing things would be there.
+Share your screen. So one would be parent transaction other would be merchant contender transaction. So order status we'll get it as partially charged. Uh in txn we'll get two list one would be of charge status another would be of to be charged which is a terminal status for merchant container. So when we see the outgoing webbook as of now for that incoming is not there it in outgoing webbook. So how the webbook call will be there like for order status we'll see order exceeded one webbook. or and TXN we are supposed to get two web books but uh uh sim was telling you order order status only we'll have two web books and TXN we have one web book so that is only ordered kids Uh, wait. I'll expand this. X and list in the X list you will see but it is filtered here that's what I'm telling so whatever you are seeing in the order status that will show so in order status for normal orders we'll get TX in detail right so here it will be TX and list that you can see the other other that that transaction this on charged or created. So charged for the the parent the transaction which you use for card the details it will show separately and u I think created means for this one to be charged all this yeah so for the contain it will be in created only because it isn't to be charged what to charge
+what it will go like what the books or what
+in sandbox web hooks will go to a text in production API book she's asking this concept working container falls under which Is it any queries?
+I'll share with everyone. You can try. That's it. Thank you. So now we don't have a lambda but we were having once. So So lambda is also a service. Okay. So in three cases the route was going to l from oiler routes were going to lambda and lambda was giving back us the responses in only three cases. One is like the saved payment method SPM. Okay. So uh the last used save payment method uh I told you right. So that was happening in lambda and lambda was giving back the response to oiler and in SPM we'll be showing the last state payment method the the response was coming from lambda only so oiler will send the uh transactions the details to lambda because we have one table called saved payment method table so that entire functionality of saved payment method table was happening in lambda only so whatever details that is stored in saved payment method that all will h that all will be in lambda right so lambda was giving back as the response. Now what we did is like we we have deprecated lambda entirely. So all the calls should happen inside oiler itself. So they have bought the functionality that was happening in saved payment method to oiler itself back. So whatever the the functional functions that were happening in lambda that will happen in oiler only. So that one thing uh we have did and one more thing is like we have a set of gateways called UPI gateways. So UPA gateways are like Google Pay, HTFC UPI, access UPI, ICICA UPI. So we have a set of UPI gateways. So all for all these uh gateways we won't have web book. We'll have call backs only. This uh you might have heard in the previous sessions. So what will happen is like the web book will not give us the response the status for the transaction whether it is charged or uh something we won't be getting from a web book. It will be coming as a call back to us. So for these gateways uh how the call back will come is like since uh these these have many uh security reasons and uh they are not giving the call back to sandbox they'll give us to prod. So from prod we'll manually take the call back and post it in postman and we'll consume the call back that is how for a transaction or for any transactions we'll get the status itself whether it is charged or it is failed and all even though if we do a complete successful transaction the status will be in pending only because have web hook to receive the status we'll get call backs to production even though if we do transactions in sandbox also we'll get call backs to production only from production we'll manually take it and uh and put it in postman we'll do it uh we'll consume it so since these call backs also was happening in lambda only so for these particular UPA gateways only for UPA gateways the callbacks calls were happening in uh lambda only. So and one more thing is like Google pay uh like a long back like 3 four years back they have Google pay is not a gateway so it is a payment method actually but 3 four years back like they thought Google pay is a gateway and they have uh did the integration as Google pay is a gateway and wallet is the payment method for Google pay but that's not a thing and also merchants got onboarded like uh Google pay is a gateway and we have like they'll configure their uh things right so they did like that so that because of that only they have created a separate service called lambda so that the call backs are going to lambda and uh lambda will process it and will give back to oiler so they wanted to rectify this mistake but they can't rectify it totally because all merchants started using Google pay as a gateway in from just pay so what they did is like they hardcoded like Google pay as a payment method only but we'll have acquirer banks like Google pay is uh internally but for merchants it will be showing as a gateway only but internally Google pay is a payment method so they'll have subacquer banks acquirer banks in the the normal gateways like paym2 or any other things like any other gateways they'll be taking those gateways as acquirer banks of Google pay and the all the transactions will happen through the acquire banks that is the gateways, the normal gateways the same like how PTM and all will works. Similarly only Google pay will work as of now but from for them it will show us Google pay as a gateway because they have uh hardcoded it and they have moved all the callbacks from Lambda and they have put it entirely like what all the calls that was going to Lambda they have made it to Oiler itself and they have uh done some changes like Google pay is internally a payment method with these uh gate ways. So now merchant what they will do is like they will in the dashboard also they Google pay as a gateway only but with which uh banks they want PTM or pay you or something they will take those PTM credits and configure it with Google pay gateway so this thing so before also like we were having like for save payment method which I told we'll have like M1 transactions uh call back we'll have so that call back only they have put it into oiler for this also. Now all the Google pay transactions you do everything will uh come to oiler only that is for search that is different this is Google pay migration I'm telling so uh so these every things for Google pay what all transactions we do now it will happen in oiler only the call backs also will come to oiler only it won't go to lambda So this also got removed from lambda the say payment method table removed and Google pay this call backs also removed and uh third thing is like the search charge calculation yesterday shisham would have given you k right so if we put the search charge rule and the search charge is uh getting calculated right like 0.05 tax amount net amount and effective amount and all those calculations was happening in lambda and lambda was returning us the uh breakups like this is the final amount that this person has to be paid and all this calculation was happening in lambda and lambda was giving uh us. So this calculation and all will happen before transaction itself just when we create an order before initiate initiation itself lambda was giving us the uh breakups like this is this will be the search charge like searchcharge amount net amount tax amount and all. So now now also like nothing should go to lambda every calculation also should happen in oiler only they thought and they have moved that uh calculation also to API TXN currently. So we'll that only that's API M1/rule you can see that's a new endpoint because we have made the search charge calculations that has to be happened in oiler itself. Yes. So because these calls when we do a transaction using access UPI because Google pay will have these these gateways like UPA gateways right as they acquire banks. So these all call Every transactions will come to oiler first and from oiler it will go to lambda then from lambda only it will go to the bank then bank will give the response to lambda lambda to oiler it was like big process now there is no lambda oiler bank or the pg like it will come back to oiler itself even the search charge calculation was happening like we'll give the order amount and the search charge rule and it the calculation will happen lambda and it will it will give back to oiler say so so they they wanted that also to happen in oiler itself and save payment method also uh same thing.
+Can you explain the Google pay what they have changed like earlier by mistake they assume that it's a gateway
+gateway
+now I mean for the call right
+no so not the application that you're using from just pay end it was uh for the merchants who were using like Google pay is not a gateway itself. Okay. Google pay is a payment method.
+So uh it will not come under yeah it will not come under gateways itself like phone pay or ptm itself. It is oh it is a payment method. So we have different types of uh payment methods under Google pay itself. If ptm means we'll have transactions wallets and all. But in Google pay we have two type of transactions called push pay and inapp. These are the flows that Google pay will have.
+As a user we can see this Push. Yes. Inapp. Only some merchants have inapp. Is there uh
+inapp some e-commerce app? I have seen inapp transactions like same thing.
+Uh there is no app and push.
+Push in the um trying to join you as mute it up here.
+So the payment method as GP so when you give the payment method as GP what will happen is you'll get a link on your uh GP this thing asking you to do a transaction.
+So you will have two option one is a pay or a decline one.
+Yeah. So when you do a pay option and do the transaction your mean your booking would be successful. So that uh option that you get it by a message and moving on to that uh uh app and all right. So that is like push by transaction inapp is like uh uh it will be inside itself
+inside the application itself it will read out
+I think like in big basket you will have I'm not sure on that but like ideally how the transaction would work is like
+we don't have to switch
+switch apps you don't need to go back to the GP pay app or phone pay app but if you are in the merchant itself in merchant app itself you'll do the GPA transaction or the phone pay transaction and transaction is successful that is like inapp flow
+so the whatever that she told right so that uh we tested for only we couldn't do it for enough
+I tested enough from an SDK I have got an SDK we have in Google pay SDK
+for in upflow GP is like when you're testing it will be similar to UPA collect transaction only but if a UP collect you'll be giving the payer BP right for this you can just give your mobile
+mobile number transactions the Google pay mobile number the the mobile number is linked to your Google pay that mobile number you will be giving the request so that the same thing it will go to the pay start you'll you'll be showing the Yeah, you will get a collect request, right? Same thing.
+Google pay will be like a VP is like because one number can be linked to two Google pay accounts also, right? My one number is linked to I have three Google accounts.
+Yeah. Yeah,
+we can link that's why we giving the mobile number in Google pages. You may have three bank accounts also. No, one phone number. My phone number is linked to three accounts.
+Bank accounts.
+Bank accounts. GP account.
+How will they have GP accounts?
+Bank accounts. So you can if it is a VPA, it will be associated with one bank account only. But it if it is a number, it will be uh linked to three bank accounts of your Google Pay. So you can take a primary account.
+Yeah.
+Yeah. Yeah. Whatever we have.
+Yeah. Whatever your
+So you can do a transaction only with if you're providing this number that should be linked with your Google pay account.
+So only those numbers I mean those mobile number you can give in the request. It's very similar to uh collect transaction only. But
+so we have this uh like payment method as Google pay wallet. If you see in dashboard we have Google pay wallet. So this like it is treated as wallet.
+Yeah. So it is like I I told you right Google pay is a payment method. It's generally a wallet kind of payment method but it is not a wallet transaction. Yes. They have done something uh many years back. We have rectified it
+long long very long. So these were all things that mainly the call backs because Uh now also if you do a uh transaction using Google pay gateway in your sandbox also it will be the entire process will be like the acquirer bank which you have configured in that mga I'm saying like Google pay you will show the merchants as a gateway but it will be like in inside it will be taking as the acquire bank which you have given like access your pay or HTC pay or pay those only those process will be uh happening the same to Google pay also. So only this was happening from long back now also the same thing is happening but
+I had one PR where I had selected like Google pay wallet but then I did up pay transaction. So I was confused like why
+they have they have
+different naming is different and the process is
+it's not a wallet it's just that they have given a wallet complicated but the call back I I told uh we don't have web books we will not get web books instead we'll get call backs call backs going to lambda and it was giving us so now everything will be happening in no only okay any other doubts this was the last session of yours

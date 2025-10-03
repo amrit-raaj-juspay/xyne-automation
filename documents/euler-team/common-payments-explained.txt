@@ -1,0 +1,514 @@
+Payments Explained: From Banks to Networks
+
+Walks through end-to-end money movement—from ledgers to banks, card-networks, acquirers, aggregators, and how Euler slots in as the all-in-one routing layer.
+Frames Euler’s merchant value prop: one API vs. many, unified dashboard, success-rate-based gateway routing, and lower total ops/engineering cost.
+Highlights conversion boosters: real-time SR routing, multi-rail coverage (cards, UPI, wallets), cost-aware path selection, and quick feature rollout.
+Breaks down the three outage triggers—faults, capacity spikes, code/config change—and the antidotes: redundancy, rate-limits + auto-scaling, blue-green/staggered deploys, and health-check switching.
+Describes the reliability playbook: 24 × 7 alerting, tiered SEV response, predictive scaling, and joint dual-endpoint integration that paves the way from 4-nine to 5-nine availability.
+
+
+—--------------------------------------------------------------------------------------------------------------------------
+
+[00:00:00] So what I'm going to do is, let's actually try, and I know you guys are as a payment expert, but still who just want to go through that journey of simplifying payments for you. if you go into industry and All right, people, what happens is they actually talk to you saying that, oh, we are doing so much.
+
+[00:00:20] If you talk to Visa, they're like, oh, we are doing this payment, that payment, and then we have this fees and open up. Opportunities Folks that are acquiring and so on, right? But ultimately, as Vimal simplifies, think of it as key. for example, if you take 2%, 1.5% MDR, right?
+
+[00:00:38] That one, four, 5% is a surcharge to just moving the money. It's okay, I do a minus here and I do a plus here, I'll just give someone like 1.5% of the actual plus and minus figures, right? This is not worth it. Truly as in, why do, for example, if I take a bottle and give it to you, right?
+
+[00:00:58] Like from a fridge, should I charge you 2% of the bottle at that point of time? Maybe because I'm doing it manually. Yes. But if it is a scale by tech, it shouldn't. moving money shouldn't be this costly as what cards world have created as a but to get that feeling, let's try to understand what payment is exactly, what's happening behind the scene and what are entities involved in.
+
+[00:01:20] Finally moving money. What happens real time? What happens in the batch time and how the payment goes out from customers to the actual merchant? again, I'll go back to basics. What is a money movement or what is actually a transaction, When I'm sending money, let's say Path is sending money to Benjamin Let's assume that there is only one bank or some guy who says that I have a ledger, right? Who says that, okay, path has thousand bucks. Benjamin has a hundred bucks, right? And if Path is moving a hundred rupees from his account to Benjamin, Benjamin has to ultimately go, his balance should go from a hundred plus a hundred.
+
+[00:02:00] That is 200 and Path has to shift from thousand to 900. This is ultimately the moving, right? Let's assume that, okay, there is some bank.
+
+[00:02:11] Which is that path is at. Okay. Maybe 1000. Oh, this is crazy. And when is at 100? Now if Path makes transfer to Ben of a hundred, then ultimately they should go to
+
+[00:02:39] 1000 minus a hundred. That is 900. And Ben has to go from a hundred plus a hundred. That is 200.
+
+[00:02:53] A transaction is done. That's too small. Okay. Let's say part has thousand rupees, right? Assume that it's a bank account. Bank account is the size. Is the size right? I will, it's hard to erase right now. So next time I'll take care of that.
+
+[00:03:09] But I'm just trying to explain what happened. So let's say in a bank account, what is a Bank account, if you see it's ultimately a ledger, what is Ledger is, it's just that key. If you have seen a, accounting software, it has credit and debit, right? Where you say how much money I owe.
+
+[00:03:27] How much money I have. if you have deposited a hundred rupees with a bank. right? Saying that I owe hundred. Rupees, let's say two customers, are basically saying he has this much balance, meaning I owe this much.
+
+[00:03:39] if I have a hundred and you have a hundred, right? If you transfer 50 rupees to me, only thing as a bank I have to do is for you, I have to go and say that QU minus 50 and then I plus 50. So that's a transaction right? Now. This is as simple as that. Now, why did it became more complex?
+
+[00:04:01] Why did the whole industry, there is a few trillion in payments, It's a trillion dollar industry, basically more than trillions, while moving money. People earn this much.
+
+[00:04:12] Why? It has to be that costly. There are complexities that came into world but still technically we have to think like when we move money, it has to be as simple as someone deducting money, which is just as a like minus 50 in some account and someone is actually doing plus 50 on another account.
+
+[00:04:31] There's two parties. If they talk to each other in a right way, then you say payment is actually done or it actually works.
+
+[00:04:43] Yeah. It has to be that simple. So this complexity increased. So when we go from one bank to two banks, right? Then ultimately two guys have to talk to each other. So when we say talk to each other it used to be like, okay, I have a signed check from your customer. I'll actually physically take the signed check to the another bank and say that, see, look, your customer gave me away.
+
+[00:05:07] To say that Hey, I should deduct you money, so you basically gimme money. I'll take it to my bank and give it to my customer. That used to happen physically, right? In the tech world, it's more like How do two people talk to each other? We have a concept called APIs. APIs is application programming interface, but you can think of it as a tech call to each other where let's say there is a two party, right?
+
+[00:05:33] A can hit an API of B with some data, He can do whatever he wants to do with this data and then respond to that. This is one way of talking to each other. another thing is batch where you say, this could be file based, like some drop server or SFTP, where let's say a actually puts a file.
+
+[00:06:00] On b, b server. And then this guy puts a file on a server saying that, okay, I've received, right? So this is, this could be real time,
+
+[00:06:14] this could be because it's batch processing. It has to take two days data and then keep a file. So it could be like one day later, you can do 15 minutes batch file. Or probably if you actually look at payments, like in UPI, it's three hours in card.
+
+[00:06:28] It's still one day. card payment will always settle after t plus one, It'll never be real time. But now two banks have to talk to each other. Think of it as like when one bank has to talk to each other, right? Let's say if I, and then wants to talk to each other, right?
+
+[00:06:47] What can happen is let's say there is a bank one and bank two, this can form a connection to say okay, we agreed on something. Think of it, okay, let's assume I probably know Hindi, he probably knows Malay, right? because we don't know each other, we say that, okay, let's probably talk on English, which is a common language right now there could be a third guy.
+
+[00:07:18] B three. Who can say I also want to talk to you guys, he might know another language, Let's say Chinese for example. In this case, again, like for them to come in to picture, you will say that Ki K, maybe we also learn English here 
+
+[00:07:34] So in a way, whenever a new guy enters the model, he has to do so much. if this language is not common, he has to learn this language. ultimately English was a unification language for them.
+
+[00:07:47] If everybody would've conversed on one thing, right? So instead of everyone talking to each other. There could be a central translator. Let's assume that translator knows all the language. So what can happen is B one actually says to the translator something in his own language, B two also connects to the translator.
+
+[00:08:11] B four also connects, and B three also connects, right? if everything connects, this kind of becomes a star topology. We technically call that everything, whenever new party comes up, you just get connected to me and I will ensure that your message goes everywhere.
+
+[00:08:29] He's the central translator. It's a unification, thing, right? So here, like we can have, we could have, for example, at right moment, people are probably, native languages are different here. Even in India we have different native languages, But we are unified by English. everybody coming on the same page, that unification layer and the topology becomes something like this.
+
+[00:08:52] This becomes English. So now when multiple banks want to talk to each other there's a guy which is called as network. They came and said that key, okay, let me be the unification layer. So when one bank talks to each other, they'll not directly talk to each other because laying up this pipe and talking to all banks, who doesn't understand one single thing, right?
+
+[00:09:14] A bank in India could be very different how a bank in Singapore could be. So network is the unification layer, which says that Hey, bank of India, you don't worry even though you want to transfer money from your bank. To Singapore's bank, I'll be the translator. You tell me like, okay, a hundred rupees minus, I'll ensure the currency and like how to technically tell to that guy and say that this is actually just $10 in Singapore, 
+
+[00:09:42] So you do plus $10, you do minus a hundred rupees. Ultimately network came and actually said that. Okay, I will unify it and I'll simplify it for you guys. So now when we say banks, right? There were multiple banks. Let's say there is an OCB bank, there is a DCB bank, but there is another layer S network, which is Visa or let's say MasterCard.
+
+[00:10:08] Not all networks are connected to all banks. It could be, let's say like for example, okay, maybe S-B-I-H-L-O. Then SBI might not be there with this. So this networks basically came and said that I'll connect all things to here right now.
+
+[00:10:27] Now, this topology basically sold saying that if a customer of this banks wants to send money to this bank, he says that I have done minus 10, right? Tell this bank to do plus 10. when there was only one bank, when we say okay, if I zoom it into this bank, I say that, okay, B five Bank, there are two customer.
+
+[00:10:52] Customer one and customer two. I did minus 10 here. I did plus 10 here. This worked, but when there were multiple banks, this party had to come in to simplify this message. Plus 10, minus 10 or minus 10 plus 10. are we getting it? All good? Sure. so that's where your visa master network helps.
+
+[00:11:15] What are they doing? They're simplifying the unification of the banks. Like all banks cannot talk to each other. They talk by a network. Okay? Yes. let's say we were talking about customer one, customer two. Let's talk about a merchant who is ultimately even a customer, but a merchant wants, let's say, 500 bucks, ultimately from his customer.
+
+[00:11:41] This customer again has some bank account and let's say like this customer is of OCB and the merchant is actually having a bank account in DBS right now what happens is he has a card which is given by this OCB bank, and a card is of actually, let's say visa, just as an example. Right Now, this guy's ultimate goal is he has to find, okay, the bank is OCB.
+
+[00:12:12] So ultimately money is with the OCB bank, right? He has to go to OCB Bank and say I need 500 rupees. how will he reach that? ideally, this merchant was supposed to call OCB Bank, but think of it, his customers could be millions of that and that can have thousands of different banks.
+
+[00:12:31] Now, can this merchant go to thousand of different bank? Practically no. Why? Because like. How will he actually reach that? For technical also, there has to be some sort of connection. There has to be some sort of lines that has to go. So what happens is he can probably go to network and say that, Hey network, I have this card, which is OCB bank.
+
+[00:12:55] Can you go to OCB Bank and say, can you deduct money 500 from this bank? So let's assume that he can go to network and say that network, being this topology network can actually go to OCB Bank and also DDBS bank. here you do minus 500.
+
+[00:13:12] Here you do plus 500. You can actually do this in a transaction, but networks are also multiple, it's Visa, MasterCard, MX Diners and so on. Now, how much things will a merchant do? Can he go to all network and do that? Probably, no. That's where acquirers comes into picture. Acquirers say that I'll make this easy for you, right?
+
+[00:13:36] I can handle this. You only come to me if you want 500. I'll ensure that whoever is related to this, I'll actually go and take a call. acquirers ideally do this ultimately, but they have to also ensure that all merchants are KYC and things like that.
+
+[00:13:55] So merchants are also like thousands of merchants coming in, right? can acquirers do that? They can, but it was a slow process. So they outsource some part of it to the aggregators. You can probably say PGS and PAs. These are ultimately those people who does this for you.
+
+[00:14:16] These PAs are now connected to multiple acquirers. Now, merchant connects to this thing, so pa as example are for here in India. You can say, let's say pay you or bill desk. Now that Juspay is also a pa, For you, it could be a bigger PA in Singapore? 
+
+[00:14:35] Stripe. so Stripe also comes here. there are various things where if it's cost focused, what if this guy is charging you more, but this guy is charging you less, right? It could be for various different options.
+
+[00:14:50] Let's say this guy has a better. With this acquirer let's call it as HDFC, for example, if this guy has a better deal, right? He can say that if you actually send A-H-D-F-C card to this guy, he can give you a better rate. But if you send an OCB card to this guy, you get a better rate or maybe DBS to this guy because he has some optimization on the later part, 
+
+[00:15:14] He has found a better rate. So this guy wants to actually have multiple aggregators also, like he wants all this connection. So that's where Juspay Euler comes into picture. Euler says that ki Hey, I am Euler one guy. I will connect to all those people. So you merchant only connect to me and tell me that I want to take a payment.
+
+[00:15:39] I'll go through the right aggregator. Which will go to the right acquirer network and your banks and get the payment done. So this is express checkout, Euler Express checkout is the name which is outside, but inner name is internal name is Euler to the product. So that's what Euler does. Now this is how the call happens, a guy submits his card details to the merchant, right?
+
+[00:16:07] The merchant goes to Juspay. If Juspay is not there. He goes to the aggregator directly, gives the card details, gives the order amount, saying that key, I want 500 rupees, this is the card details, and that gets processed. Plus minus happens. Says success delivers. The service says thank you, this is the payment works.
+
+[00:16:31] So in payment, there are two parts. One is actually a transaction processing. My handwriting are very bad. That's why I'm speaking. And then you probably assume that what I wrote is this. The another is actually settlement, clearing and settlement. So this part, what happens is see when he says, okay that message is successful and you deliver the service.
+
+[00:16:59] at that point the merchant has not received money in his bank account. What he has got is whatever the requirers are, right? PJP or they have just promised him, ki you will get your money in bank account. That's the promise given and that's why he delivers the goods. Let's say if I have a stall.
+
+[00:17:18] if you pay me, right? I don't receive money at that point of time. I just get a message saying that your money has been credited or customer is debited. You don't worry. I deliver the goods. I get money after a day. That's three plus one or some. So there are now business thing that comes into picture where aggregators might want to keep your money if you want a better rate.
+
+[00:17:42] If you are okay with not taking the money, like in T plus one, then they give you a better. Then you have to keep money with him for more number of times. So as in if you keep your money with aggregator for three days, he'll give you a better rate. If you keep it for only one day, then he'll charge more MDR to you as a, so that transaction processing happened in a real time settlement happens later in settlement.
+
+[00:18:07] What happens is ultimately this network, right now it's a settlement between banks where you say that bank needs to have an account with one of the bank. So there are multiple banks like all this OCB Bank, D-C-B-D-B-S, HDFC, things like that, right?
+
+[00:18:23] They have a bank account and Visa has a hold to it. So now what happens is some Bank of Singapore, let's say, is having an account of OCB as well as DBS, where Visa will go and say at the end of the day, if I actually do plus minus. Plus minus, right? The final balance is OCB Os DBS, let's say like one like grows or something like that, right?
+
+[00:18:48] Let's say like few millions. So he does on that bank account, he does few millions minus and few millions. Few millions. Plus this happens after a day. This is actual settlement, And then when the bank raises money, they say okay, now that I have money in my account, let me give it to my acquirer.
+
+[00:19:08] my aggregator, my merchant, and so on. It flows from there. So that settlement part processing, we said this is the processing part, which is real term the main major thing was authorization. This is like deducting money, right?
+
+[00:19:23] In Singapore you will see only this part happening in transaction processing. But if you go for other countries like Europe or maybe India you'll see there is an OTP or some sort of authentication going on processing also has two parts to it. One is like proving that your customer is there another is actually just deducting money.
+
+[00:19:44] So in Singapore right now, I think only oddie happens where you just take a card to the merchant. Merchant takes a card, goes to this end and says like money is deducted. That's, but in India there is also an Han in Europe also there is an han in us. There is no han. And settlement part is actually a t plus where many moves between banks, right?
+
+[00:20:06] So this is transaction processing. We merchant how Euler works. What is aggregator, PG acquirer networks and banks that's pretty much all about payment. This is a card payment, but you can draw mental model to any sort of payment with this.
+
+[00:20:23] And if one thing you would've noticed that a customer is not going to his bank and saying that I want to pay to merchant in car, it's always a pull payment where you say Hey, merchant, I want to pay you, so I'll give you the details. You pull it off. So merchant has to say, so if you actually tap your card on a pause machine, right?
+
+[00:20:46] You are basically giving card details to the machine, and machine is going to the. Acquirer network and actual bank deducting money and saying, yes, it's not you going to bank and saying that, give money to the merchant. But the new age payments like wallet based payment, right?
+
+[00:21:03] Where there is a QR photo like SGQR and you say that I scan it in my grab wallet or some wallet app, maybe Ali Alipay or grab, right? You scan it and pay it. That's a push payment. It's like you are telling your bank Hey, do a minus 50 in my account and do plus 15 this destination.
+
+[00:21:26] So it's an unsolicited payment that works as But those are RTPs or wallet based payments? Card payments works like this as a Yeah, this is again on this part. Now. When you actually pitch to the merchant, this floor, right? I think first thing you have to say that Why do I take you?
+
+[00:21:48] What? What's your pitch today to the merchant? Why do you need Euler in this floor? If Euler was not there, what would've been the problem with the merchant? You have to understand those. Each individual. So when you are saying that multiple integrations you have to do.
+
+[00:22:14] So just that I want to also make you understand what's an integration, right? ultimately what happens is nowadays people are onto this model. technically when I want to talk to you, you will say that Hey, here is my endpoint.
+
+[00:22:32] Like some sort of, think of it like facebook.com, Let's say there is something called Juspay Here is my endpoint, right? And I have something called spay slash pay on this URL, this is ultimately a URL. You send me some data
+
+[00:22:54] and whoever is hosting this URL, right? He'll have his own structure. Of the data. So have you seen the API structure of Juspay?
+
+[00:23:09] Sure. Have you seen API structure of stripe? Anything where Stripe says that, Hey, if you want to attempt a payment, this is how you will send me the data. you'll probably have something like this. Okay, Hey, it's a Jason. Jason meaning a key value pair in key value, okay? There has to be something called amount, and then you fill up the amount.
+
+[00:23:32] There has to be something called currency. You say, what is the currency, Then you probably say, there is something called Card. inside that card you say, what is the card number? What is the expiry? What is the CVV, et cetera. Okay, the structure is given by the one who hosts the URL.
+
+[00:23:56] Now, this structure could be different, right? So Juspay gives and says that here is my structure. and this is how you'll send me the data. But some other company will give you another structure. So now what happens is you have to keep, when you integrate that, you, have to make sure that I have some data.
+
+[00:24:14] The data I have to transform it into your structure because I'm calling you. So that's what the integration is like. When Euler is not there, then this person has to integrate their structures, ultimately their APIs, right? That's the integration. So one point is that Euler says that, Hey, I've written all the transformation.
+
+[00:24:33] I support 300 plus pgs. You just come to me and tell me in one structure. I will ensure to transform this request into whatever, wherever you say, I'll be able to do that. You don't have to worry about multiple integrations if you want to, right?
+
+[00:24:51] Two or multiple PAs or pgs. What else do we pitch code for? Manual checking for every transaction. Customer, manual checking for every transaction If you use the dealer, the evidence section that we can, see is, successfully or fail, et cetera. if we don't use this, and then the, like finance need to ask the customer, they have to pay something like that.
+
+[00:25:22] Okay, so what I understand is, if you use Euler, there is a single dashboard to see what happened to that transaction across pgs. If you don't use Euler, then if you're using four pgs, you need to open up each single dashboard and see is your transaction here in this dashboard?
+
+[00:25:42] No. Probably it would've went here or probably it would've went here. So it's a single dashboard that unifies all the transaction data. Another value prop we say is dashboard unification.
+
+[00:25:57] There's, another value prop. What else do we pitch? Have we already pitched the merchant or have you. Or is it like you've been, okay, maybe you guys would've been shadowing someone else, like KU or Raho or someone would be pitching and you guys would be shadowing it. But what other value props do we pitch?
+
+[00:26:15] to many power. If we not use the alert to manage all the things. I'm assuming it's under multiple integrations. If he doesn't use Euler, he has to take care of multiple integrations. I think one of the strong coins is that, ing, 'cause they are managing multiple countries and can't really manage the success rate or even fx.
+
+[00:26:37] So that is one of the strongest point when talking to travel companies. Sure. So third, third point is basically We actually help in conversion We shift the success rate, I think generally to the See Merchant will probably see merchant generally, this is the truth that merchant only spends money where either if he's getting the new business or he is saving some bucks, 
+
+[00:27:05] if I increase the success rate, that means a customer whose transaction would be failing would probably go to someone else. So let's say if I am not able to order from grab, I will probably open up Uber and book it because my payment is failing in grab.
+
+[00:27:21] So let me go. Get an Uber and go, If you increase the success rate, meaning that many customers actually saved, so for the increase they actually pay. So the bigger value prop is a success rate increase. now you can question, how does bringing on a new thing right, actually increases the success rate.
+
+[00:27:41] So typical mental model is let's say if you have to get something done, if you directly go to a person versus if you go via someone, which will have a better success rate, if you go to the person directly, that will have a better success rate rather than going via something, right?
+
+[00:28:01] But that's as a reverse. Like we are saying that no, you go via me and I'm able to push the success rate. Now what happens is, I can get some examples relatable to India, but I don't know how does it work in Singapore, Maybe We are trying to find a guest house in Singapore, right?
+
+[00:28:24] Do you think that our success rate would be better if we go directly talk to the owners, or we go via agents? Agents are going directly to the owners. Go for agent. Why shouldn't it be like they will? Agents will charge more. Yes. But won't the success rate be better if I go to owner directly, 
+
+[00:28:45] Hey, can you gimme the property? He'll say, no, I can go to another end. Can you gimme the property? He'll say, yes, my success rate, it has 50%. But if I go to agent, what will happen? As a so sure, some by intuition, you know that yeah, I go to agent, I'll be better in a better deal. Even though you know that you'll be paying more charge.
+
+[00:29:06] Truly, right? Because if there is another guy. He'll take more charges. Whatever this guy was taking, he'll still take it. But this is an extra charge coming into picture. But how he increases your success rate, that's the question because he knows the behind part more, right? based on our requirement, he understands that, okay, this sort of owners will not even agree to that.
+
+[00:29:29] Let me, ideally this will suit the perfect thing. he saves time, saying that, no, don't even attempt them, Just go to this guy and he'll get things done. That's the value add he's adding. Similarly, oil adds that Euler knows where to process the transaction. He knows if this guy is down, it can actually go to something else.
+
+[00:29:51] why will there be a transaction failure? One. Failures are genuine to say that key customer didn't have balance. Or customer. If I'm trying to charge your card, but your card doesn't have balance, then it'll fail. Regardless of your giveaway, go any channel, right? If you don't have balance, it'll fail.
+
+[00:30:11] It'll always fail. What sort of thing can be saved is technical errors where you said that key, okay, maybe I took a wrong route, I went to a wrong person. If I have, I would've gone to the right person. This could have succeeded, right? So those kind of technical failures, this guy understands saying that Ki here for this particular type of charge or this type of card, he is the best guy or he is the best guy to actually go to.
+
+[00:30:40] So he only goes to that guy and get it done, right? If he is down, then he knows who is the second best guy, and that's how he saves your conversion. He makes the success rate uplift. That's what we tell to merchant, right? Yeah. But again I think this comes because when we know that, okay, who is the best guy?
+
+[00:31:06] Second, we know who is down. That's where if you have heard of SR routing in our pitch, did this word come up as a routing success rate routing? This basically says that based on the success rate of each partners on the behind, I'll actually write transaction to him as a, so this makes this possible.
+
+[00:31:30] This is what it does. this is third. And then what else is there on our, pamphlet or, the pitch, the three boxes, what we say to the merchant? Cost. So he's the best guy for your success rate, 
+
+[00:31:47] He'll do this sort of card. he'll also take a lesser cost. We know another dimension about cost, and then we can route it to the right guy and reduce the cost. So what we have to do is if this whole thing is, let's assume that this whole thing is like one 40 bips, right?
+
+[00:32:07] we take another six bips, then overall cost is 1 46, right? But we have to. Also accumulate for this, right? You have to pay or make him do better. Only place where you say that I save the cost. Then if you can take this one 40 to less than 1 34 bips, not actually, right? So that's the whole solution, you're getting a lot of other things with respect to integrations and all of that.
+
+[00:32:38] Correct. That also add, it's not a one 40 minus six, but maybe No it's not. But then if you are pitching him saying that, Cal, save the cost, then how will you justify that integration cost Okay, sure. right in terms of cost, let me write here. Four is the cost. So what he's saying is it's not only about the transaction processing cost.
+
+[00:33:03] Let's assume that we were not able to make this down. or we were not able to get the best deal out of these people, right? But there are other costs to it. if this value prop was not there, you know that you will end up doing multiple integration, right? That integration ultimately means like there is an engineering cost to it, there is a maintenance cost right?
+
+[00:33:27] Plus, if you actually go into this, then there are compliances also that comes into picture. So there is a compliance cost for a regulators ultimately, right? maybe these are the top costs, Now all this cost you actually save, but Juspay will bear it. How many cost?
+
+[00:33:44] I think on the finance side when it comes to reconciliation, you need to go into all the dashboards as well. This is a normal question that we usually get when we say we reduce costs for you. You add on to my cost. Correct. You don't reduce to my cost.
+
+[00:33:55] Correct. We tell you that we might reduce two bibs, not six bibs. But overall, you get the benefit of all this So these are the parts. Apart from that, for example, there is another product, This is the new product that's coming up. this product can tell you when a card transaction is there, what is the best guy and what is, who will give you the list cost of this car transaction. So based on that, you can actually route to that and save the cost.
+
+[00:34:27] But the point is, this might not be enough to save what we are adding. every transaction, if we add six bips, this might not save you six bips. The ultimately merchant will feel that key. I am being charged more. If I go directly, I was paying one 40 bips, but now with Euler being there, I might be paying 1 46 or maybe let's say at worst case, 1 42.
+
+[00:34:52] Even if you save something, right? But it is not lesser than what I was paying. it's not only about the transaction processing cost, it's ops cost, compliance cost, maintenance and engineering, we have case studies.
+
+[00:35:05] For example, here in India, there is a quick commerce partner who is zep to, he only has two members team for payments. Ideally, like if you look at people do have bigger payment, teams where they can say that people generally of Zep to size, they have 50 members team. But because Zep to has Juspay, he only has two member, one an engineer and one dev.
+
+[00:35:28] One pm that's it, right? It's a lean team. So he is clearly saving engineering and maintenance cost there. So these are also our value add. Okay, conversion happen, cost happen, dashboard unification happen. Basically, this is more towards. Again, towards the ops where we say that your operations are easier and at one place where to go and multiple integrations is clearly again about the engineering cost that you will land up doing that's the value add.
+
+[00:35:58] anything else? We commit you constantly on your core competency while you do all of this. That is all to, his business, if Grab is doing a business, his business more of to, like I said, look at like how your transportation is, how your food delivery is.
+
+[00:36:13] Don't worry about payments, we'll take care of it. That's the value add as well. So that's why this layer is important. Now being with this layer, what happens is just actually jumps in here also. So if you look at UPI. Like Juspay is actually here in UPI as a pg. Even in cards, if you look at, have you met here?
+
+[00:36:34] There is a hyper PA team or we call it hyper PG internally, Juspay is playing this role if you look at HSBC, HSBC is an acquirer. But he's using, Juspay as a PG there, so it's like merchant Juspay and HSBC, like that bank, we are not bank yet, yet, so that we have to deal with the current banks and networks are also powerful because they are probably 50-year-old company who did the right thing at that point of time.
+
+[00:37:04] And then they're just, surviving on the buffer. Reaping the benefits, of their 50-year-old thing. that's pretty much about the payment now. Now with this, see, one technical question, if you guys come across right with the merchant, again, there is always a field that if I introduce a new guy, there could be more failures.
+
+[00:37:28] It cannot be like, there would be more success, it would be more failure. So if this is giving you, let's say, like 80% success rate, one is, one is about success rate. how will we save or increase the success rate is understanding where the failure is and avoid that failure that this guy can do.
+
+[00:37:48] But technically what happens is one question is always that, Hey, I am increasing the hop. So going from one thing to another this hop will actually increase the latency. What is latency? You send this message from here, right? Ultimately, let's say it comes back within for example, 300, 500 milliseconds from all of them.
+
+[00:38:08] Let's say 500 milliseconds is basically half a second. it comes back in half a second. But if you put more here, or someone else also comes into picture It just increases your time. Because you go and tell him, and then he converts and he does something and goes and tell him and so on, right?
+
+[00:38:25] So 500 ultimately more, the layers are added, more time it'll take, but ideally this is true technically, but if you do that in a right way then the reliability is higher So think about it, right? It could be the same example where, rather than me going directly, I go via someone and I'll have a better rate.
+
+[00:38:49] it has to be, see, ultimately I think this, question boils down to reliability. what if this becomes a single point of failure? Maybe I should have asked you this, Why do people want two things here? Why are they not just happy with Stripe saying that I have a Stripe, I don't need anything else.
+
+[00:39:06] Forget it. Or you are actually seeing that scenario. They're happy with Stripe. People are happy with strip other than cost, reliability is not a concern first. But because they don't have to, reliability is not a concern. because Stripe is good in terms of reliability. So they haven't seen that problem.
+
+[00:39:25] But let's say if they have a problem of cost, they'll end up doing Stripe plus something else, in something else, how do they ensure saying that the other guy doesn't go down? Would that also be reliable as Stripe? Who knows, it might not be case. Then Merchant has to ride all this, that, oh, when he's down, let me understand that.
+
+[00:39:45] And then I redirect the traffic to Stripe. So he has to ride all those intelligence and say that this is how I'll be reliable in reliability principles, we have, we can talk about that. I'll not be able to erase this because there is no district of this.
+
+[00:40:01] Yeah, sure. So I think sure. Okay. So anything on this before we jump into reliability or maybe, I don't know. We can take that later. Also, however you guys will fill it, but yeah. Okay. This was again, probably a very high level, and how payment works and what probably merchant or why do merchant wants to.
+
+[00:40:24] Another thing is, if you go to one aggregator, He supports, let's say card, this thing, that thing. nowadays most people support most payment methods. But earlier it used to be that key. If I go to one aggregator, he supports cards, net banking, but he doesn't support some wallet.
+
+[00:40:40] So for wallet, I have to get another aggregator. But now probably it is not the case. Most people support every alternate payment methods. Also s don't have. Huh? Some countries maybe have stripe, huh? Yeah, sure. But does Stripe support? Stripe generally will support all the payment methods, right?
+
+[00:40:57] Even the localized wallets? No. Limited. Some. Limited. Limited. They don't limited. Sure. Okay. Then that's a good thing, right? As in if Stripe doesn't support, you can clearly go and tell Merchant Key, Hey don't you want this sort of customers? I go to this, LA Passat like in Singapore and then there was this juice sock.
+
+[00:41:20] They only supported SGQR, so she didn't have a post terminal. I didn't have cash, I only had card and like we were not able to pay. ultimately I had to ask my friend, from below, can you pay? that's how it worked. I was not able to pay them. that's because, all methods are not supported by merchant.
+
+[00:41:40] But assume that if I didn't have that friend with me, then I would have to just walk off. I cannot buy the juice and merchant will not get the business. So ultimately. It's a win-win if they support everything that customer can pay through. Merchant has more acceptance of money, more business.
+
+[00:41:58] They are happy. We are happy. Customer is happy he got his goods. So that's also a point if Stripe doesn't support anything, we bring in another partner who supports and say that key. I'll route everything to Stripe, but if it doesn't support, I'll route it. Do this works. 
+
+[00:42:16] So reliability becomes a super, critical there. Scalability, if he merchant has a huge traffic coming in, and if you cannot handle that, then you go down and then he doesn't support payments and he doesn't get business. So scalability comes into picture.
+
+[00:42:34] Plus some merchants tends to believe that if they were doing the engineering, and a new feature and he says that Hey, my team would be able to actually, get this feature live up and running.
+
+[00:42:45] Let's assume there is a click to pay. And click to pay is a newly released feature for which we have to call another two APIs of stripe. But this integration, if Euler doesn't do fast enough, then they start to believe saying that Hey, if I were there instead of Euler, if things were on to my hands.
+
+[00:43:04] I would've done a better job. Merchant will feel like this. It's always a doubt. Could have been. Or maybe, who knows, they could have za, right? So we always have to put, put ourselves at a higher bar and say that you no, I can do all the things faster than you. So that's where agility comes into picture.
+
+[00:43:23] It basically says that in, in a ecosystem, something changes. I will the first one to adopt the changes. So scalability, reliability, agility, and affordability, which is about the cost. But I think, yeah, those are the pretty much four dimensions that merchant will question you. And you will, you'll need to know that, why it'll not go down, why I will scale, why am I affordable?
+
+[00:43:49] And what else? Yeah. More question is security. Security, sure. But that is always, security is something that key, it's not my word against merchant's word, or if I say that, Hey, I'm secured, how will you believe me? I don't think we should believe each other. It's more of I have done all the certifications, right?
+
+[00:44:10] I have this third party who are actually auditing me and saying that I'm secured. You have to trust that or else you choose a third party and send me for the audit, I'll be happy to do that. Yes. I think when you face merchants, the very first problem or question that merchant will ask is you become our single point of failure.
+
+[00:44:31] Because what we are asking merchant is. You integrate with Euler and Euler will integrate several other partners, right? Rather than you integrating several partners. if Devon doesn't work, they have to only ensure that other works and they should be able to route it.
+
+[00:44:48] If they ensure that, then it's all taken care of. But if you say that Keno only come to me and this is all abstracted out of you, Then we become the only single point of failure to the merchant. If we go down, the whole of that stack goes down, So the question is how do you ensure that you are reliable?
+
+[00:45:10] We have to give that charity to merchant that, hey, whatever happens, I will not go down. How do we give that fail? One is you can say the. Metrics that, Hey, I am look 9, 9, 9, 9% available in the history. That maybe that will give comfort to the merchant that, okay, they are working, but still would it be like, can you give him more details onto that?
+
+[00:45:35] Or do you even understand that only from the history? it was a shock for you that we only write three nines in agreement. now you might be questioning saying that, oh. Actually, what is it? Is it, are we 9, 9 9 or are we four nines or are we five nines? What is this confusion We are writing on banner somewhere.
+
+[00:45:53] Five. We are writing in agreements. Three. We are saying practically we are at four, but okay. Let's understand ourselves that what is actually like reliability that we target or we achieve How is it that reliable to understand that reliability? I think we have to first understand when does, or how does any system in the world goes down?
+
+[00:46:18] when I say system, it could be anything. It could be a bridge, it could be this building itself. Let's say like this building currently you are sitting here, are you worried that this building will go down? Probably not, right? based on the past, you are thinking, no.
+
+[00:46:32] Building has not yet fallen down suddenly. That's why you are not worried. Why are you not worried that this building will go down? You don't know India. How are the buildings coming up? what if it's not up to the standards? This can go down anytime and you should be worried about that as a, you don't know.
+
+[00:46:52] There are multiple buildings which has fallen down okay. Okay. How does a system go down?
+
+[00:47:12] This is a question. One thing, like what we feel we have actually, Narrowed it down to three main reasons of how a system can go down. The very first is actually a fault.
+
+[00:47:31] What does this mean? So let's say there is the foundation of the building. There are columns, right? But somehow we were doing something and one of the column actually went down. basically there is a fault in the system. when multiple things are running together, one of the system, in a flight, for example, some part of the engine is like I say, it's got, it got rested or what whatsoever reason, right?
+
+[00:48:01] It just goes down. It's a act of God. You will have no way to control it saying that, oh, I will never let this fail. There would be a part in a system that will fail, if a hard desk has to get us like, corrupted or it'll not work. It'll not work. Suddenly it'll just go off. There is no control over it.
+
+[00:48:21] In your mobile, also, in your, multiple electronics that we use today, we see that it might go down, that's a fault. You will have no control over it. This will happen, but the way is how do we actually handle the fault if a fault happens, should the whole system go down? The answer is no. We have to protect that.
+
+[00:48:44] Okay. So how do we protect this? the way to protect this is first is redundancy.
+
+[00:49:00] let's take an example where
+
+[00:49:06] If you are driving a car to your office what's the probability that it'll break down? Let's say it's very less, but one day you are gonna go out and that, oh, my car has a flat tire. That can happen, right? But how do we solve for it? It's not that you have control, and you can say that I'll never have a flat tire.
+
+[00:49:25] But if a flat tire happens, then how do you save for it? You have a spare wheel, right? That's basically building upon redundancy. Like you say that, I know that this can fail. Let me have two of it so that if one fails, another will be, used when you actually do these two things, the probability actually multiplies.
+
+[00:49:47] So now what is the probability that you went to a car? It's a flat tire. You saw your spare wheel and that is also a flat tire. This is a very rare probability Assuming that you are checking eventually, or in an interval to say that my spare tire actually works So let's say if there is a probability in one in thousand day that okay, a tire goes flat for both of them, then actually having a probability of both of the tire went flat on the same time is actually run by a thousand in 2000. So it just became like one in, one in million rather than one in a thousand days.
+
+[00:50:22] So that's how you solve for it. if there is a part which says this can go wrong, have another of it. that probability just increases to say that it'll work. The probability of going down just when. Sew down by a hundred, by a thousand fault or whatever the, ratio was.
+
+[00:50:43] So having a redundancy is the mean. But now think of it, let's say you are there and then there is one tire, There is another tire. But let's say that you were the one who were like, okay, this tire went flat, so let me actually put it here, So ideally you are switching the tire and you say that I'm manually doing this as a when this becomes, I actually bringing the working part and replace, right?
+
+[00:51:13] But if you do this manually, then there is a time involved which will make you a downtime, right? So you need to automate this time where you say that if a failure happens at one place, someone has to switch to the working part. To save the time. It cannot be a manual activity. Now, this switch, whatever this automatic thing is with switches, 
+
+[00:51:38] This is that switch. That switch becomes critical
+
+[00:51:47] and you need to ensure that the switch always work.
+
+[00:51:59] Do you feel this? this principle is not related to tech at all. This is a very generic principle why a system will go down, right? How can it be saved? if there is a fault, there has to be redundancy. If there is a redundancy. Someone has to actually say that. See, this redundancy can ideally in two modes, if we talk about this redundancy, right?
+
+[00:52:24] One is active where switch doesn't matter. Another is active. Standby
+
+[00:52:36] My car cannot have, two wheels at a time. If one goes down, I will have to replace it. it's an active standby mode if one goes down, I have to get another, but if there are, two things running at a time.
+
+[00:52:48] If one goes down, another can still keep working that's an mode. Trucks. Yeah, trucks can have, two wheels, if there is a flat tire, it keeps going, For some time or maybe for some period 
+
+[00:52:59] So that's that mode. But if you are in this mode, active standby, then you need to have a switch. That switch has to be reliable. So that probably again puts you to the same thing. Okay, how do I make this switch reliable? to ensure that. You need to make this reliable one is key Now, because the switch is becoming a critical path, right?
+
+[00:53:21] how do I ensure this switch never goes down? You can again, come back to the same things and say why will this switch go down? But then can I have two switches? Then the two switches will actually again, be a problem what is the switch that switches between two switches?
+
+[00:53:36] So practically or theoretically there is no escape to, single point of failure, but ultimately you have to find this which is actually the most reliable. So if you actually look at nature, right? There are things which is only one, a single point of failure, but it is such reliable that you don't worry, like for example, sun.
+
+[00:53:57] Wow. Your only source of thing is like one thing, right? Which is sun. That is only one thing. There is no redundancy. There are no two suns to our solar planet to say that if something happens to that sun, will my solar system exist? It'll not exist, but it is highly reliable that nothing will happen to that sun, 
+
+[00:54:20] At least not that we are aware of. So you have to find that if there is a single point of failure, you have to find a system that is highly reliable. It'll not go down, that's where you have to bet on this. But again, same principles can be applied because it's a single point of failure, you need to know that key.
+
+[00:54:39] It works. So monitoring or health check, you can say is more important for the switch. You need to keep, an eye on that. Okay, this is actually working so keep testing it. So even testing comes here.
+
+[00:55:02] So this is the thing that if a fault happens, this is all you can do about it. Second is capacity. When I say capacity, this is another reason why things will come down. for example, let's say there is this building supposed to handle, 10,000 folks 
+
+[00:55:22] But what if you put 20,000 people on this building? Then this will go down, right? This can go down. So that's another reason why any system goes down. So maybe when our stack of Euler or express checkout, it can say that I can handle 10,000 T ps. But if you send a traffic more than 10,000 tps, then it'll go down because of capacity, 
+
+[00:55:44] So this is another problem why it'll go down. Now you need to handle that as well. one thing you can do for the capacity problem is like kill the problem. You say, I will do a rate limit where you say that on a bridge, if it only supports 10,000 vehicles, I will not allow 10,001 vehicle actually board the bridge till one exits.
+
+[00:56:10] So that's basically rate limiting. If you know that your stack handles 10,000 TPS, then any traffic that has more than 10,000 tps, you are going to kill it. I will not handle this traffic In order to prevent you from going too close to the limit, do you provide a buffer?
+
+[00:56:25] So generally what happens is, if you have seen our dashboard of rate limiting, so if a merchant, let's say generally by default, we give them 60 TPS, this is the pipeline, but generally merchant does 10 TPS so this whole is technically a buffer. And now let's say if they assume that this 10 TPS will go to 60 tps, they tell us, we tell this to be like one 20 TPS or 180 tps.
+
+[00:56:52] We are more than what you assume as, so the buffer is pretty high. if, this is our rate limiting graph, they are generally here. but still for system stability, there is this limit that they hit as a, so when, now if you say that, okay, I want to increase, right?
+
+[00:57:09] What happens is because it's a software world, the stack is horizontally scalable. What we do is if merchant says that I want to increase the limit, right? We can actually increase the limit of the whole stack. if the whole stack was running at 10,000 TPS buffer, then we can scale up and it can say that K can, now I support 15,000 TPS, and increase the limit for you 
+
+[00:57:33] generally, it takes few, couple of minutes. Like you can think of it as 10, 15 minutes to bring it up because you have to put more machines and scale up, right? So that activity, but generally merchant, this kind of activity happens when merchant says that I'm going to release a.
+
+[00:57:51] So it's always mostly the planned activity. when they're assuming more traffic will come, they come to us, they say we scale up, we increase the limit. And then that works as a, so to the merchant's point, only thing is you can say that key.
+
+[00:58:07] Like here we can scale. at your demand Bring whatever traffic you want. We charge for that. We do, right? Yes, we can that up to 60 K ps we are okay with it. But with certain merchants, right? You have to also understand that certain, if you're bringing us 1 23 years, that means additional revenue for just your save, things like that.
+
+[00:58:30] So it's a mix of both. Let's say for merchant you are, for example, there is a merchant who has a saved. Wherein the revenue might not be much, but the amount of payment pay calls that you offer, calls that they do will be 10 x to 50 x of the revenue that they would bring in. Then it would make sense to charge them.
+
+[00:58:48] Whereas if it's going every time, the actually or every user that's going to try, or at least some ratio of it, is gonna bring more revenue to spay also. So that is a debate if we should charge them or not. But that's a case to case call that we take general stand is that we charge. Yeah. Yeah. That's a similar guarantee, the sales that Yes.
+
+[00:59:12] That'ss the point, take the risk. Yeah, exactly. So apart from that, see one is like. Where merchant can come and demand, right? This will happen. Another thing could be that because we know that for example, it's Black Friday you know that typically this kind of commerce merchants will actually go up.
+
+[00:59:31] If they are doing this much, black Friday will probably hit this much, right? Then there is predictive scaling also that we do, where we say that I understand your traffic based on the history and I can predict something based on that I can also increase the limit these things are possible and we have the way to do it.
+
+[00:59:52] in our stack, It would be another question that, okay, do we actually just go and increase for them that I'm unsure of, but again, the same reasons what you asked, like for business reasons. But yeah, this is something that we do. So this is the capacity problem. you're expecting something, if the load comes more, then you can go down.
+
+[01:00:16] So two problems because of which a system goes down. One is an act of God where we can do anything, but you can handle it if that happens. Another is capacity, where ideally you should handle that also with the rate limit saying that more than this. If that doesn't work, then you handle it.
+
+[01:00:35] you can actually scale at that point when you see the traffic If you can cope scale it, if it's a planned activity, always scale before. monitoring and figure out if you can predictively believe, yeah, if it could be automatic predictive scaling rather than merchant always coming to you and saying that, Hey, increase the traffic for me.
+
+[01:00:56] So this is capacity that is act of God cuts based upon the shared infra that we have. Ha. Why if one merchant brings in more volume how it's going to affect us. So that's okay. So what happens is, let's say Kia, our overall pipeline, capacity was 10,000 tps. This is what we can handle.
+
+[01:01:17] But you have to see that this is actually a shared pipe, right? for all the merchants out here and to the Euler, This pipe size is 10,000, But we have said that, I am giving you 60 TPS. But if you actually do the addition of the 60 TPAs, right?
+
+[01:01:34] Practically what will happen is the available size, if you do 60 into number of merchants, right? This might exit 10,000 because you don't always put 60, you give them 60 TPS as limit. But it doesn't mean that everybody, every, each and every merchant can throw up 60 T ps traffic. So this, you would've seen that, okay?
+
+[01:02:00] If you have an ISP, right? ISP always says that, Kia, I'll give you. Let's say two 50 GBPS plan, right? Your data speed. When they say 50 GBPS, they don't mean that every single customer can actually use 50 GBPS at a time as a, because their pipeline itself could be just thousand GBPS, which means they know that ki, you and I being the same customer are not going to use the data at same point of time together.
+
+[01:02:31] Not all customers will use that, so what they have seen is with my understanding of how the customer actually uses, I can actually say that I'm giving you 50 whenever you use it, because I know that not everybody is using that let's say at the time 50% of people are active, 
+
+[01:02:49] At same point of time. Then I still have okay, thousand. MBPS line. I can actually multiply and say that I can promise 2000 pipeline, which doesn't even exist virtually. And this 2000, I'm giving you two 50 as this thing. There's a business model, right? Ultimately same happens with us also.
+
+[01:03:10] So when we say 60 TPS, it doesn't mean that ideally every merchant can send 60 TPS, but we know that when you will send at point of time, some of the merchant is just sending one TPS, so that will actually like fill for it. Now, when that happens, however, see, we cannot let it go as a, just use the whole thing at all, right?
+
+[01:03:32] That's where the rate limiting comes into picture, we say, it's a shared thing. if you take it all everybody goes down because in this same pipeline, even though if it's 10,000 tps, let's assume that a merchant didn't tell us about a Black Friday sale.
+
+[01:03:47] and they just consume 10,000 TPS. Then every other merchant will go down, All transactions are coming and waiting to save that, we have this limit, which is 60 dps. By default, you can increase this if you know that this pipeline can go up.
+
+[01:04:04] So that's what we do as of now. If you had an instance where you had to tell them To stop, Yes, we do. So how do you deal with that? There are also instances where we missed putting a rate limiting on a merchant, and merchant actually took it off. So in India this happened.
+
+[01:04:23] Like I said, there was one instance, few, probably couple of weeks back where, because he was using another, entry point, we missed rate limiting of 60 60 T ps. And he sent us a traffic at around like some I think 4,000 TPS and we were not ready for this.
+
+[01:04:44] So he actually took the whole of the infrastructure and then every other merchant's failed as a downtime. So that was wrong. It was wrong on our part. We didn't apply this rule. If this was there, this could have saved as a but these are learnings that we have. We should never, I can also, the third point will also tell you that why did that happen to that particular thing?
+
+[01:05:08] That's our third principle. Commercially, do we put a clause in when we make mistakes like that to compensate clients? Yes. So it all boils down to your. Up time s up times the four, nine or the three nines that you put? Yeah, four. That measures over the entire year how many minutes can, are you allowed to be down?
+
+[01:05:29] No. Without being commercially viable to a merchant. if you increase more than that, this measure gives so much of invoice discounting sometimes what Jasper does as a goodwill. when we go down, we give merchants an invoice discounting, even though we have not reached that four, nine place.
+
+[01:05:46] And we realize that, we want a merchant to trust and have a good relationship with us. Sometimes we give them a invoice discovery, but that's enterprise motive. Not everyone, but not discretion, not discussion level for commercial. So there's a SLA saying that, you know what's level one, level two, like whatever is critical, we have to resolve 
+
+[01:06:04] The resolution SLA. Now, with respect to entire infrastructure, when a system goes down, it's the highest level. like if our APIs are not responding, be the highest, that's the highest s that's the highest s for which you have a 30 minute, what response time and one hour resolution time.
+
+[01:06:21] usually it's resolved within five to 10 minutes. The entire company gets on a call. As soon as that is done, we have alerts in place. the start time of the issue and the end time of the issue is measured your downtime. When the entire system is down, this is not cut. So now when you say 99.9 for one month is different for one year.
+
+[01:06:40] So remember always it's in contract, it is 99.9 for an entire year. you measure the downtime and the SLA for an entire year, okay? it's again for the critical APIs. not for every API or every request. So different API will have different resolution type. Yes. Depending on how critical it is to the transaction flow.
+
+[01:07:01] So if it's something to do with the main transaction flow and that goes down, then obviously it's like P zero. But then there are some APIs that are not critical to the transaction flow.
+
+[01:07:15] Think of it as some sort of analytics API, Or let's say some fetch balance, API that you just on the checkout page, you wanted to show the balance and balance didn't appear, but your payment still goes through So that API, we don't consider that as a critical API I wanted ask if one merchant is able to just send 4,000 TPS Uhhuh and is there any plans to scale further than. 10,000 tps. Yes, If you see, we don't say that we have a limit to scale. So what we have come up with our architecture, if you look at Euler it's horizontally scalable architecture.
+
+[01:07:53] So you don't have a point to say that this is my limit. You can keep adding machines and scaling it up right now. Now the problem only happens is it's not about scaling. Whatever they are, we can support. Yes, very well done. Only problem is did they ask, it shouldn't be like a sudden traffic, then we have to go into the rate limit of it.
+
+[01:08:17] But if it was a planned activity, we would've scaled it. this example, was not actually planned. They didn't tell us. They just sent that traffic and our problem was that we didn't apply the rate limit. That's why everyone went down.
+
+[01:08:33] If the rate limits were working, then it was no issue If he is going to send more traffic, more than 60 tps, which they know is my limit, they were supposed to ask.
+
+[01:08:43] If they would've asked, we would've increased it and that would've worked. That was bulk of 10,000. Is it always at 10,000 or just examples? No, this is just example. See, ultimately it boils down to the cost. So if you actually run a stack of 10,000 and people are not using it, generally in Euler, we reach up to something 1200 to 1400 tps.
+
+[01:09:05] There's the practical numbers that we reach at the max of the day. Now for this, if you keep running 10,000 sort of stack, You are actually paying for five times or four times more because whatever you bring up, you'll end up paying for those machines, 
+
+[01:09:21] Which you have added in your stack but we have to be affordable also because we only charge six bips to the customer, right? to maintain that scalability and affordability for ourselves, We don't really run at 10,000 DPS. If you know this is the pattern every day, right? Then we usually run only our 3000 t ps stack.
+
+[01:09:42] If a merchant says that I actually want more, then we scale this up as a, so that's, this sort of things are there at night, this will probably come down to seven 50 TPAs and things like that also happens. So when it's a nighttime. Generally there are no transactions to it. So this 1400 numbers will actually fall down to 10 20 TPS across merchant.
+
+[01:10:06] And for this numbers we probably have a very small set of stack that actually powers up. So yeah, those are practical numbers, but the point is, if it's a planned activity, we can scale. And then also we support them saying that 60 t ps is the buffer because we know this is something that whatever we scale down, we can still support this.
+
+[01:10:28] So that's how you tell it to merchant. The two problems, fault and capacity. The another one which probably was an example for this also, where we, which we'll talk about. The third one is actually a change. when a system is up and running it doesn't go down if fall doesn't happen or if a capacity is not overloaded, right?
+
+[01:10:53] if you try to go and make a change at it as a think of it, something is just as a running, have you seen this? if something is running, don't touch it. if you touch it, you don't know what will happen to it, people are worried that whenever you change it, it might go down, which we don't want so don't change it.
+
+[01:11:13] But remember, we all want to be agile Rather than saying my systems are running. We don't change it usually. And often things like that, being agile, you also want to say that oh, I, every now and then go and change the system. I change configurations, I change the code, I change deployments.
+
+[01:11:30] We do keep doing those kind sort of things and this becomes one of the factor to actually make a system go down. you cannot say don't touch the systems. this could have been the call if you don't want to be agile, but we can't live with that.
+
+[01:11:45] With non-ag agility, which is also one of your KPI to a merchant that we are agile. If our ecosystem demands a new change in the pipeline or in the transaction processing, we'll be the one who will integrate, right? So if you wanna be agile, you will be actually making changes to your system now because you make a change system can go down right?
+
+[01:12:10] Now. How do we handle that as a So here first thing is to do is generally what do people do? you would've seen that, right? If I'm changing something, we just say that QA have a production environment, I have a sandbox environment, let's go there, let's do qa, let's do testing and see that this works, and then bring it here.
+
+[01:12:31] So testing is something that people can do before you change, right? what could be better than testing? Rather than making a change that can just go a big bank, right? Like none or all. So you are at state A, you made a change, you went to B. Can you introduce B slowly and steadily where you say that oh, I am going from A to B, right?
+
+[01:12:57] Can I be like, okay, 99% of traffic serves from A, but B only handles 1% to start with. And this equation slowly goes to say that key A becomes zero and B becomes a hundred percent right? This is a strategy which is called staggering.
+
+[01:13:19] So you always do staggering for a change. Like it shouldn't be that you just say, from here I went there. You have to take a step, monitor. Now as soon as you stagger, you have to monitor. You should know what is working and what is not working. So assume that you are moving from A to B slowly, but you don't monitor A and B to say is B performing bad or worse than A.
+
+[01:13:45] If it is, then you exit, you don't increase the percentage. rather than going from one to hundred, you go zero and say okay, let A come back Ks. you do monitoring and you do staggering. This is the major thing you will end up doing in a change and this will give you confidence whenever you are touching the system.
+
+[01:14:05] this is something our merchants ask us frequently, since you are doing regular releases or conflict changes, Can we control how quickly the change goes out to our live users? Can you do it in a staggered fashion? Can we do an AB to judge if the change is working, 
+
+[01:14:22] If it's very common question that you hear, yeah, that's so merchant. See this staggering, right? Ultimately, this also says that there could be two versions live at a point of time. Some person here and some person there, right? One is like you're looking, this has a reliability, angle. And seeing that ki igo, I can actually do A, B, and C that OB is performing at par or better than A, then let me shift to B.
+
+[01:14:48] But if not, then let me say that B is bad and fall back to a right. this can also be used if you have two options of features, right? let's say you are just showing a button to the user. Should I show this button on the right side as a CTA or should I show somewhere above on this?
+
+[01:15:08] Which is better. How do you do this as a one is you can take an intuition and do it another, you can actually do with ab. Where you say that, okay, let a version actually throw 50% of traffic at a, which has a button on the right side, and let B have a button on the top side. Now let's see which one user are clicking more, right?
+
+[01:15:29] So that's also an ab ultimately, so product manager should be able to do those kind of, experiment and say that yes, I can do AB with this system. From the reliability angle. use this system to understand that whatever change you are making that is reliable and only then it goes in the production.
+
+[01:15:49] Now this staggering is again automated staggering in our stack where we use basically an autopilot our internal product manager, who got this B version out, says that I want to release this B version. an automated system that's an AB system actually verifies whether B is performing better.
+
+[01:16:09] And then it slowly increases the traffic to the B and makes B life. This is what we have to work against change. So these are our best practices, which ensures that reliability is high in our stack. Even after this, if something goes down, then RCA happens. this particular use case, our case study where we saw that KI one merchant was able to actually choke down the pipeline of this 4,000 TPS, right?
+
+[01:16:40] How did that happen? That was actually a problem of change. So what happened was generally merchant takes this entry point. Some entry point, right? But we created a new entry point. This was a new change in our system in this entry point when we gave out, right? All the rules of rate limiting that applies to this entry point.
+
+[01:17:00] We forgot to apply on this new change and because the merchant was using this new entry point, he was able to skip the rate limit if we wouldn't have touched it, he would still be using the older entry point and would get rate limited.
+
+[01:17:16] So the RCA to that particular problem is that Kiwi made a change of introducing a new entry point that skipped the rate limit. And because of that we went down. These are the three things. over and above that, if something goes down, we have an RCA process where we say that QOK, we try to look back what happened, what went wrong, and have to avoid that.
+
+[01:17:41] That's basically root cause analysis, right? And we treat that as a sacred thing where there is no foregoing or we tracked the process end to end. Shiva is not here. So Shiva built a tracker for RCA, which says that, okay, you log it from the time it went down what happened, what was the impact?
+
+[01:18:01] Then there is a technical argument like, what missed and how do we ensure that this never repeats again in the system? So that's a sacred process. with all this, we ensure we have four nines, five nines as ideally we aspire to be five nines. This practically gives you four nines.
+
+[01:18:20] still an interesting point that in agreement we write three nines. One question. when this thing happened, how was it resolved? so what happened was when this happened. People were down, Because he was choking us. Now we were figuring it out. how did he choke it?
+
+[01:18:40] We found out Kio, there is no rate limiting. Here he is using the new entry point and this is how he's doing. And then we implemented rate limiting. So then we brought him down, and then others started working How long did it take for you to figure out. This part. It probably took half an hour, practically 30 minutes and that was, one of the recent biggest downtime in our just space X first checkout. Yeah. I wanted to ask, because now we're going global, right? So transactions are happening 24 7, right? So how do we ensure that it stays constantly more monitored 24 7 and it's, anyways, see, things are anyways automated, right?
+
+[01:19:20] It's not a person who is sitting and looking at the graphs. alerts are there, right? Alerts are also not so what happens is monitoring is anyways happening on an automated fashion where all the data comes into picture. On top of that, there are alerts, saying that this graph should be like this, but if it shows an anomaly.
+
+[01:19:41] Then that anomaly has to be seen and someone has to be alerted. That's where we get a call. it's all automated, A system looks at the graph, it says anomaly found, then it creates an alert. Alert is actually called to the respective team. there are various versions of it.
+
+[01:19:58] So it starts with C3. These are ranks, ultimately C two and CEV one. these are escalation metrics. if there is a C3, right? This is something that those side, this sort of alerts can be handled in a working R where you say that ki oh, this can probably tomorrow someone will come, a person will actually look at this problem and say that key, Hey, this is okay.
+
+[01:20:24] I have to now mail the PG and get this thing done. C two is where you actually get call alerts. These are to the peoples. Okay? Like very first, the infra team gets the call alerts, actually call alert also goes to the product people and engineers, also top people.
+
+[01:20:42] But the ownership generally lies to start with. It's like practically infra comes into picture and he says that, oh, this is the guy, let's all get into, call goes. They come into a conference and they see what is the problem and they try to resolve it on call. So this is the metrics. if this doesn't work within let's say 15 minutes, then ideally it's a seven one, which you will create.
+
+[01:21:08] And seven one is something that I say like everyone will go, come on to call. Where will come, all will come. But practically we will also join CEF two. So we take that seriously. Yeah. So that's the escalation metrics. But in true term, C one is something where, someone's business is truly affected as a, you can assume that okay, cef, two few percent of traffic is affected, but if you say that nothing is working, it's always seven because that's a business stopping there.
+
+[01:21:40] In terms of percentages for us, in our SS, we specify anything above 50% getting affected for much
+
+[01:21:50] 15 or 15 five. Yeah, like more than half your volume. Because ideally, if anything greater than 50 means the entire system, there's a fault something, otherwise there can't be one system having a fault or something.
+
+[01:22:09] What if soft one happens at 3:00 AM in your time? It does happen. this can actually it's not a problem, right? It's less severe. But when this happens at 3:00 AM also because of the call, people do tend to come and say that okay, I'll have to join a call, join a conference call, look for the solution and solve it.
+
+[01:22:31] So it has no time boundary. We ensure that some people will be there. If some people are off or if then there has to be other people who take up the call and do the process. But yes, this is 24 7. Okay. Anytime it happens, we have to come on call and solve for it. Are there any plans to involve a product or engineering team in let's say US time zone?
+
+[01:22:55] Because I think sometimes, clients have comfort knowing there's someone else in another time zone. generally, what we are trying to do is let's say when we go for different region, right? They are not in our local time zone to give them comfort. We also try to deploy a team there.
+
+[01:23:11] I think that's the plan. So for example, if we have merchants in us, we'll actually have a team in us sitting in us with their time zone to handle their issues or queries, or even meet the folks there, there will be a team in their respective time zone. For example, if you look at SEA market in India, it's not much a difference of time zone.
+
+[01:23:31] So that is still manageable. But yeah, if you look at other markets where there is a difference, we'll end up doing that as well. And there are plans to do that. we're working on putting up a support shift model. Yeah. That's need to do L one and alert others that already alert systems are there. We want someone to also be there and identify that 
+
+[01:23:54] Okay. This is a potential issue that might go to a server. Now what happens is three, so it usually happens at a C3, it goes tos, comes to CEV one, and when it comes to CEV two it gets alerted. But when you have a support team, usually what happens, the merchants pick up their phone and call us whenever there's an issue.
+
+[01:24:09] And that's also one of the ways. we would've already got an alert. We are already working on it, but merchant also picks up their phone and calls us. So people like HSBC have asked for a cross shift across support model wherein we are also working on putting that gradually when we scale more merchants, we'll put up somewhere on Aship basis as,
+
+[01:24:32] but for now, if merchant ask you, if your support is 24 7, we with confidence, tell them that we provide 7 7 24 by seven support. If there have been times when you caught on a call at 1:00 AM or things like that, right? generally there's someone available, even in the SLAs, we specify 7 24 by seven is working on.
+
+[01:25:13] Yeah, that's pretty much on reliability. with this, you should be able to give confidence to the merchant saying that QVR four nine is reliable, You should come and ask me why are we pitching five nines Now? we can practically, or at least we aspire to become five nines, but that, that literally has tightly working out with merchant also, because if there is a solution end to end that we handle from merchant's end, then it is doable.
+
+[01:25:44] But generally what happens is because practically these are two different system, right? Merchant system and then our system, this two has to synchronize at a point to say that, okay, this doesn't work. You retry. And that particular retrying merchant has to implement because that becomes, a switch to our, this guy, right?
+
+[01:26:04] So think of it as a merchant. There is Juspay one and Juspay two. If Juspay one doesn't work, which gives you like four nines, right? Both of them gives you four nine. But if he ensures that when this go down this works then you can practically achieve five nines that switching thing he has to implement in the right way.
+
+[01:26:29] So this is what, but generally merchant doesn't implement and that's the reason we cannot move to five nine straight away. But we do have a way to make it work. So we pitch it saying Hey, do the right way of integration, right? We are making the integration more simpler, where merchant doesn't have to write too much of logic to do this.
+
+[01:26:50] We are working it out. I think once I'm in one cut, we have already done in India and we are hoping people to move to this integration so that we can give them five nines as well. So that's, that will happen soon. But yes, because there exist away we say that k we are five nines available if you do the integration in the right way.
+
+[01:27:13] But if you don't, we still give you four nines? People don't ask and say no to three nines on SLS. Everybody says no to all enterprise merchants and order to three 90. Then make them enterprise usually bigger revenue for example, in India. We have all enterprises merchant, 
+
+[01:27:34] But still, their agreement would say three nines. Some of them have some of them, or most of them, I think. Some of them. Because you remember the recent HSC discussion we had? No. Five versus four. Five versus four? I'm not sure. No. What happens in the marketing material?
+
+

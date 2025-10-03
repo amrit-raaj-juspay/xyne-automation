@@ -1,0 +1,86 @@
+Overview - 
+
+The Centrality of Critical Paths in Reliability
+
+The provided text emphasizes the critical path as a key focus for improving system reliability. It highlights that the critical path often represents points of centralization, such as control routing, data aggregation for critical decisions, or workflow systems acting as task schedulers. The author suggests that these critical points should be exceptionally robust and reliable, acting as a single point for generic error detection, load balancing, capacity allocation, and user isolation through methods like shuffle sharding. Furthermore, the text proposes that Root Cause Analysis (RCA) should specifically question why the critical path failed to detect or prevent an issue, aiming for long-term fixes that strengthen these central components.
+
+
+Transcript 
+
+[00:00:00] There has been another, uh, learning in, uh, looking at reliability. Even with these principles, we had issues. That's why the third learning is coming, I think. So it is the focus on critical path, which is the second principle in our 10 principles. So again and again, it is coming back to critical path is what I realized.
+
+[00:00:21] What is the critical path and. Is there any pattern anywhere identifying critical path? Because critical path is a word and we can say something is a critical path, but we might not be able to make it the next better. Then what's the point? Right? We can say it's critical path, it failed next time also it'll fail.
+
+[00:00:38] Then the word critical path kind of loses its meaning. So there seems to be a pattern, um, in between critical path and non-critical path. Going back to the scarcity and abundance argument. So it's almost like a dual, like this, uh, duality of yin yang, kind of dual it looks like. So we are always after unlocking abundance for reliability, right?
+
+[00:01:04] Uh, and this critical part is few things which are scarce, which are like, you know, small parts of the system. It should be like that. Well, it is scarce because it's difficult, but we should try to make that, uh. We should not just say it's scarce and we won't fix the critical pathway, but it is, it is having this characteristic in one side.
+
+[00:01:22] We want to open up more and more, and in this side we have to keep this finding something like, um, even if it is scarce, we have to find it and we have to make it work. Like it is, like, you know, this is like opening up oxygen. We said oxygen is abundant. This is like gold. You have to also keep looking for this, the gold to solve the critical path.
+
+[00:01:42] Another characteristic is this side has more diversity, more redundancy, higher capacity, um, and decentralization. In fact, decentralization is a good word. So this side seems like decentralization is the abundance, and this side looks like centralization because this is like a single point of failure and it is centralized.
+
+[00:02:04] We have to recognize that yes, this is how systems are. When we decentralize, also something gets centralized. So. While we are always talking about abundance, decentralization, et cetera, I think the focus on this part seem to be missing. The recognition of this central point seem to be missing. So that is, that is what this third part of third series of this principles is about.
+
+[00:02:28] So is there any characteristic to critical path at all? So critical path looks like places of controlled routing. Like places where all the control comes and then flows back to the rest of the system, right? The rest of the system is big and diverse and high capacity. Everything is there, but somehow this control comes to, uh, a few points, which are critical.
+
+[00:02:51] So it has this characteristic of a kind of centralization, like we talked about, proxies, routers, switches, et cetera. Right? Uh, critical path also looks like in another place where. Well, maybe control is not flowing through it, but data is aggregating to that point. Critical data is aggregating to that point because with that data we are making some critical decisions.
+
+[00:03:16] So maybe with that critical data, we are understanding that system does not, uh, has not scaled up. Uh, so we have to allocate more capacity from that point. We know that maybe some errors are happening in the system and this is, uh. A reliability level error, and we have to go and fix it. ASAP, uh, sometimes this aggregation of data happens in the control path itself, but sometimes, uh, there is no single point control path.
+
+[00:03:43] Um, the system is reasonably decentralized, but still you need to aggregate the data, uh, and you have to monitor it. Uh. The, there has been a lot of, uh, interest in decentralized blockchain like systems, right? Um, they might not have this kind of a single point, like a router. Uh, the system control path is quite decentralized.
+
+[00:04:07] Uh, the centralization rather happens in protocol. So there'll be like, uh, central points of everybody running the same protocols. That's the kind of centralization, but physically they're decentralized. Uh, but there also we. I kept seeing when we think about such systems, are they the solution? Uh, you need to have this monitoring, central monitoring, or multiple points of centers, which are critical centers, which know what's going on in these systems, right?
+
+[00:04:35] So this critical path is also a point of, um, central aggregation of critical data to understand the health of the system and act. Uh. Act for reliability, act, instant actions, et cetera, could be taken based on that. There was also another, there is also another pattern, uh, of this critical path, uh, especially in workflow systems.
+
+[00:05:00] So systems which are the tasks runners, um, also could end up being a point of critical path. Um. In our system, let's say there are lots of types, let's say some 25 types of workflows. This workflow system still is a task scheduler. Did that task end or not? Um, should I schedule the next task? And well, these workflow systems are not just like executing single tasks.
+
+[00:05:27] They execute A, B, C, D, subtask. And did the entire task end just like a router or a proxy, which can do HT TP and it knows HTTP requests failed and it can have a five XX error recorded or the request timed out and the five five XX timeout error got recorded. Your workflow system also can be unified in a way such that any kind of workflows there, it has to end within a time.
+
+[00:05:54] And any kind of error the workflow had and it stuck and it bubbles up into something like a fi XX error for that workflow. So even these task runners have that characteristic, a kind of a central characteristic. Well, there are other kinds of task runners, which are very asynchronous task runners. Like, you know, you start a task at the end of A, a triggers BN.
+
+[00:06:17] It's like passing the parcel kind of a thing. Sometimes our data pipeline works like that. Either the system itself acts on it or a human can immediately get engaged and, uh, fix the system. So these critical parts are these control routing points, some kind of centralization. I, I would say metaphorically think centralization.
+
+[00:06:37] It might not be a single machine, it might be a bunch of machines, but, uh, those bunch of machines are, uh, central, at least conceptually, or it is a central workflow engine, or it is a central aggregation point. So these are the patterns in these, uh, central aggregation points. Um, so these aggregation points can be the switches, which could do instant failover.
+
+[00:07:04] And they have to be super reliable. It's a critical path. It has to be super. It has to be a hundred x stronger. They are the ones who can identify generic errors so that we don't need to keep configuring different, different alerts in the system. If you have to configure a hundred alerts in the system, the 101 alert, you have missed it, right?
+
+[00:07:22] But if you have found a way to any alert in the system, it'll get caught or any error in the system, it'll be caught in this single place. That's a better design. That, that's how we have two design system. Otherwise, we, we would be like, we, we will again go back to who knows what could happen inside the system mode versus anything happens in that inside the system.
+
+[00:07:39] We will know in the critical path. So these are the points which also knows how to balance the load inside the system. In fact, they can even, uh, request for more, uh, capacity in the system, uh, based on. Some simple way in which it can see how much, how the traffic pattern is shaping. Uh, well, it could be part of a control flowing router.
+
+[00:08:01] Um, well, it, it would be part of a place where data is getting aggregated. Sometimes in, uh, systems like AWS Autoscaling group feels like it's part of the router itself. But in our current system, we have this separate predictive scaling systems, which, uh, aggregate data and decide, uh, how much to allocate.
+
+[00:08:22] So those also, some, at least some parts of it are critical path. Or even if these prediction systems are complex, you need to take some parts of that and make it critical, which can never fail because the ma main system capacity allocation is dependent on this data aggregation and decision. So, what did we say?
+
+[00:08:39] We, it can switch, it can, uh, do generic error detection. Uh, it can decide on how much capacity to allocate and it can load balance within the system. Uh. So these are the three things. Uh, it can also do isolation and rate limiting. So these are the places where you can keep a simple account of who is given how much capacity and who is using how much.
+
+[00:09:05] And you can limit how much of each user is using the system. You can allocate capacity and you can isolate in these places. Well, there is a difference between, uh. Isolation and just allocating capacity. Well, even allocating capacity separately. One kind of isolation, you can even isolate, um, different parts of the system to different users.
+
+[00:09:31] Um, this is something that AWS talks a lot about called cell-based architecture and Shuffle sharding. Um, like not all users can use every part of the system. The typical systems can. Affect the entire system because of one user's, one particular request, a typ. The typical systems when we build, I don't think these, these, these characteristics are already made.
+
+[00:09:55] Let's assume, uh, a particular request from a particular user, uh, triggers a bug in the system and the server goes down. So what will our road load balancer do? Like the user will just, uh, keep repeating it, let's say. Right? It'll just bring down the entire system. Right? It could, it could even be an automated statistic script, which, uh, calls something a an API and which somehow affects some part of the system and the whole system can go down.
+
+[00:10:23] So it has to be done in a. Way this isolation has to be done in a way that it is sharding the customers to different parts of the system. Typically, sharding is more done for databases in this approach. Uh, the entire system could be sharded based on customers. Again, your customer could be the end user itself or it could be a merchant.
+
+[00:10:46] Uh, all that has to be figured out, but uh, uh, this is another future investment that we have to do. Uh, shuffle, charting, uh, to truly isolate different customers such that these requests called, these are called poison pill requests, uh, doesn't affect the entire system and will reduce the blast radius. The critical path also can do staggering.
+
+[00:11:08] I. That we talked about in the 10 principles or the change, change as a cost. So the critical path is the one which does the routing. So it is the one which can, uh, test the waters. Okay. We have, we want to release to a new release called BA is working. It can test the waters, send a little bit of request to B and see that, uh, things are fine and in increase the traffic or it can immediately, uh, detect the issue and roll back automatically to a.
+
+[00:11:34] So this staggering and rollback and, uh, this issue detection. Uh, you can see how it is also part of this, uh, controlled router and, uh, the data aggregator and decider of, and detector of errors. Talking about R-C-S-E-Y-E one feeling I'm getting is instead of only doing the five wise and going deeper, uh, because even when we do it, sometimes we are not going deep enough because mostly we don't have time.
+
+[00:12:03] I. Uh, we are all also always innovating and, um, it's being difficult to, you know, do deep RCAS sometimes. Uh, but this focus on critical path could help. So whenever we write an RCA, uh, why did the critical path not catch this issue? I think that question should be asked and how are we fixing the critical path?
+
+[00:12:26] So I'm seeing this pattern that that could be. One of the thumb rules to, you know, do very categorical fixes in RCS and find more broader issues, uh, rather than having, when just identifying a specific issue and fixing it. So the whole point of RCS is not only to fix the current problem, right? The immediately current problem, even incident response, fixes it true, right?
+
+[00:12:55] RCS have to have. Uh, medium term fixes and long-term fixes also, and focus on why did the critical path not catch the issue and what fix are we doing to critical path, uh, could be a thumb rule in RCS two, uh, which could be a innovation from our side. Uh, we are, we are feeling that will enable, uh, a lot of our folks, uh, with less time or less experience to also become 10 x reliability experts.
+
+[00:13:25] Yeah. And, uh, well, we said critical path has to be simple only. Now, we talked about critical path has to do many things. So how to do these many things in a simple ways. Again, uh, innovation to be done. So this is where our principles stand and it'll keep evolving. Uh, hope you liked, uh, this, uh, explanation of principles and, uh, my experience.
+
+[00:13:54] Uh. I have some more experiences also, uh, of, you know, uh, thinking about reliability more in the physical world, like from, uh, fixing transformers in our, uh, outside our office to, you know, fixing, uh. How, how electricity works or, uh, you know, various, various other, you know, debating with people on, you know, what should be important in a building versus what, why, why should we not bother about many things?
+
+[00:14:21] In fact, critical path also gives me a lot of, uh, understanding on what we should not, what we don't need to bother otherwise, if we are bothered, we'll bother about everything, right? So we have to find what is the real thing to really bother about, uh, so that we can get freedom in other places, right? So yeah, it's still a journey.
+
+[00:14:39] And, uh, hope you all become 10 x reliability experts. Thank you.
+
+

@@ -1,0 +1,44 @@
+Payment Routing Systems.mp4
+
+https://www.youtube.com/watch?v=0CeNbtK0Rog
+
+
+Overview - 
+
+Payment Routing System Deep Dive
+
+
+The provided text describes a payment routing system designed to optimize transaction processing for merchants. It explains how the system acts as an orchestrator, enabling merchants to work with multiple payment providers, unify customer experiences, and improve authorization rates. Key components of the routing engine are detailed, including an eligibility check to filter suitable payment gateways (PGs) or payment service providers (PSPs). The document further outlines two primary routing methods: rule-based routing, which allows merchants to configure specific transaction pathways based on predetermined criteria, and dynamic success rate (SR) based routing, which uses real-time data and an explore-exploit strategy to select the best-performing PG or PSP. Finally, it touches on health-based routing, a mechanism for detecting and responding to PG or PSP downtime, ensuring transaction continuity.
+
+
+Transcript 
+
+[00:00:00] Hi everyone. As an orchestrator, JusPay solves various merchant problems like working with multiple payment providers, unifying the customer experience, streamlining, authentication, improving authorization rates, and providing unified analytics. One part of the payment processing is routing. Today we'll do a deep dive into payment routing systems.
+
+[00:00:20] Merchants integrate with multiple payment gateways or payment service providers for various reasons, like global coverage, success rate optimization, and to keep processing costs in check. Our routing products identify the best path for a transaction among the options available for the merchant. So let's dive straight into it.
+
+[00:00:40] Following are the building blocks of our routing engine. Firstly, the eligibility check to understand the pgs or psps to be evaluated for a given transaction. Then we have a rule based routing to choose the right PG or PSP for a transaction based on rules preconfigured by the merchant. Next up is the dynamic SR based routing to determine which PG or PS P is the right choice for a transaction based on realtime success rate analysis.
+
+[00:01:07] And then we have health, health-based routing to further conduct health checks on the available pgs before transactions are processed. Eligibility check. At this stage, the system checks the eligibility of the PG or PSP integrated with the merchant for a particular transaction. They are evaluated on various parameters like payment method coverage, merchant restrictions, geographical or currency restrictions, and even minute parameters like card bin eligibility.
+
+[00:01:37] All the ineligible, pgs or psps are filtered out at this stage before evaluating them. Once the eligibility check are completed, the actual routing happens. Here we have two products, rule-based routing and dynamic routing, and the merchant is free to choose which product to use. Rule-based routing is simple.
+
+[00:01:58] It allows the merchant to pre-configure a set of rules in the form of nested if L statements and the best PG or PSP is chosen based on these rules. This provides merchant a lot of predictability and also meet business commitments like sending a certain volume and transactions to a particular PG or PSP.
+
+[00:02:17] Some of the rules that can be set up are if the merchant amount is less than $500, and the payment method is card issued by Bank X routed to processor A if the transaction is more than $500, and payment method is a wallet route to processor B. If none of the above are true, fall back to processor C. The eligible pgs or psps are compared against these criteria set up by the merchant to determine the right PG or PSP for the transaction.
+
+[00:02:48] Dynamic SR based routing, on the other hand, identifies the best path for a transaction on the basis of the most recent success rate data of the eligible pgs or psps. Our algorithm places a lot of value on recency here because we want to protect the merchant from even minute fluctuations. In success rate, the problem of selecting the best gateway can be mapped to a non-stationary, multi-arm banded problem with delayed feedback where.
+
+[00:03:14] Each gateway is an arm with fluctuating success rates and varying latency for success and failure. The approach used to solve this problem is driven by explore and exploit strategy. The method takes two-pronged approach. In exploration, PGS or psps are continuously evaluated by sending a small percentage of traffic to ensure up to date performance data in exploitation.
+
+[00:03:38] Majority of the traffic is sent to the best performing PG or PSP to maximize overall success rate. The algorithm uses a sliding window technique to assess the success rates of last end transactions for each gateway. This ensures that barring any downtime, the highest ranked gateway is chosen for a transaction routing.
+
+[00:03:57] Merchants are free to decide the window size and the percentage of traffic allocated for exploration. Merchants typically configure these on the basis of traffic volume and average success rate. For more on dynamic SR based routing and how we handle certain edge cases, do visit our latest blog on the same.
+
+[00:04:17] Help based routing is our last checkpoint. Our downtime detection mechanism uses. Reward and penalized loop to evaluate real-time success rates. When the success for a PG or PSP falls below a merchant configured threshold, it is marked as down. If the merchant is using rule-based routing, the transaction is moved to the default fallback, PG or PSP.
+
+[00:04:39] And in case of dynamic SR based routing, the gateway stopped for exploration for a certain amount of time. After this, the transaction is routed to the chosen PG or PSP to conclude. Our routing products are built to provide maximum transparency and choice to merchants, and at the same time makes scientific and data-backed decisions to maximize success rate optimization.
+
+[00:05:01] At present, we are in the process of publishing a technical paper that further explores the map behind our routing products. We look forward to share it with you all soon. Until then, thank you very much.
+
+

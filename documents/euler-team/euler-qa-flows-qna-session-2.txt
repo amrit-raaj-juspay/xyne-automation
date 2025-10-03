@@ -1,0 +1,247 @@
+# Euler QA Flows Q&A Session 2
+
+• **Database Operations & Logging**: Covers how to identify and track database calls across different payment flows, including query patterns, field updates, and debugging techniques using Kibana logs and session IDs for comprehensive flow analysis.
+
+• **Producer-Consumer Architecture**: Explains the process tracker sync workflow including task creation, Redis streams, scheduling mechanisms, frequency configurations, and the complete lifecycle from task creation through execution with 45-second delays and retry intervals.
+
+• **Gateway Status Mapping & Error Handling**: Details gateway status mapping (GSM) configurations for retry/requeue/retarget flows, cleaner processes for dropped tasks, force sync vs cron sync differences, and various status update mechanisms (webhook, process tracker, order status sync).
+
+---
+
+So guys uh previously we did uh we asked for uh DB calls right? What are the DB calls we are making for each flows? Have you guys worked on that?
+Yes. Next.
+Next.
+Yeah.
+Uh can you share the sheet? Where is the sheet? I'm not able to look in that sheet. Has anybody shared or are you guys still working on it? What is the status of that? We have noted in our
+individually we have noted it. If you want we can
+uh can you share this individually that will be better DB calls when the DB calls is happening? What are the fields we are updating? What are the ARMS we are using to update the DB? When can I expect this to be shared? Guys,
+can we send it by end of the day?
+Sure. But I need it by the format yesterday. Flow
+number of updates or number of queries happened, which table at what point of flow and what is the uh where clause we are using. like this format I need.
+What is the
+wear clause? We are updating mean we need some wear clause to update right? We cannot update the entire table there.
+You mean uh in whatever APIs like suppose customers so uh like create action, update action, find action.
+Yeah, these are the uh DB calls making
+and it is making a DB call means it will use some field to search the DB right suppose you're doing TX and detail query means you're using order id to query it or txn ID to query right
+so similar way it will be using some quir right can you get those fields also
+okay got it right what am I saying any doubts and I checked for SPM. So when I'm checking in logs, we not getting any, you know, DB logs.
+Uh you share your screen and show us to me. One second. Again, we're just shifting into a room. Can I give 5 minutes?
+Sure. Take your time. Awesome. Are you able to see me?
+No. Yeah, it's visible now. See uh I did the SPM call and with the session ID when I check the logs update find or some other actions it is not it's not showing any logs but
+see you're putting can you go to your like whatever it won't show update log for SPM it will show only Find logs will be there. Now
+okay
+I'm asking
+find also it is not showing.
+No can you call your screen up and not auto qu Can you mute yourself?
+Uh, are you like doing something on your screen? Your screen looks like stuck.
+My screen got freezed. I'm I'm trying to restart it. They share it. Sure. Are you able to see now?
+So one thing can you just run that query itself not with and condition.
+Okay. What does SPM API do?
+Uh, it will give the hello.
+Yeah. It will give the all the last use payment methods and all the payment methods are available for that customer.
+Okay. Other than that How do SPM works? works. Anyone else? S Goautam Shankari SPMB is basically uh it's a safe method basically when uh we it's a pretext and call so Whenever we call SPM, it will show for the specific customer ID. Whatever whatever uh we have the previously used trans uh payment methods were there for that customer ID will be shown in that all
+that is what it does. I mean what how it works?
+It will fetch all the uh like it will fetch the details from like it will query for all the uh tables like verify VP like uh you have UPI where all the uh PPS will be stored. Then you have card all the card list card will be called. Then uh list wallet will be called for that customer ID multiple calls will be done and then we'll fetch the data from there.
+So it's basically calls other API and based on consuming the response from the API it will construct the SPM response.
+Yes.
+So the SPM API will like SPM API will do any Update queries or queries
+update it will not do but fetch it will be doing right
+from
+no fetch also fetch also it will be doing for few like uh uh uh huh it won't be doing it will be calling for outages also it will be calling out for/ outage then it will for EMI plans it will be calling EMI plan then
+so if you search with SPM session we'll be able to get find query update query or any other query in SPM session
+not in SPM session it you have to check in the call like say suppose a card is being there so for that you have to check for list card session and then in that session you will get the DV query
+so so you have to search for all the outgoing calls from save payment method to
+save payment method to other auxiliary services and see in those sessions of auxiliary services what are the call we are making to DB right?
+Yes.
+So similar you got it right?
+Yeah I got
+okay check like that.
+Sure. Sure.
+Okay. Uh can we start with this session? Anybody else has doubt how to fetch logs? Anybody else? Okay. Uh you guys can start like what is your doubts you can start with one by one hello?
+Yeah anybody can start now like five folks have any doubt in any particular flows or need like extra creative like how it might work or anything like that anybody can start. related to this consumer producer.
+Uh sorry Shankar your voice is very feeble. Can you speak up?
+Yeah. Uh related to this consumer, producer and cleaner. Uh so we only know a higher level. Uh so can you explain bit more on it like anything which needs known
+like we know that producer like it creates the task and then consumer would pick of the task and then it process it and cleaner would clean both the end. Apart from these anything else that we are supposed to know
+like we have different service wise uh this is schedules right it is having for different different whatever you're saying is architecture of producer and consumer
+uh we only know that one so with in depth we are like not aware that is also written in the K do
+so in in depth means what you need to know like what are the service configurable and what it does.
+Yeah. What it does and then how what are the things basically we are supposed to check in when it is coming for producer consumers test cases related to those like what are the main points that we supposed to check in. Okay. Uh Can anybody share your screen and can anybody do raise up a transaction for Azertus merchant ID?
+Hello.
+You're not in the
+Sure. Please share this. One sec. very different. 16 digits. It's more than 16 digit actually. Okay. Don't load the past. Okay. No problem. You loaded. Just take the order ID and search process tracker in the logs. Mhm.
+So, if you are doing for uh if if you're doing for process tracker like T and sync workflow, It will search for specific taglines. Okay. DX and sync aggressive workflow. This is the tagline it will search for if you're doing uh uh if you are trying to do any PT sync task. Okay. First uh can search that one.
+Check the tags here. What is the tag it is referring to? So small screen. Can you increase the size of your screen? So you can see a right tag. It's web book. So it's not a syn. Can you scroll down? Ready? You can stop your screen. I'll explain it through code itself.
+Mhm. Sure. Yeah. Yeah. My screen is visible right?
+Yes.
+So we have few cuts to enable process sync for any merchant and gateway combination. Okay. First cut over is merchant enabled for pts sync_ gateway. So this cut what it does it will check in the config whether for that merchant is for that merchant and gateway combination whether process tracker sync is enabled or not. Okay after checking that process tracker sync is enabled it will check for second key. Okay merchant enabled for pts sync aggressive. This is the second key it will check and after checking for this key it will check like whether what is the count of frequency it will be doing right once you have one Once the merchant is enabled, it need to get the frequency, how many times the execution task should happen, when it should pick, when it should execute and once the task is created, what uh when it should be picked, when it should be executed, how many times it's executed and how many intervals it has to be executed. So there is one more key for that that is frequency. This is third key. So basically what it does you can check here. Uh okay. So once you hit pay start right once you paste start pay start in the flow itself it create a sync task. Okay the sync task will pick up after 45 seconds or 45 minutes in sandbox. Frequency will be 60 180 and 300 means 1 minute 3 minute and 5 minutes and the count is 5 1020 why here 5 10 20 I'll tell you okay once the task is created it will start executing at like after loading page chart your task will get created after that 45 seconds later your task will be picked by producer okay producer will pick the task how producer will pick the task is there is one key You Can uh if you see in our logs there is a workflow key called TXN workflow txn sync aggressive workflow that is the tag name. So that it create when you uh if you want to get even deeper like when you create producer right producer and consumer so consumer basically what it does it will create a stream there is something called stream like it's a channel in which your syntax will go through this channel. And producer will pick up the producer will pick up this task and execute. Understanding right this like how the producer and consumer works.
+Oh, so now producer will uh execute the task or consumer. So basically I think producer will set the task in PT and consumer will pick and consume or how it is.
+Uh no like first thing it will create a screen whenever I telling from the beginning of like when you start deployment right. when you start deploying.
+So first you need to deploy consumers because consumer will create the stream and set the stream. Okay. Whatever the task now it's already created, right? It will be pushed into ready stream. Okay. Next when you scale up producer this stream will be inputed to producer. So it will take each individual task and it start executing means calling PG. Okay. So there is a producer will like give
+Sorry I think there's some delay. Can you speak it?
+Execution which one will happen through which it will happen is it through producer or is it through consumer?
+Through consumer itself. Producer will just schedule it.
+Okay. It won't call any external API. Producer don't have internet. It won't call any external API. Okay, it just reads the queue whatever the radius stream it is created, right? And it has some tasks. Okay, so it will read those task, it will schedule those task. I have shown you the frequency mapping key, right? Based on those frequency mapping key, it will read the TX detail. When the TXN is created, after that TXN is created, it will schedule it when it should do its first attempt. Like after 45 seconds, it will have to do its first attempt. So, It will push it into schedule consumer with schedule time as txt extend detail create time plus 25 sorry plus 45. So after 45 seconds of past it will call first sync call to PG. Okay you're getting it now right?
+Yeah.
+So after it calling to PG at that point then there it will go on loops. Okay. So once it has called BPG next it will do intervals frequency intervals okay how many times for next five counts it will do what 60% uh 60 seconds intervals so you will do five five times execution with 60cond interval now we have done first execution at 45 second after the next 1 minute after 1 minute it will again call PG to get the status like that it will be doing till five times with 60 seconds interval and then it will switch to 10 intervals with more delay like from 60 like 60 seconds to 3 minutes delay it will start to give from one PG call to next PG call so like that it's updating the scheduleuler uh like when the schedule should ex get completed okay any doubts here still No, you told stream, right? What does what is stream actually?
+Stream is like radish cache. It contains the number of task it should like it's just a radius Q which contains which contains all the task next need to be executed. So producer picks this task by batch. So first thousand task will be considered as one.
+Yeah.
+Okay. So now the task will be pick up the cache only. Ready cash only.
+Yeah. It will be picked from ready cache to producer. Okay. Producer will write into process tracker when it need to be consumed. So consumer uh
+Mhm.
+Uh then consumer will pick it up and call the PG. Okay. Then Once PG it will call right again it will consumer will update the task to do happen at next interval. So like that keep on updating the task. Okay again it will be pushed back to Q like back to ready Q itself again producer will pick it up then it will send to uh consumer consumer will call to PG again put it back into uh Q itself. So it's a cyclic thing here. Mhm.
+So we got
+Okay.
+So now you have understood like how producer works externally. So producer will update few things like what are the statuses we will check when we want to update any order. We'll check whether the order is charged or if the order is failed. Is the order is in any terminal status, right? Authentication failed or authorization failed. This terminal status will check. But there are other things also which can update the status, right?
+Like authorizing.
+No, like you have already created a task, you pushed it into stream. Okay. Producer need to pick it up. At that time, webbook will come. Should producer should execute it again or what should it need to do?
+I'm sorry.
+It won't execute. It will it will get consumed from web hooks.
+So then what what will be the status of the task then?
+Uh whatever the task created the uh will uh the cleaner would uh clean it.
+I think it will be in
+I think it will be in processing only then cleaner will clean that thing
+because as it is in processing so
+see cleaner won't come to these things itself cleaner is a separate thing only producer and consumer will do this cleaner is separate use case itself you guys are cons like confusing that with something else I'll come to cleaner later but what will be the status of consumers What will be status of those process tracker ids which are updated by web books web books or you get pay response like that what will be status then in process tracker table you can see right business status and status
+so what will be stat
+I think it will be in pending only because it will process is
+why it should be in pending. You already got a confirmation from PG to move the order to terminal status by some or one or other means other than PT sync. Why it should be in pending state? Hello.
+Yeah.
+Have you like how many guys worked on puzzle tracker till now? So you guys have never seen
+someone turn on the camera. I'm not able to understand like why you guys are taking so turn on the camera. Sure. Keep it in your
+So you guys have never came this use case at all like you have tested refund also right? Refund also happens same thing and webbook also does the same thing. So Have you guys ever stumbled upon this use case? What will be the status of the task when it is updated by like move it to ter status by before process tracker can move it? Sure. Okay, like when the task is updated by any other service other than process tracker to a terminal status will mark the status as finished, business status as finished and status as completed by others here other than process tracker some other services updating right updating the status to terminal status and updating TXM detail gateway TXM data and other fields right. Uh, anybody can uh how many people have PSTL access?
+Mostly everyone.
+Everyone have Nagendra.
+Can some guys uh take any task that is completely finished by process tracker and check what was the what are the business status and status of any tasks. You can search in logs for like process tracker entries. Whatever the currently happening like if someone is doing any transaction they will be making process tracker entries. So can you guys check that once? Did you guys find any tasks?
+I asked to you guys to check it in Kibana logs. Write any entry for process tracker for sync. If there is any entry, take that ID and check it in SQL. What is the status? Like how status move from one state to another state. So what are states status we have for process tracker? I think we have finished retry
+mandate is different I'm asking from sync perspective what are the thing created pending. See created pending finish failure.
+Okay. Now explain me when are the status coming.
+Uh I think when the task is created in the P it will be first it is in created state.
+I see when it is
+state has created anytime.
+Uh can you guys put one one entry for these things like screenshot or anything? Okay. For created, pending, finish and failure. And can you guys define when this will come like individual statuses? So when you'll get created status for any process tracker task and the entry is created.
+Okay.
+So when it will move from created to new sorry created to pending
+we have something called new also right. Right.
+Yes.
+So when will it be new? Like I can see for for new but I'm not able to see the ids for that
+ids or what your created id
+status status is new. So that's why I asked to put in for each status there is no created status. Okay. So when it will move from when it will be new and when it will move from new to pending
+by consumer cabin or something your is very noisy.
+Yeah. Similarly you're saying something.
+Yeah I think that task is picked up picked up by consumer it will be moved to pending.
+The task will be picked by producer and scheduled but not consumer will pick it. So when the producer picks the task and insert into consumer stream it will be in pending but it will become actually pending when it calls to pg when it execution happens then we'll move from new to pending. So when will the status pending till what long the status pending will So until we do TX and sync it will be in pending only you like uh the schedule time we try.
+Uh Simon, you're not properly audible. Can you come again?
+Uh not the same one. So one will have we will give some retry count. So till that it will again try calling calling the PG till then it has been pending. So once it like exceeded the count we will move that to other uh status. What will be the other status?
+See if we get the if the transaction got successful, we might move to finish otherwise you will move to finish and in business law um business error somewhere will whether it got success or it got failure.
+There's no thing called business error. It's business status.
+Business status.
+So two possibilities are there. when a status from pending to finish can happen when the number of data accounts exceed. Second thing when the status of the order is changed from non-terminal status to terminal status only these two times the beginning part will be marked as finished. It can be done through PTC because PT can like run out of number of iteration and can mark it as finished and keeping what will be status if it is marking it as sir. Uh if the task is finished what will be status of order then after completing all the iteration.
+Sorry.
+Hello.
+After can you hear me again?
+Yeah. Yeah. You're audible now.
+So once uh it moves to terminal status If it is finished uh the order status uh will be order succeeded and we'll send order succeeded by
+are you sure? How are you saying you'll get success response from PG always I think based on the tracking in tracking data uh we will mark TX and detail we'll update the TX and detail ID and all based on that we will mark the status of
+no Why you are referring to tracking data? What is the tracking data contains?
+Thanks ma'am. What does tracking data contains?
+It will contain merchant ID gateway the order ID details new.
+So how These details help in knowing customer the status is charge or anything else. I think there is one more column called name there based on that might be marked here. There it is in charge. main column in the process tracker. So there we we are able to see and char fail values.
+Where are you seeing this next process?
+Who's taking the
+Sorry guys, speak up. I can't hear you properly. very mund. telling uh so uh for some of the know IDs we able to see takes some charged or failed values thinking based on this value
+based on which sorry like it's very jumbling I cannot Uh uh okay you open the PD sync right?
+Yes I open
+uh here beside ID we have name column right there we have the value uh now for this ID we have the value as px and sync
+okay
+in for we are able to see px and charged order failed like that value
+so like okay you'll give uh what I asked you understood right Yeah. Yeah. So how we will mark the order as successful?
+So by name we'll mark the order as successful. status.
+Okay. Uh if you update the uh update the order status based on name from where will you construct the PGR payment gateway response? Can you repeat the question again?
+So you based on name you are updating the status in TX and detail and order reference from pending to some terminal status. Okay. So you are updating TX and detail means to some terminal status means you are also updating PGR saying that this is the this is the PGR for this order. So for PGR to construct where are you getting the details to construct so you have you guys have understood like what producer does what consumer does right. So if you guys understood this one you could have answered this like what will be updating the status layer who will be updating and how the updating process will go through. So can you guys uh can can anyone explain this PT whole flow how it will happen then you will only figure it out where the updation will happen. So can anyone explain this one? You can take any video whe it's web book or refund anything.
+PD4 is very generic. So you can take anything just need to update few things. You can tell me that one. We can start explaining this. I'll point it out where it will exactly update it. Come on guys, Paul. Sorry. Let's explain the flow based on the intervals how the data happens how the status should get updated. What is the status of the process tracker? What is the business status get?
+So guys from last 1 hour I'm telling process tager so you guys would have understood something right anyone can repeat that I'll point it out where it will update the status
+so consu uh so when we uh get these tasks right
+uh yeah
+first consumer consumer creates a stream of all these red tasks
+okay
+and uh then when producers up it schedules all of these tasks and uh attaches the schedule time and frequency and everything and based on that uh consumer starts executing.
+Yeah.
+It it observes frequency which is set by this producer these tasks get executed by
+yes so now it start to execute right what it will do execution means what in the sense
+it will sync with gateway
+so it will sync with gateway right what return What
+what will gateway return you call?
+G will set the orders basically the order status from there end.
+So it will say whether the order is charged or failed.
+So if it is pending we'll do one more count of sync.
+Yeah.
+So if PG gives success means what you will do?
+Then we'll update it.
+Yeah. You'll update process tracker. You'll update ex in detail. You'll update order reference. will update PGR right?
+Yes.
+So this is this is very simple thing I'm asking you guys are not able to repeat that so now you understand how PG like how consumer works right there is one more thing called gateway status map in process tracker itself. Oh now when the when it comes to pro uh gateway status map whatever the mandate you're trying right retry recry everything comes into this gateway status map. So if you check in service configuration, there is something called gateway status map enabled. Uh Okay. You can see right status cut over. So once this is enabled, so whatever the same task you'll do, right? and PG gives some status like status code 00 status message pending. So based on these two messages we'll query something called gated stat gateway status map. So if you query g status map with these two details for that particular gateway if you check So you can see here several entries right gateway PTM gateway code gateway me message source source sub type just status just by code just by message disabled date created action status last modified threshold in minutes and this one so PG will give some error message and error code so we'll quy gateway status map windows error message and error code so we'll check other few details if you check the gateway status map query you can check for gateway merchant ID sorry gateway status error code source sub type. Based on this, we'll query the status map and get the action on status. Why we need action on status here?
+So you guys have tested like how many of you tested mandate retry recube? Action on status will tell like what kind of u I mean whether it is recue, retry or retarget of failed status action done.
+Okay, it will tell but what is the use case of that telling?
+Then we will go to that that flow like whether the retray flow or recal flow. create one more time and it will give the next
+see uh error message right whatever you see in the GSM so that will basically tell whether I have to terminate the flow whether I have to make the mark the transaction as you or I have to retry on this error messages or I have to make this a success or failure okay that is what it'll do basically so as I told right it'll query all these things error message error error code combination gateway set message and error code combination I just pass in what I'm going to do for this guy
+okay so if if there's a insufficient balance message error message then actions uh action status will be failing
+no that depends on the gateway not particularly on
+you not deciding it
+you have to decide so some gateway let's say insufficient balance let's say some gateway insufficient balance is use cannot even do anything right
+right
+but some gateways will allow a top up and do a transaction
+on top of it so it is different kind of a thing based on a gateway so gateway will say failure this this will be a failure I'm not allowing a user to try another transaction or something okay and I said I can directly mark this as failure and action on action on status which we do right there you can mark failure what is the just page status order we can mark what is the just page status for that particular order if I get that particular SMS an error code.
+Uh how do we know that for a particular error message the gateway has marked it as terminal state is done
+cannot nothing cannot be done further for that error but we are mapping manually right somehow
+see here I update it right that is like manually I'm doing it so how this is that failure status or not that uh thing will be given by the gateway itself I'm not going to check and go to gate check it. So someone from MS you know some gateway people will say that if this is the message I'm not going to allow user for any of the updation of the transaction or uh continuation of the particular group so that we there we can I can add this as this gateway code and gateway message I can make this as failure directly if gateway says okay this has can be retried so after some time let's say gateway system was down and gateway is handling gracefully like saying this giving particular error message. Okay. So now after some time the gateway system come up right the gateway can come up. Now after that he will allow to continue the transaction flow. So at that point this particular message I'll keep on pending or retry that is based on mandate or normal transaction kind of thing. We will check and we will continue to execute the flow. If there is failure I'll terminate the flow. If there is pending or uh this thing I'll the process tracker will actually So we have a number of retry counts right in the frequency we will set the retry counts. How many retries should happen?
+So based on that retries okay this is pending then uh if we need to continue the flow and I'll start again uh syncing with the gateway. So first or second or third rig drive I got this particular error message saying that continue then I'll go for the four. If that is saying terminate I mean failure or something I'll uh terminate the process pattern
+gateway there is an account
+gate this is our flow right I don't know how the gateway is going to handle I don't know nothing about gateway I just know gateway is allowing this particular flow I'm doing this way I know for this particular gateway set this is the terminal level message I'm not going to allow you to continue the transaction so based on that I'll update my GSM okay this is the period I'll make it map it to
+uh you can check the GSM.
+So I think
+I think that sums up PT for like you can apply the same logic for both sync webbook and refund. So any other doubts guys will come.
+So PG will give some response. Okay. We have called PG for some we have called PG for a detail status. PG will give something that we cannot handle in consumer. So what will happen? The task will drop. off from the stream. Okay. So if if a task drop off from the stream, what might be the consequence there?
+We don't execute anything will be continuously in pending state or
+yeah it will be remaining in continuously pending state even the transaction will remain in pending state. It won't go to status right?
+Yeah. For those cases, we have something called cleaner. Whenever the task will drop, right, it will fall back to cleaner like it will cleaner stream. Cleaner stream will pick it up and it it will try to execute it.
+Okay. Once the cleaner has picked up and try to execute and cleaner the same issue, it will try to execute for few retries and it will mark status as failure and close the task. Okay. And Nan can you give an example like when the cleaner will told when we got some some other status from PG will the will come into picture will pick up the task right?
+Yeah.
+Can you example? So what can be those status?
+See our our we use ASCA right? We expect a particular type in each flow. Okay.
+If PGs fail to send those type like we are expecting some string for some ID value. Okay, PG send some other value. So our flow cannot handle it. It will throw exception and it will drop the task there itself. Okay, so then the task will be remaining pending. So the task is dropped from the uh consumer registry and it will fall back to cleaner registry. So once the task is fallen back to cleaner registry, it will see both Consumer and cleaner are running on same uh consumer and cleaner are running on same code itself. But the thing is consumer is like 5 10 minutes ahead of cleaner. Okay. So whenever the consumer drops a task it will be picked by cleaner. So that there will be no delay in response or status there for customer or merchant. So if you want if PG gives 54 then the task might get dropped. Okay. If PG starts to give 500 If for if you see for ICPU there is some issue with the certificate means PG will give 500 then whatever the response PG is giving it will be in HTML and in that case our consumer cannot handle so it will drop the task there itself. So if like that continuously tasks are getting dropped means our SR will decrease and so many orders will be pending. So prevent those status will move the all the fallen task to cleaner and cleaner will execute it there. If cleaner also facing same issue, it will mark the status as failure and finish the tasks.
+Okay. And what clean consumer will do?
+Clean consumer. So clean consumer also similar to cleaner. So there also cleaner will also drop the task, right?
+So it will get fall back to clean consumer. Previously we had a priority stream. So priority stream was handled by this Now we don't have the but we use this to pick the drop by cleaner to preconumer. That's it. It's like cleaner drops uh preconumer will pick. If consumer drops cleaner will pick.
+Okay. At the time whatever service like whatever is available like either cleaner or clean consumer based on that it will pick up the task. Is it?
+Yeah. Okay. So both the same use case and consumer.
+Yeah, it's like same use case. If anything we start to drop any task in consumer, we need to pick it up and assignment is update this status.
+Okay. Anything in uh pync you guys need to and con sync and forcing both are same right like what we are doing from the tens by using the system
+uh chron sync and for sync are both same but for sync is done by different service and chron is done by different service
+so nothing like we by using the tx and sync API They're doing the sync right? So that should be the chron sync bit.
+Yes.
+When the merchant is doing the sync from the dashboard is that the forcing?
+Yeah, that is for sync. And there is something called order status for sync.
+Order status for sync.
+For sync.
+So for that we enable the cut only when we hit the order status it will go to for it will do the sync. It will internally call the sync call. No. Mhm.
+Not just only when you order status it will call there are so many like checks in order status for sync also. So once those checks are all fulfilled like when the transaction is created when was the last sync happened. Okay whether the last sync time exceeds there is some TTL time like this time duration it should wait should not call for sync until those time is breached and number of attempts. For sync there are several configs there like chucks if only if all the chucks are passed it will call sync
+and for sync is also of two types asynchronous for sync and synchronous for sync.
+Okay what is the difference asynchronous for sync uh as the name says itself if you call order status it will fet from the DB whatever the current order status is there. M it internally call sync if all the checks are passed it will call the sync API.
+So it will call the PG and update the internal tracker infos and later in the next order status it will give the updated status
+okay so
+sorry
+can you repeat that now?
+So as the name says asyn forcing means It will when you call order status it won't directly call sync API it will fetch the order status from existing from DB or cash it will fetch the order status and display to merchant and it simultaneously call PG and try to fetch the details whatever the latest PG details we have for that order and store it in DB this is in one call so in the current call you won't get the latest status in the next order status call you'll get the latest status of order ID for that order ID everything will be updated in previous order status so in current order status we'll get the latest order status there this is asynchronous for sync okay in for sync when you call order status API it it will validate all the checks and then it will directly call PG to get the status it will get the latest status and update cache or DB and give the order status there whether it is moving from pending to charge or pending to fail it will giving same order status response this is synchronous for sync
+okay
+there is also a status uh I mean I don't know if it is a status transaction in the column username where it shows like chron what is that uh
+have you done transactions Oh yes
+in that you cannot mark it as read action right in the transaction call itself it is getting updated as successful right
+oh yeah
+have you done direct debit in direct debit you can see status as transaction in redirection calls you can see the username as redirection in tx and detail if you're doing chron sunk and updating from any non- terminal status to terminal status then it will be chron sync if pts sync is updating the status from non- terminal to terminal it will be pts sync if the is updated by auto status for syncing there will be oc something like that it will be there if web book is updating then it will be return as web book all are the these are the username which fields can update okay any other doubts
+sure so um What we can do is we can conclude this meeting right now. It's been already stressed and maybe you can have another session if uh anyone else have more doubts. Uh so you guys can let me know or you can just add any questions in your Google sheets in that Google city which you have based upon that we can have a third session within dad or someone else. Sure.
+Okay. Uh one thing.
+Yeah. Thanks.
+Uh that one ticket we were discussing right?
+Yes.
+Uh she's asking to add the logs for that one. We can check it, right? Uh Gai Street.
+One sec. One sec. I'll just stop the recording guys can drop off now.
