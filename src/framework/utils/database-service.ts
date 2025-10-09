@@ -202,19 +202,21 @@ export class DatabaseService {
    * Determine the run environment
    */
   private determineRunEnvironment(): string {
-    const nodeEnv = process.env.NODE_ENV;
-    if (nodeEnv) {
-      return nodeEnv;
-    }
-
     const baseUrl = process.env.XYNE_BASE_URL;
     if (baseUrl) {
-      if (baseUrl.includes('staging') || baseUrl.includes('sbx')) {
-        return 'staging';
+      console.log(`🔍 Determining run environment from base URL: ${baseUrl}`);
+      if (baseUrl === 'https://sbx.xyne.juspay.net') {
+        return 'Sandbox';
       }
-      if (baseUrl.includes('prod')) {
-        return 'production';
+      if (baseUrl === 'https://xyne.juspay.net') {
+        return 'Production';
       }
+    }
+
+    // Only fall back to NODE_ENV if base URL doesn't match known environments
+    const nodeEnv = process.env.NODE_ENV;
+    if (nodeEnv && nodeEnv !== 'local') {
+      return nodeEnv;
     }
 
     return 'local';
