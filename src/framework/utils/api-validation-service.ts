@@ -519,11 +519,10 @@ export class ApiValidationService {
     }
 
     const { timeout = 60000, responseInStr = false, validationOptions } = options;
-    const page = this.page; // Store page reference to avoid undefined issues
 
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        page.off('response', responseHandler);
+        this.page!.off('response', responseHandler);
         reject(new Error(`Timeout waiting for API response: ${apiEndpoint}`));
       }, timeout);
 
@@ -531,7 +530,7 @@ export class ApiValidationService {
         try {
           if (response.url().includes(apiEndpoint)) {
             clearTimeout(timeoutId);
-            page.off('response', responseHandler);
+            this.page!.off('response', responseHandler);
 
             const statusCode = response.status();
             const contentType = response.headers()['content-type'] || '';
@@ -571,12 +570,12 @@ export class ApiValidationService {
           }
         } catch (error) {
           clearTimeout(timeoutId);
-          page.off('response', responseHandler);
+          this.page!.off('response', responseHandler);
           reject(error);
         }
       };
 
-      page.on('response', responseHandler);
+      this.page.on('response', responseHandler);
     });
   }
 
