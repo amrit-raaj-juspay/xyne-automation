@@ -3,10 +3,17 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { ApiValidationService } from '../utils/api-validation-service';
+import { APIMonitor } from '../utils/api-monitor';
 
 export class ChatModulePage {
+  private apiValidator: ApiValidationService;
+  private apiMonitor: APIMonitor;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.apiValidator = new ApiValidationService(page);
+    this.apiMonitor = new APIMonitor(page, 'chat-module');
+  }
 
   /**
    * Verify all chat page UI elements are present and visible
@@ -447,5 +454,275 @@ export class ChatModulePage {
    */
   async getPageTitle(): Promise<string> {
     return await this.page.title();
+  }
+
+  /**
+   * Send message and wait for API response with validation
+   * This is the main method you'll use to validate chat API responses
+   */
+  async sendMessageAndWaitForResponse(
+    message: string = 'Hello, this is a test message for the chat functionality.',
+    options: {
+      chatApiEndpoint?: string;
+      timeout?: number;
+      validateResponse?: boolean;
+      expectedStatusCode?: number;
+      requiredKeys?: string[];
+    } = {}
+  ): Promise<{ 
+    messageData: any; 
+    apiResponse: any; 
+    validationResults?: any[] 
+  }> {
+    const {
+      chatApiEndpoint = '/api/v1/chat',  // Adjust this to your actual chat API endpoint
+      timeout = 60000,
+      validateResponse = true,
+      expectedStatusCode = 200,
+      requiredKeys = ['response', 'message_id']
+    } = options;
+
+    console.log('🚀 Starting message send with API validation');
+    
+    // Start API monitoring before sending the message
+    await this.apiMonitor.startMonitoring('chat-message-test');
+    
+    // Send the message using existing method
+    await this.sendMessageToChat(message);
+    
+    // Wait for the specific API response
+    console.log(`⏳ Waiting for API response from ${chatApiEndpoint}...`);
+    
+    try {
+      const apiResult = await this.apiValidator.waitForApiResponseWithInterception(
+        chatApiEndpoint,
+        {
+          timeout,
+          validationOptions: validateResponse ? {
+            expectedStatusCode,
+            expectedContentType: 'application/json',
+            requiredKeys
+          } : undefined
+        }
+      );
+
+      console.log(`✅ API response received:`, apiResult);
+
+      // Stop monitoring and get all captured calls
+      await this.apiMonitor.stopMonitoring();
+      const capturedCalls = this.apiMonitor.getAPICalls();
+
+      return {
+        messageData: { message, timestamp: new Date().toISOString() },
+        apiResponse: apiResult,
+        validationResults: apiResult.validationResults
+      };
+
+    } catch (error) {
+      console.error(`❌ Failed to get API response: ${error}`);
+      await this.apiMonitor.stopMonitoring();
+      throw error;
+    }
+  }
+
+  /**
+   * Wait for specific API endpoint and validate response
+   */
+  async waitForApiEndpoint(
+    endpoint: string,
+    validationOptions: {
+      expectedStatusCode?: number;
+      requiredKeys?: string[];
+      forbiddenKeys?: string[];
+      timeout?: number;
+    } = {}
+  ): Promise<{ data: any; statusCode: number; validationResults?: any[] }> {
+    const {
+      expectedStatusCode = 200,
+      requiredKeys = [],
+      forbiddenKeys = [],
+      timeout = 30000
+    } = validationOptions;
+
+    console.log(`🔍 Waiting for API endpoint: ${endpoint}`);
+
+    const result = await this.apiValidator.waitForApiResponseWithInterception(
+      endpoint,
+      {
+        timeout,
+        validationOptions: {
+          expectedStatusCode,
+          expectedContentType: 'application/json',
+          requiredKeys,
+          forbiddenKeys
+        }
+      }
+    );
+
+    console.log(`✅ API endpoint ${endpoint} responded with status: ${result.statusCode}`);
+    
+    if (result.validationResults) {
+      for (const validation of result.validationResults) {
+        console.log(`📋 Validation: ${validation.message} - ${validation.success ? 'PASSED' : 'FAILED'}`);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Monitor and validate multiple API calls during chat interaction
+   */
+  async monitorChatAPIs(
+    action: () => Promise<void>,
+    expectedEndpoints: Array<{
+      endpoint: string;
+      expectedStatusCode?: number;
+      requiredKeys?: string[];
+    }> = []
+  ): Promise<Record<string, any>> {
+    console.log('🔍 Starting comprehensive API monitoring for chat interaction');
+
+    // Start monitoring
+    await this.apiMonitor.startMonitoring('chat-apis-monitoring');
+
+    try {
+      // Perform the action (e.g., send message, click button, etc.)
+      await action();
+
+      // Wait for all expected endpoints
+      const results: Record<string, any> = {};
+      
+      for (const { endpoint, expectedStatusCode = 200, requiredKeys = [] } of expectedEndpoints) {
+        try {
+          const result = await this.waitForApiEndpoint(endpoint, {
+            expectedStatusCode,
+            requiredKeys,
+            timeout: 30000
+          });
+          results[endpoint] = result;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn(`⚠️ Failed to capture ${endpoint}: ${errorMessage}`);
+          results[endpoint] = { error: errorMessage };
+        }
+      }
+
+      // Stop monitoring and get summary
+      await this.apiMonitor.stopMonitoring();
+      const summary = this.apiMonitor.getValidationSummary();
+      
+      console.log('📊 API Monitoring Summary:', summary);
+
+      return {
+        endpointResults: results,
+        summary,
+        allCapturedAPIs: this.apiMonitor.getAPICalls()
+      };
+
+    } catch (error) {
+      await this.apiMonitor.stopMonitoring();
+      throw error;
+    }
+  }
+
+  /**
+   * Validate that chat response contains expected data structure
+   */
+  async validateChatResponseStructure(
+    apiResponse: any,
+    expectedStructure: {
+      hasMessageId?: boolean;
+      hasTimestamp?: boolean;
+      hasContent?: boolean;
+      hasMetadata?: boolean;
+      customValidations?: Array<(data: any) => boolean | string>;
+    } = {}
+  ): Promise<{ isValid: boolean; errors: string[] }> {
+    const {
+      hasMessageId = true,
+      hasTimestamp = true,
+      hasContent = true,
+      hasMetadata = false,
+      customValidations = []
+    } = expectedStructure;
+
+    const errors: string[] = [];
+
+    console.log('🔍 Validating chat response structure...');
+
+    // Basic structure validations
+    if (hasMessageId && !apiResponse.data?.message_id && !apiResponse.data?.id) {
+      errors.push('Missing message ID in response');
+    }
+
+    if (hasTimestamp && !apiResponse.data?.timestamp && !apiResponse.data?.created_at) {
+      errors.push('Missing timestamp in response');
+    }
+
+    if (hasContent && !apiResponse.data?.content && !apiResponse.data?.message && !apiResponse.data?.response) {
+      errors.push('Missing content/message in response');
+    }
+
+    if (hasMetadata && !apiResponse.data?.metadata) {
+      errors.push('Missing metadata in response');
+    }
+
+    // Custom validations
+    for (const validation of customValidations) {
+      const result = validation(apiResponse.data);
+      if (typeof result === 'string') {
+        errors.push(result);
+      } else if (!result) {
+        errors.push('Custom validation failed');
+      }
+    }
+
+    const isValid = errors.length === 0;
+    
+    if (isValid) {
+      console.log('✅ Chat response structure validation passed');
+    } else {
+      console.log('❌ Chat response structure validation failed:', errors);
+    }
+
+    return { isValid, errors };
+  }
+
+  /**
+   * Extract specific data from API response
+   */
+  extractResponseData(apiResponse: any, dataPath: string): any {
+    return this.apiValidator.extractNestedValue(apiResponse.data, dataPath);
+  }
+
+  /**
+   * Validate API response timing
+   */
+  async validateResponseTiming(
+    action: () => Promise<void>,
+    endpoint: string,
+    maxResponseTime: number = 5000
+  ): Promise<{ responseTime: number; withinLimit: boolean }> {
+    console.log(`⏱️ Measuring response time for ${endpoint}`);
+    
+    const startTime = Date.now();
+    
+    // Start listening for the API response
+    const responsePromise = this.apiValidator.waitForApiResponseWithInterception(endpoint, {
+      timeout: maxResponseTime + 1000
+    });
+    
+    // Perform the action
+    await action();
+    
+    // Wait for response and measure time
+    const response = await responsePromise;
+    const responseTime = Date.now() - startTime;
+    const withinLimit = responseTime <= maxResponseTime;
+    
+    console.log(`⏱️ Response time: ${responseTime}ms (limit: ${maxResponseTime}ms) - ${withinLimit ? 'PASSED' : 'FAILED'}`);
+    
+    return { responseTime, withinLimit };
   }
 }

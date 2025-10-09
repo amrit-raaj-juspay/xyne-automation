@@ -204,7 +204,7 @@ export class LoginHelper {
         // Wait before retry (except for last attempt)
         if (attempt < maxAttempts) {
           console.log(`⏳ LoginHelper: Waiting 5 seconds before retry after error...`);
-          await page.waitForTimeout(5000);
+          await page.waitForTimeout(20000);
         }
       }
     }

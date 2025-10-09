@@ -1,6 +1,8 @@
 import { Page, Request, Response } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiValidationService } from './api-validation-service';
+import { ApiValidationOptions, ApiValidationResult } from '../../types/api-validation.types';
 
 export interface APICallRecord {
   'Status-Code': number;
@@ -304,5 +306,154 @@ export class APIMonitor {
     console.log(`Captured ${summary.totalCalls} API calls (${summary.successfulCalls} successful, ${summary.failedCalls} failed)`);
     
     return await this.saveToFile();
+  }
+
+  /**
+   * Validate a specific captured API call using the API validation service
+   */
+  async validateCapturedAPI(endpoint: string, validationOptions: ApiValidationOptions): Promise<ApiValidationResult[]> {
+    const apiValidator = new ApiValidationService(this.page);
+    return await apiValidator.validateCapturedAPI(endpoint, this.apiCalls, validationOptions);
+  }
+
+  /**
+   * Validate multiple captured API calls
+   */
+  async validateMultipleAPIs(validations: Array<{ endpoint: string; options: ApiValidationOptions }>): Promise<Record<string, ApiValidationResult[]>> {
+    const results: Record<string, ApiValidationResult[]> = {};
+    const apiValidator = new ApiValidationService(this.page);
+
+    for (const validation of validations) {
+      results[validation.endpoint] = await apiValidator.validateCapturedAPI(
+        validation.endpoint, 
+        this.apiCalls, 
+        validation.options
+      );
+    }
+
+    return results;
+  }
+
+  /**
+   * Get API call by endpoint pattern
+   */
+  getAPICallByEndpoint(endpointPattern: string): APICallRecord | null {
+    const matchingEntry = Object.entries(this.apiCalls).find(([url]) => 
+      url.includes(endpointPattern)
+    );
+    
+    return matchingEntry ? matchingEntry[1] : null;
+  }
+
+  /**
+   * Extract response data from captured API call
+   */
+  extractResponseData(endpoint: string): any | null {
+    const apiCall = this.getAPICallByEndpoint(endpoint);
+    if (!apiCall || !apiCall.response_body) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(apiCall.response_body);
+    } catch (error) {
+      console.warn(`Failed to parse response body for ${endpoint}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Validate all captured API calls meet basic criteria
+   */
+  validateAllAPIs(options: { 
+    allowedStatusCodes?: number[]; 
+    requiredContentType?: string;
+    maxResponseTime?: number;
+  } = {}): ApiValidationResult[] {
+    const results: ApiValidationResult[] = [];
+    const { 
+      allowedStatusCodes = [200, 201, 202, 204], 
+      requiredContentType = 'application/json',
+      maxResponseTime = 5000 
+    } = options;
+
+    for (const [url, apiCall] of Object.entries(this.apiCalls)) {
+      // Validate status code
+      if (!allowedStatusCodes.includes(apiCall['Status-Code'])) {
+        results.push({
+          success: false,
+          message: `API ${url} returned unexpected status code: ${apiCall['Status-Code']}`,
+          actualValue: apiCall['Status-Code'],
+          expectedValue: allowedStatusCodes,
+          details: { url, method: apiCall['Request-Method'] }
+        });
+      }
+
+      // Validate content type
+      if (requiredContentType && apiCall.content_type && !apiCall.content_type.includes(requiredContentType)) {
+        results.push({
+          success: false,
+          message: `API ${url} returned unexpected content type: ${apiCall.content_type}`,
+          actualValue: apiCall.content_type,
+          expectedValue: requiredContentType,
+          details: { url, method: apiCall['Request-Method'] }
+        });
+      }
+    }
+
+    // If no failures, add success result
+    if (results.length === 0) {
+      results.push({
+        success: true,
+        message: `All ${Object.keys(this.apiCalls).length} captured API calls passed validation`,
+        details: { totalCalls: Object.keys(this.apiCalls).length }
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * Get validation summary for all captured APIs
+   */
+  getValidationSummary(): {
+    totalAPIs: number;
+    successfulAPIs: number;
+    failedAPIs: number;
+    apisByStatus: Record<number, string[]>;
+    apisByContentType: Record<string, string[]>;
+  } {
+    const summary = {
+      totalAPIs: Object.keys(this.apiCalls).length,
+      successfulAPIs: 0,
+      failedAPIs: 0,
+      apisByStatus: {} as Record<number, string[]>,
+      apisByContentType: {} as Record<string, string[]>
+    };
+
+    for (const [url, apiCall] of Object.entries(this.apiCalls)) {
+      // Count success/failure
+      if (apiCall['Status-Code'] >= 200 && apiCall['Status-Code'] < 400) {
+        summary.successfulAPIs++;
+      } else {
+        summary.failedAPIs++;
+      }
+
+      // Group by status code
+      const statusCode = apiCall['Status-Code'];
+      if (!summary.apisByStatus[statusCode]) {
+        summary.apisByStatus[statusCode] = [];
+      }
+      summary.apisByStatus[statusCode].push(url);
+
+      // Group by content type
+      const contentType = apiCall.content_type || 'unknown';
+      if (!summary.apisByContentType[contentType]) {
+        summary.apisByContentType[contentType] = [];
+      }
+      summary.apisByContentType[contentType].push(url);
+    }
+
+    return summary;
   }
 }
