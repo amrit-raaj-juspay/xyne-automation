@@ -189,15 +189,19 @@ export default class EnhancedReporter implements Reporter {
       fs.mkdirSync(reportsDir, { recursive: true });
     }
 
-    // Write enhanced report
-    const reportPath = path.join(reportsDir, 'priority-dependency-report.json');
+    // Get module name for unique file naming
+    const moduleName = this.determineModuleName();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+    // Write enhanced report with module-specific name
+    const reportPath = path.join(reportsDir, `priority-dependency-report-${moduleName}-${timestamp}.json`);
     fs.writeFileSync(reportPath, JSON.stringify(reportData, null, 2));
 
-    // Generate HTML summary
-    this.generateHtmlSummary(reportData);
+    // Generate HTML summary with module-specific name
+    this.generateHtmlSummary(reportData, moduleName, timestamp);
 
     console.log(`📄 Enhanced report saved: ${reportPath}`);
-    console.log(`📄 HTML summary saved: ${path.join(reportsDir, 'priority-dependency-summary.html')}`);
+    console.log(`📄 HTML summary saved: ${path.join(reportsDir, `priority-dependency-summary-${moduleName}-${timestamp}.html`)}`);
   }
 
   private serializeDependencyGraph() {
@@ -267,14 +271,32 @@ export default class EnhancedReporter implements Reporter {
       // Determine module name from test file paths or environment
       const moduleName = this.determineModuleName();
       
-      // Get Playwright HTML report path
-      const playwrightHtmlReportPath = path.join('reports', 'html-report', 'index.html');
+      // Look for the dynamic HTML report directory created by the script
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      let playwrightHtmlReportPath = path.join('reports', `html-report-${moduleName}-${timestamp}`, 'index.html');
       let finalHtmlReportPath: string | undefined;
       
-      // Create a zip archive of the HTML report directory
-      if (fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
+      // First try to find the dynamic HTML report directory
+      const reportsDir = 'reports';
+      let htmlReportDir: string | undefined;
+      
+      if (fs.existsSync(reportsDir)) {
+        const reportDirs = fs.readdirSync(reportsDir).filter(dir => 
+          dir.startsWith(`html-report-${moduleName}-`) && 
+          fs.statSync(path.join(reportsDir, dir)).isDirectory()
+        );
+        
+        if (reportDirs.length > 0) {
+          // Use the most recent directory (last in alphabetical order due to timestamp)
+          htmlReportDir = reportDirs.sort().pop();
+          playwrightHtmlReportPath = path.join(reportsDir, htmlReportDir!, 'index.html');
+        }
+      }
+      
+      // Create a zip archive of the HTML report directory with module-specific naming
+      if (htmlReportDir && fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
         try {
-          const zipReportPath = path.join('reports', 'html-report.zip');
+          const zipReportPath = path.join('reports', `${htmlReportDir}.zip`);
           console.log('📦 Creating zip archive of the HTML report...');
           await createZipArchive({
             sourceDir: path.dirname(playwrightHtmlReportPath),
@@ -287,6 +309,12 @@ export default class EnhancedReporter implements Reporter {
           console.error('❌ Error creating HTML report archive:', zipError);
           // Fallback to the non-archived report path
           finalHtmlReportPath = playwrightHtmlReportPath;
+        }
+      } else {
+        // Fallback to default path if dynamic path not found
+        const fallbackPath = path.join('reports', 'html-report', 'index.html');
+        if (fs.existsSync(path.dirname(fallbackPath))) {
+          finalHtmlReportPath = fallbackPath;
         }
       }
       
@@ -425,7 +453,7 @@ export default class EnhancedReporter implements Reporter {
     return null;
   }
 
-  private generateHtmlSummary(reportData: any) {
+  private generateHtmlSummary(reportData: any, moduleName: string, timestamp: string) {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -560,7 +588,7 @@ export default class EnhancedReporter implements Reporter {
 </body>
 </html>`;
 
-    const htmlPath = path.join('reports', 'priority-dependency-summary.html');
+    const htmlPath = path.join('reports', `priority-dependency-summary-${moduleName}-${timestamp}.html`);
     fs.writeFileSync(htmlPath, html);
   }
 }

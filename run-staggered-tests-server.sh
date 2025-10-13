@@ -66,10 +66,39 @@ for file in $TEST_FILES; do
   echo "Starting test: $file (Cron Run ID: $CRON_RUN_ID)"
   echo "--------------------------------------------------"
   
-  # Run the test in the background with the --headless flag and without HTML reporter to prevent blocking
-  npx playwright test "$file" --project=chromium --reporter=json,junit,list,./src/framework/core/enhanced-reporter.ts &
+  # Extract module name from file path for unique naming
+  MODULE_NAME=$(basename "$file" .spec.ts)
+  export MODULE_NAME
+  
+  # Create timestamp for unique file naming
+  TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S-%3NZ")
+  
+  # Create a temporary config file with unique output paths
+  TEMP_CONFIG="playwright.config.${MODULE_NAME}.${TIMESTAMP}.js"
+  cat > "$TEMP_CONFIG" << EOF
+import { defineConfig } from '@playwright/test';
+import baseConfig from './playwright.config.ts';
+
+export default defineConfig({
+  ...baseConfig,
+  reporter: [
+    ['html', { outputFolder: 'reports/html-report-${MODULE_NAME}-${TIMESTAMP}', open: 'never' }],
+    ['json', { outputFile: 'reports/test-results-${MODULE_NAME}-${TIMESTAMP}.json' }],
+    ['junit', { outputFile: 'reports/junit-results-${MODULE_NAME}-${TIMESTAMP}.xml' }],
+    ['list'],
+    ['./src/framework/core/enhanced-reporter.ts']
+  ],
+  outputDir: 'reports/test-artifacts-${MODULE_NAME}-${TIMESTAMP}'
+});
+EOF
+  
+  # Run the test in the background with the temporary config
+  npx playwright test "$file" --project=chromium --config="$TEMP_CONFIG" &
   pids+=($!)
   
+  # Clean up the temporary config file after a delay (in background)
+  (sleep 300 && rm -f "$TEMP_CONFIG") &
+  pids+=($!)
   echo "Waiting for 40 seconds before starting the next test..."
   sleep 40
 done

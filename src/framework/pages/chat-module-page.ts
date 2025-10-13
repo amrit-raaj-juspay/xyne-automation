@@ -725,4 +725,213 @@ export class ChatModulePage {
     
     return { responseTime, withinLimit };
   }
+
+  /**
+   * Verify models API and check if model names are reflected in dropdown
+   */
+  async verifyModelsAPIAndDropdown(): Promise<void> {
+    console.log('🚀 Starting models API and dropdown verification test');
+    
+    // Set up network interception to capture the models API response
+    console.log('📡 Setting up network interception for /api/v1/chat/models...');
+    
+    let modelsApiResponse: any = null;
+    
+    // Listen for the models API response
+    this.page.on('response', async (response) => {
+      if (response.url().includes('/api/v1/chat/models')) {
+        console.log(`📋 Intercepted models API response: ${response.status()}`);
+        if (response.status() === 200) {
+          try {
+            modelsApiResponse = await response.json();
+            console.log('📋 Models API response captured:', JSON.stringify(modelsApiResponse, null, 2));
+          } catch (error) {
+            console.log('⚠️ Failed to parse models API response as JSON:', error);
+          }
+        }
+      }
+    });
+
+    // Trigger the API call by refreshing the page or opening the dropdown
+    console.log('🔄 Refreshing page to trigger models API call...');
+    await this.page.reload();
+    await this.page.waitForTimeout(3000); // Wait for API calls to complete
+
+    // If no API response was captured, try opening the model dropdown
+    if (!modelsApiResponse) {
+      console.log('🔍 No API response captured on page load, trying to open model dropdown...');
+      
+      // Find and click the model selector button
+      const modelSelector = this.page.locator('button').filter({ 
+        has: this.page.locator('span:has-text("Claude Sonnet 4"), span:has-text("Sonnet 4"), span:has-text("Claude"), span:has-text("GPT"), span:has-text("Gemini")') 
+      }).first();
+      
+      await expect(modelSelector).toBeVisible({ timeout: 10000 });
+      await modelSelector.click();
+      await this.page.waitForTimeout(2000); // Wait for potential API call
+    }
+
+    // Verify we captured the API response
+    expect(modelsApiResponse).toBeTruthy();
+    expect(modelsApiResponse.models).toBeDefined();
+    expect(Array.isArray(modelsApiResponse.models)).toBe(true);
+    expect(modelsApiResponse.models.length).toBeGreaterThan(0);
+
+    // Extract model names from the API response
+    const modelNames: string[] = modelsApiResponse.models.map((model: any) => model.labelName);
+    console.log('📋 Extracted model names from API:', modelNames);
+
+    // Expected models based on the provided response format
+    const expectedApiModels = ['Claude Sonnet 4', 'Gemini 2.5 Pro', 'Gemini 2.5 Flash'];
+    for (const expectedModel of expectedApiModels) {
+      expect(modelNames).toContain(expectedModel);
+      console.log(`✅ Expected API model "${expectedModel}" found in response`);
+    }
+
+    // Now verify the model selector dropdown in the UI
+    console.log('🔍 Verifying model selector dropdown...');
+    
+    // Find the model selector button
+    const modelSelector = this.page.locator('button').filter({ 
+      has: this.page.locator('span:has-text("Claude Sonnet 4"), span:has-text("Sonnet 4"), span:has-text("Claude"), span:has-text("GPT"), span:has-text("Gemini")') 
+    }).first();
+    
+    await expect(modelSelector).toBeVisible({ timeout: 10000 });
+    console.log('✅ Model selector button found');
+
+    // Get the current selected model text
+    const currentModelText = await modelSelector.textContent();
+    console.log(`📋 Current selected model: "${currentModelText}"`);
+
+    // Click on the model selector to open dropdown
+    await modelSelector.click();
+    console.log('✅ Model selector clicked to open dropdown');
+
+    // Wait for dropdown to appear
+    await this.page.waitForTimeout(2000);
+
+    // Find the dropdown menu container
+    const dropdownMenu = this.page.locator('div[role="menu"]').or(
+      this.page.locator('div[data-radix-popper-content-wrapper]')
+    ).first();
+    
+    await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
+    console.log('✅ Dropdown menu opened');
+
+    // Extract all model options from the dropdown
+    const modelOptions = await dropdownMenu.locator('div[role="menuitem"], button[role="menuitem"]').all();
+    console.log(`📋 Found ${modelOptions.length} model options in dropdown`);
+
+    const dropdownModelNames: string[] = [];
+    
+    for (const option of modelOptions) {
+      // Look for the model name span within each option
+      const modelNameSpan = option.locator('span.font-medium').first();
+      if (await modelNameSpan.isVisible()) {
+        const modelName = await modelNameSpan.textContent();
+        if (modelName && modelName.trim()) {
+          dropdownModelNames.push(modelName.trim());
+          console.log(`📋 Found dropdown model: "${modelName.trim()}"`);
+        }
+      }
+    }
+
+    console.log('📋 All dropdown model names:', dropdownModelNames);
+
+    // Verify that dropdown contains expected models based on the HTML structure provided
+    const expectedDropdownModels = ['Sonnet 4', 'O3 Research', '2.5 Pro', '2.5 Flash'];
+    
+    for (const expectedModel of expectedDropdownModels) {
+      const found = dropdownModelNames.some(name => 
+        name.includes(expectedModel) || expectedModel.includes(name)
+      );
+      if (found) {
+        console.log(`✅ Expected dropdown model "${expectedModel}" found`);
+      } else {
+        console.log(`⚠️ Expected dropdown model "${expectedModel}" not found`);
+      }
+    }
+
+    // Verify correlation between API models and dropdown models
+    let matchCount = 0;
+    for (const apiModel of modelNames) {
+      const found = dropdownModelNames.some(dropdownModel => {
+        // Check for partial matches (e.g., "Claude Sonnet 4" matches "Sonnet 4")
+        const apiModelNormalized = apiModel.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const dropdownModelNormalized = dropdownModel.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return apiModelNormalized.includes(dropdownModelNormalized) || 
+               dropdownModelNormalized.includes(apiModelNormalized) ||
+               this.normalizeModelName(apiModel) === this.normalizeModelName(dropdownModel);
+      });
+      if (found) {
+        matchCount++;
+        console.log(`✅ API model "${apiModel}" correlates with dropdown models`);
+      }
+    }
+
+    // Extract expected providers from API response model names
+    const expectedProviders = new Set<string>();
+    for (const model of modelsApiResponse.models) {
+      const labelName = model.labelName.toLowerCase();
+      if (labelName.includes('claude')) {
+        expectedProviders.add('Claude');
+      } else if (labelName.includes('gemini')) {
+        expectedProviders.add('Gemini');
+      } else if (labelName.includes('gpt') || labelName.includes('openai')) {
+        expectedProviders.add('OpenAI');
+      }
+    }
+    
+    console.log('📋 Expected providers from API:', Array.from(expectedProviders));
+    
+    // Verify provider sections are present in dropdown using correct selectors
+    const providers: string[] = [];
+    
+    // Look for provider text elements directly
+    for (const expectedProvider of expectedProviders) {
+      const providerElement = await dropdownMenu.locator(`text=${expectedProvider}`).first();
+      if (await providerElement.isVisible()) {
+        providers.push(expectedProvider);
+        console.log(`✅ Provider "${expectedProvider}" found in dropdown`);
+      } else {
+        console.log(`⚠️ Provider "${expectedProvider}" not found in dropdown`);
+      }
+    }
+    
+    console.log('📋 Found providers in dropdown:', providers);
+    
+    // Verify that all expected providers from API are present in dropdown
+    for (const expectedProvider of expectedProviders) {
+      const found = providers.includes(expectedProvider);
+      expect(found).toBe(true);
+    }
+
+    // Close the dropdown by pressing Escape key
+    await this.page.keyboard.press('Escape');
+    await this.page.waitForTimeout(1000);
+    
+    console.log('✅ Dropdown closed');
+
+    // Final validation
+    expect(dropdownModelNames.length).toBeGreaterThan(0);
+    expect(providers.length).toBeGreaterThan(0);
+    expect(matchCount).toBeGreaterThan(0);
+    
+    console.log('🎉 Successfully verified models API and dropdown integration');
+    console.log(`📊 Summary: API returned ${modelNames.length} models, dropdown shows ${dropdownModelNames.length} options, ${matchCount} correlations found`);
+  }
+
+  /**
+   * Helper method to normalize model names for comparison
+   */
+  private normalizeModelName(modelName: string): string {
+    return modelName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .replace(/claude/g, '')
+      .replace(/openai/g, '')
+      .replace(/gemini/g, '')
+      .replace(/gpt/g, '')
+      .trim();
+  }
 }

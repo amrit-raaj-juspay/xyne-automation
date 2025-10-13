@@ -45,6 +45,18 @@ test.describe('Chat Module Tests', () => {
     await chatPage.verifyChatPageElements();
   });
 
+  testHigh('verify models API and dropdown integration', {
+    dependsOn: ['verify chat page elements'],
+    tags: ['@core', '@chat', '@api', '@models'],
+    description: 'Verify models API response and check if model names are reflected in dropdown'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Use the page object method to verify models API and dropdown
+    await chatPage.verifyModelsAPIAndDropdown();
+  });
+
   testHigh('verify search functionality', {
     dependsOn: ['verify chat page elements'],
     tags: ['@core', '@chat', '@search'],
@@ -104,4 +116,5 @@ test.describe('Chat Module Tests', () => {
     // Use the page object method to edit chat title
     await chatPage.editChatTitle();
   });
+  
 });
