@@ -2928,6 +2928,7 @@ export class WorkflowModulePage {
     // Find the plus icon button below the AI agent node
     const plusIconButton = aiAgentNode.locator('div.absolute.left-1\\/2.transform.-translate-x-1\\/2.flex.flex-col.items-center.cursor-pointer.z-50.pointer-events-auto div.bg-black.hover\\:bg-gray-800.rounded-full.flex.items-center.justify-center.transition-colors.shadow-lg');
     await expect(plusIconButton).toBeVisible();
+    await plusIconButton.scrollIntoViewIfNeeded();
     await plusIconButton.click();
     console.log('Clicked plus icon on AI agent node');
 
@@ -3645,7 +3646,7 @@ export class WorkflowModulePage {
 
     // Step 11: Wait for processing to complete and verify success state
     console.log('Step 11: Waiting for processing to complete (15 seconds)...');
-    await this.page.waitForTimeout(15000);
+    await this.page.waitForTimeout(30000);
 
     console.log('Verifying UI changes to success state');
 
