@@ -29,6 +29,7 @@
     "test:collection-module": "playwright test tests/functional/collection-module.spec.ts --workers=1 --project=chromium --headed",
     "test:history-module": "playwright test tests/functional/history-module.spec.ts --workers=1 --project=chromium --headed",
     "test:workflow-module": "playwright test tests/functional/workflow-module.spec.ts --workers=1 --project=chromium --headed",
+    "test:sidebar-module": "playwright test tests/functional/sidebar-module.spec.ts --workers=1 --project=chromium --headed",
 
     "test:google-login:headless": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium",
     "test:login:safe": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium --headed",
