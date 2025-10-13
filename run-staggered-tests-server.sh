@@ -66,8 +66,8 @@ for file in $TEST_FILES; do
   echo "Starting test: $file (Cron Run ID: $CRON_RUN_ID)"
   echo "--------------------------------------------------"
   
-  # Run the test in the background with the --headless flag to ensure it works on servers.
-  npx playwright test "$file" --project=chromium &
+  # Run the test in the background with the --headless flag and without HTML reporter to prevent blocking
+  npx playwright test "$file" --project=chromium --reporter=json,junit,list,./src/framework/core/enhanced-reporter.ts &
   pids+=($!)
   
   echo "Waiting for 40 seconds before starting the next test..."
@@ -99,6 +99,32 @@ else
   echo "❌ One or more tests in batch failed."
 fi
 echo "📊 Check database for detailed results with Cron Run ID: $CRON_RUN_ID"
+echo "--------------------------------------------------"
+
+# Wait for database writes to complete before generating PDF
+echo "⏳ Waiting for all test data to be written to database..."
+echo "🔄 Allowing 15 seconds for database synchronization..."
+sleep 15
+
+# Generate PDF report after all tests complete
+echo "📊 Generating PDF summary report..."
+if [ -d "venv-pdf" ] && [ -f "venv-pdf/bin/python" ]; then
+  echo "🐍 Using virtual environment for PDF generation..."
+  venv-pdf/bin/python src/framework/utils/pdf-report-generator.py "$CRON_RUN_ID"
+  pdf_exit_code=$?
+  
+  if [ $pdf_exit_code -eq 0 ]; then
+    echo "✅ PDF report generated successfully"
+  else
+    echo "⚠️ PDF report generation failed (exit code: $pdf_exit_code)"
+  fi
+else
+  echo "⚠️ PDF virtual environment not found. Skipping PDF generation."
+  echo "💡 Run './setup-pdf-dependencies.sh' to set up PDF generation."
+fi
+
+echo "--------------------------------------------------"
+echo "🎯 Test execution and reporting completed for batch: $CRON_RUN_ID"
 echo "--------------------------------------------------"
 
 exit $exit_code

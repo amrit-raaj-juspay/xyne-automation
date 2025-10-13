@@ -72,7 +72,7 @@ export class DatabaseService {
   /**
    * Get login token using the same method as in gsheet_report.py
    */
-  private async authenticateWithJuspay(): Promise<string> {
+  public async authenticateWithJuspay(): Promise<string> {
     try {
       // Check if we have a valid token
       if (this.authToken && Date.now() < this.tokenExpiry) {
