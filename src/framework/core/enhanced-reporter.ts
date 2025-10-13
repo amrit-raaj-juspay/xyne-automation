@@ -10,6 +10,7 @@ import { slackNotifier, SlackNotificationData, SlackNotificationResult } from '.
 import { createZipArchive } from '../utils/zip-utils';
 import { configManager } from './config-manager';
 import { databaseService } from '../utils/database-service';
+import { pdfReportService } from '../utils/pdf-report-service';
 import fs from 'fs';
 import path from 'path';
 
