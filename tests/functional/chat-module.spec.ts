@@ -66,7 +66,7 @@ test.describe('Chat Module Tests', () => {
     const chatPage = new ChatModulePage(page);
     
     // Use the page object method to send a message to chat
-    await chatPage.sendMessageToChat();
+    await chatPage.sendMessageAndWaitForResponse();
   });
 
   testHigh('verify chat header icons', {
