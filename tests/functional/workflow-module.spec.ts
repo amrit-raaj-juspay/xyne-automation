@@ -48,8 +48,52 @@ test.describe('Workflow Module Tests', () => {
     await workflowPage.navigateToWorkflowModule();
   });
 
-  testHigh('verify workflow page elements', {
+  testHigh('verify workflow template default tabs state', {
     dependsOn: ['navigate to workflow page'],
+    tags: ['@core', '@workflow', '@template', '@tabs'],
+    description: 'Verify workflow template page shows All and Public workflows tabs with All selected by default'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting workflow template default tabs state verification');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyWorkflowTemplateDefaultTabsState();
+  });
+
+  testHigh('click public workflows template tab', {
+    dependsOn: ['verify workflow template default tabs state'],
+    tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'],
+    description: 'Click on Public workflows tab in workflow template page'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting click public workflows template tab');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickPublicWorkflowsTemplateTab();
+  });
+
+  testHigh('verify public workflows template tab active', {
+    dependsOn: ['click public workflows template tab'],
+    tags: ['@core', '@workflow', '@template', '@tabs', '@verification'],
+    description: 'Verify Public workflows tab is now active and All tab is inactive'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify public workflows template tab active');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyPublicWorkflowsTemplateTabActive();
+  });
+
+  testHigh('click all template tab again', {
+    dependsOn: ['verify public workflows template tab active'],
+    tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'],
+    description: 'Click on All tab again to switch back'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting click all template tab again');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickAllTemplateTab();
+  });
+
+  testHigh('verify workflow page elements', {
+    dependsOn: ['click all template tab again'],
     tags: ['@core', '@workflow', '@elements'],
     description: 'Verify workflow page elements including tabs, creation options, and search'
   }, async ({ sharedPage }) => {
@@ -224,8 +268,41 @@ test.describe('Workflow Module Tests', () => {
     await workflowPage.addEmailNode();
   });
 
-  testHigh('save and verify saved workflow', {
+  testHigh('click workflow breadcrumb before save', {
     dependsOn: ['add email node'],
+    tags: ['@core', '@workflow', '@breadcrumb', '@navigation'],
+    description: 'Click Workflow breadcrumb to test unsaved work warning'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting click workflow breadcrumb before save');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickWorkflowBreadcrumb();
+  });
+
+  testHigh('verify unsaved work popup', {
+    dependsOn: ['click workflow breadcrumb before save'],
+    tags: ['@core', '@workflow', '@popup', '@unsaved-work'],
+    description: 'Verify unsaved work popup appears with correct content'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify unsaved work popup');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyUnsavedWorkPopup();
+  });
+
+  testHigh('click cancel in unsaved popup', {
+    dependsOn: ['verify unsaved work popup'],
+    tags: ['@core', '@workflow', '@popup', '@cancel'],
+    description: 'Click Cancel button to dismiss unsaved work popup'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting click cancel in unsaved popup');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickCancelInUnsavedPopup();
+  });
+
+  testHigh('save and verify saved workflow', {
+    dependsOn: ['click cancel in unsaved popup'],
     tags: ['@core', '@workflow', '@save', '@success-popup', '@execute-button'],
     description: 'Click Save Changes button, verify success popup appears, and verify execute button is enabled'
   }, async ({ sharedPage }) => {
@@ -244,6 +321,83 @@ test.describe('Workflow Module Tests', () => {
 
     const workflowPage = new WorkflowModulePage(sharedPage.page);
     await workflowPage.executeWorkflow();
+  });
+
+  testHigh('click upload another button', {
+    dependsOn: ['execute workflow'],
+    tags: ['@core', '@workflow', '@execute', '@upload-another'],
+    description: 'Click "Upload Another" button after workflow execution completes successfully'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting click upload another button test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickUploadAnotherButton();
+  });
+
+  testHigh('upload text file and wait for completion', {
+    dependsOn: ['click upload another button'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@text-file'],
+    description: 'Upload text file from documents data enrichment folder, start execution, and wait 30 seconds for completion'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting upload text file and wait test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.uploadTextFileAndWait();
+  });
+
+  testHigh('verify completion and click view workflow', {
+    dependsOn: ['upload text file and wait for completion'],
+    tags: ['@core', '@workflow', '@execute', '@view-workflow'],
+    description: 'Verify workflow execution completed successfully and click "View Workflow" button'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify completion and click view workflow test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyCompletionAndClickViewWorkflow();
+  });
+
+  testHigh('verify workflow execution details screen', {
+    dependsOn: ['verify completion and click view workflow'],
+    tags: ['@core', '@workflow', '@execute', '@execution-details', '@react-flow'],
+    description: 'Verify workflow execution details screen shows correct breadcrumb with timestamp and all three workflow nodes with green borders'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify workflow execution details screen test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyWorkflowExecutionDetailsScreen();
+  });
+
+  testHigh('verify node execution details', {
+    dependsOn: ['verify workflow execution details screen'],
+    tags: ['@core', '@workflow', '@execute', '@node-details', '@sidebar'],
+    description: 'Click each executed node and verify their execution details in the sidebar'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify node execution details test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyNodeExecutionDetails();
+  });
+
+  testHigh('navigate back to workflow page via breadcrumb', {
+    dependsOn: ['verify node execution details'],
+    tags: ['@core', '@workflow', '@breadcrumb', '@navigation'],
+    description: 'Click Workflow breadcrumb text to navigate back to workflow page'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting navigate back to workflow page via breadcrumb test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.clickWorkflowBreadcrumbFromExecution();
+  });
+
+  testHigh('verify workflow template appears in templates page', {
+    dependsOn: ['navigate back to workflow page via breadcrumb'],
+    tags: ['@core', '@workflow', '@template', '@verification'],
+    description: 'Verify that the created workflow template appears with correct name and timestamp when Save as Private was clicked'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting verify workflow template appears test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.verifyWorkflowTemplateAppears();
   });
 
 });

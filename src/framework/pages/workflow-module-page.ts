@@ -5,6 +5,15 @@
 import { Page, expect } from '@playwright/test';
 
 export class WorkflowModulePage {
+  private workflowData: {
+    executionTimestamps: {
+      pdf?: string;
+      txt?: string;
+    };
+    saveTimestamp?: string;
+  } = {
+    executionTimestamps: {}
+  };
 
   constructor(private page: Page) {}
 
@@ -14,16 +23,13 @@ export class WorkflowModulePage {
   async verifyWorkflowPageElements(): Promise<void> {
     console.log('Starting workflow page elements verification test');
 
-    // Wait for page to load
-    await this.page.waitForTimeout(3000);
+    // Verify main container with proper background (wait for page to load)
+    const mainContainer = this.page.locator('div.p-8.bg-gray-50.dark\\:bg-\\[\\#1E1E1E\\].overflow-y-auto.h-full');
+    await expect(mainContainer).toBeVisible({ timeout: 10000 });
 
     // Debug: Log current page state
     console.log('Current page URL:', this.page.url());
     console.log('Current page title:', await this.page.title());
-
-    // Verify main container with proper background
-    const mainContainer = this.page.locator('div.p-8.bg-gray-50.dark\\:bg-\\[\\#1E1E1E\\].overflow-y-auto.h-full');
-    await expect(mainContainer).toBeVisible({ timeout: 10000 });
     console.log('Main container with proper styling is visible');
 
     // Verify main heading "Workflow Builder"
@@ -125,6 +131,21 @@ export class WorkflowModulePage {
     await expect(searchIcon).toBeVisible();
     console.log('Search icon is visible');
 
+    // Verify filter tabs container
+    const filterTabsContainer = workflowContainer.locator('div.flex.items-center.gap-1.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(filterTabsContainer).toBeVisible();
+    console.log('Filter tabs container is visible');
+
+    // Verify "All" tab (active state)
+    const allTab = filterTabsContainer.locator('button.bg-white.dark\\:bg-gray-700.text-gray-900.dark\\:text-gray-100.shadow-sm:has-text("All")');
+    await expect(allTab).toBeVisible();
+    console.log('"All" tab is visible and active');
+
+    // Verify "Public workflows" tab (inactive state)
+    const publicWorkflowsTab = filterTabsContainer.locator('button.text-gray-500.dark\\:text-gray-400:has-text("Public workflows")');
+    await expect(publicWorkflowsTab).toBeVisible();
+    console.log('"Public workflows" tab is visible');
+
     // Find the grid container that holds workflow cards (specific targeting to avoid strict mode violation)
     const gridContainer = yourWorkflowsHeading.locator('xpath=../../div[contains(@class, "grid") and contains(@class, "gap-4") and contains(@class, "w-full")]');
     await expect(gridContainer).toBeVisible();
@@ -155,6 +176,29 @@ export class WorkflowModulePage {
       const botLogo = firstCard.locator('img[alt="Bot Logo"]');
       await expect(botLogo).toBeVisible();
       console.log('Bot logo is visible in workflow card');
+
+      // Verify workflow privacy badge (Private or Public)
+      const privateBadge = firstCard.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-gray-50.dark\\:bg-gray-700.text-gray-600.dark\\:text-gray-400.border.border-gray-200.dark\\:border-gray-600:has-text("Private")');
+      const publicBadge = firstCard.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-blue-50.dark\\:bg-blue-900\\/30.text-blue-700.dark\\:text-blue-300.border.border-blue-200.dark\\:border-blue-700:has-text("Public")');
+
+      const hasPrivateBadge = await privateBadge.isVisible().catch(() => false);
+      const hasPublicBadge = await publicBadge.isVisible().catch(() => false);
+
+      if (hasPrivateBadge) {
+        await expect(privateBadge).toBeVisible();
+        // Verify lock icon in private badge
+        const lockIcon = privateBadge.locator('svg.lucide-lock');
+        await expect(lockIcon).toBeVisible();
+        console.log('Private badge with lock icon is visible in workflow card');
+      } else if (hasPublicBadge) {
+        await expect(publicBadge).toBeVisible();
+        // Verify users icon in public badge
+        const usersIcon = publicBadge.locator('svg.lucide-users');
+        await expect(usersIcon).toBeVisible();
+        console.log('Public badge with users icon is visible in workflow card');
+      } else {
+        console.log('⚠️ No privacy badge found on workflow card');
+      }
 
       // Verify edited date
       const editedDate = firstCard.locator('p.text-sm.text-gray-500.dark\\:text-gray-400');
@@ -223,12 +267,9 @@ export class WorkflowModulePage {
     await workflowNavLink.hover();
     console.log('Hovered over workflow navigation link');
 
-    // Wait for tooltip to appear
-    await this.page.waitForTimeout(1000);
-
-    // Verify tooltip with text "Workflows" appears
+    // Verify tooltip with text "Workflows" appears (wait for tooltip)
     const tooltip = this.page.locator('[role="tooltip"]:has-text("Workflows"), .tooltip:has-text("Workflows"), [data-tooltip]:has-text("Workflows")');
-    const tooltipVisible = await tooltip.isVisible().catch(() => false);
+    const tooltipVisible = await tooltip.isVisible({ timeout: 2000 }).catch(() => false);
     if (tooltipVisible) {
       console.log('Tooltip with text "Workflows" is visible');
     } else {
@@ -244,11 +285,88 @@ export class WorkflowModulePage {
     await workflowNavLink.click();
     console.log('Clicked workflow navigation link');
 
-    // Wait for navigation and verify we're on the workflow page
-    await this.page.waitForTimeout(2000);
+    // Wait for navigation to workflow page
+    await this.page.waitForURL(/\/workflow/, { timeout: 5000 });
     const currentUrl = this.page.url();
-    expect(currentUrl).toContain('/workflow');
     console.log('Successfully navigated to workflow page:', currentUrl);
+  }
+
+  /**
+   * Verify workflow template page default tabs state
+   * By default, "All" tab should be selected (active) and "Public workflows" tab should be inactive
+   */
+  async verifyWorkflowTemplateDefaultTabsState(): Promise<void> {
+    console.log('Verifying workflow template default tabs state');
+
+    // Verify the tabs container exists
+    const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(tabsContainer).toBeVisible();
+    console.log('✅ Tabs container is visible');
+
+    // Verify "All" tab is in active state (white background, shadow)
+    const allTabActive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.bg-white.dark\\:bg-gray-700.text-gray-900.dark\\:text-gray-100.shadow-sm:has-text("All")');
+    await expect(allTabActive).toBeVisible();
+    console.log('✅ "All" tab is visible and active (white background with shadow)');
+
+    // Verify "Public workflows" tab is in inactive state (no background, gray text)
+    const publicWorkflowsTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("Public workflows")');
+    await expect(publicWorkflowsTabInactive).toBeVisible();
+    console.log('✅ "Public workflows" tab is visible and inactive (gray text, no background)');
+
+    console.log('✅ Workflow template default tabs state verified successfully');
+  }
+
+  /**
+   * Click on "Public workflows" tab in workflow template page
+   */
+  async clickPublicWorkflowsTemplateTab(): Promise<void> {
+    console.log('Clicking on "Public workflows" tab in workflow template page');
+
+    const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(tabsContainer).toBeVisible();
+
+    const publicWorkflowsTab = tabsContainer.locator('button:has-text("Public workflows")');
+    await expect(publicWorkflowsTab).toBeVisible();
+    await publicWorkflowsTab.click();
+    console.log('✅ Clicked "Public workflows" tab');
+  }
+
+  /**
+   * Verify workflow template tabs state after clicking "Public workflows"
+   * "Public workflows" tab should be active and "All" tab should be inactive
+   */
+  async verifyPublicWorkflowsTemplateTabActive(): Promise<void> {
+    console.log('Verifying "Public workflows" tab is active');
+
+    const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(tabsContainer).toBeVisible();
+
+    // Verify "All" tab is now in inactive state (gray text, no background)
+    const allTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("All")');
+    await expect(allTabInactive).toBeVisible();
+    console.log('✅ "All" tab is visible and inactive (gray text, no background)');
+
+    // Verify "Public workflows" tab is now in active state (white background, shadow)
+    const publicWorkflowsTabActive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.bg-white.dark\\:bg-gray-700.text-gray-900.dark\\:text-gray-100.shadow-sm:has-text("Public workflows")');
+    await expect(publicWorkflowsTabActive).toBeVisible();
+    console.log('✅ "Public workflows" tab is visible and active (white background with shadow)');
+
+    console.log('✅ "Public workflows" tab active state verified successfully');
+  }
+
+  /**
+   * Click on "All" tab in workflow template page
+   */
+  async clickAllTemplateTab(): Promise<void> {
+    console.log('Clicking on "All" tab in workflow template page');
+
+    const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(tabsContainer).toBeVisible();
+
+    const allTab = tabsContainer.locator('button:has-text("All")');
+    await expect(allTab).toBeVisible();
+    await allTab.click();
+    console.log('✅ Clicked "All" tab');
   }
 
   /**
@@ -257,12 +375,9 @@ export class WorkflowModulePage {
   async verifyAndClickWorkflowCreateButton(): Promise<void> {
     console.log('Starting workflow create button verification test');
 
-    // Wait for page to load
-    await this.page.waitForTimeout(3000);
-
-    // Check if we're on the "no workflows" page first
+    // Check if we're on the "no workflows" page first (wait for page to load)
     const noWorkflowsMessage = this.page.locator('text="No Workflows yet."');
-    const isNoWorkflowsPage = await noWorkflowsMessage.isVisible().catch(() => false);
+    const isNoWorkflowsPage = await noWorkflowsMessage.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (isNoWorkflowsPage) {
       console.log('No workflows present - looking for create button in empty state');
@@ -289,9 +404,6 @@ export class WorkflowModulePage {
       console.log('Create from Blank option clicked successfully');
     }
 
-    // Wait to see the interaction
-    await this.page.waitForTimeout(3000);
-
     console.log('Workflow create button verification and click test completed');
   }
 
@@ -301,10 +413,7 @@ export class WorkflowModulePage {
   async verifyWorkflowCreationInterface(): Promise<void> {
     console.log('Starting workflow creation interface verification');
 
-    // Wait for the workflow creation interface to load
-    await this.page.waitForTimeout(3000);
-
-    // Verify main container with proper layout
+    // Verify main container with proper layout (wait for workflow creation interface to load)
     const mainContainer = this.page.locator('div.w-full.h-full.flex.flex-col.bg-white.dark\\:bg-gray-900.relative');
     await expect(mainContainer).toBeVisible({ timeout: 10000 });
     console.log('Main workflow creation container is visible');
@@ -330,16 +439,26 @@ export class WorkflowModulePage {
     await expect(untitledWorkflow).toHaveText('Untitled Workflow');
     console.log('Untitled Workflow text is visible');
 
-    // Verify Save Changes button is disabled
-    const saveButton = this.page.locator('button:has-text("Save Changes")');
-    await expect(saveButton).toBeVisible();
-    await expect(saveButton).toBeDisabled();
-    console.log('Save Changes button is visible and disabled');
+    // Verify Save as Private and Save as Public buttons are disabled
+    const saveAsPrivateButton = this.page.locator('button:has-text("Save as Private")');
+    const saveAsPublicButton = this.page.locator('button:has-text("Save as Public")');
 
-    // Verify button has disabled styling
-    await expect(saveButton).toHaveClass(/opacity-50/);
-    await expect(saveButton).toHaveClass(/cursor-not-allowed/);
-    console.log('Save Changes button has proper disabled styling');
+    await expect(saveAsPrivateButton).toBeVisible();
+    await expect(saveAsPrivateButton).toBeDisabled();
+    console.log('Save as Private button is visible and disabled');
+
+    await expect(saveAsPublicButton).toBeVisible();
+    await expect(saveAsPublicButton).toBeDisabled();
+    console.log('Save as Public button is visible and disabled');
+
+    // Verify both buttons have disabled styling
+    await expect(saveAsPrivateButton).toHaveClass(/opacity-50/);
+    await expect(saveAsPrivateButton).toHaveClass(/cursor-not-allowed/);
+    console.log('Save as Private button has proper disabled styling');
+
+    await expect(saveAsPublicButton).toHaveClass(/opacity-50/);
+    await expect(saveAsPublicButton).toHaveClass(/cursor-not-allowed/);
+    console.log('Save as Public button has proper disabled styling');
 
     // Verify React Flow canvas area
     const reactFlowWrapper = this.page.locator('[data-testid="rf__wrapper"]');
@@ -398,12 +517,9 @@ export class WorkflowModulePage {
     await addFirstStepButton.click();
     console.log('Clicked Add first step button');
 
-    // Wait for sidebar to appear
-    await this.page.waitForTimeout(2000);
-
     // Verify "SELECT TRIGGERS" panel appears
     const triggersPanel = this.page.locator('div:has-text("SELECT TRIGGERS")').first();
-    await expect(triggersPanel).toBeVisible();
+    await expect(triggersPanel).toBeVisible({ timeout: 5000 });
     console.log('SELECT TRIGGERS panel is visible');
 
     // Verify triggers panel header
@@ -492,12 +608,9 @@ export class WorkflowModulePage {
     await formSubmissionTrigger.click();
     console.log('Clicked On Form Submission trigger');
 
-    // Wait for configuration panel to appear
-    await this.page.waitForTimeout(2000);
-
     // Verify form configuration panel header
     const formConfigHeader = this.page.locator('h2:has-text("On form submission")');
-    await expect(formConfigHeader).toBeVisible();
+    await expect(formConfigHeader).toBeVisible({ timeout: 5000 });
     console.log('Form configuration panel header is visible');
 
     // Verify Form Title field
@@ -604,9 +717,6 @@ export class WorkflowModulePage {
   async verifyWorkflowNameChange(): Promise<void> {
     console.log('Starting workflow name change verification');
 
-    // Wait for the page to be ready
-    await this.page.waitForTimeout(1000);
-
     // Find the "Untitled Workflow" text element that can be clicked to edit
     const untitledWorkflowSpan = this.page.locator('span.cursor-pointer.hover\\:text-\\[\\#1a1d20\\].dark\\:hover\\:text-gray-100.transition-colors.px-2.py-1.rounded.hover\\:bg-gray-50.dark\\:hover\\:bg-gray-800[title="Click to edit workflow name"]:has-text("Untitled Workflow")');
     await expect(untitledWorkflowSpan).toBeVisible({ timeout: 10000 });
@@ -624,11 +734,9 @@ export class WorkflowModulePage {
     await untitledWorkflowSpan.dblclick();
     console.log('Double-clicked on Untitled Workflow text');
 
-    // Wait for the text to transform into an input field
-    await this.page.waitForTimeout(1000);
-
-    // Find the input field that appears after double-clicking
+    // Find the input field that appears after double-clicking (wait for text to transform)
     const workflowNameInput = this.page.locator('input[value="Untitled Workflow"], input:has-value("Untitled Workflow")').first();
+    await workflowNameInput.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Alternative selector in case the input doesn't have the exact value
     const alternativeInput = this.page.locator('div.text-slate-500.dark\\:text-gray-400 input').first();
@@ -666,12 +774,9 @@ export class WorkflowModulePage {
     await this.page.locator('div.flex-1.bg-slate-50.dark\\:bg-gray-800.relative').click({ position: { x: 100, y: 100 } });
     console.log('Clicked outside the input field to save changes');
 
-    // Wait for the input to transform back to text
-    await this.page.waitForTimeout(2000);
-
-    // Verify the workflow name has changed in the breadcrumb
+    // Verify the workflow name has changed in the breadcrumb (wait for input to transform back to text)
     const updatedWorkflowName = this.page.locator(`span:has-text("${newWorkflowName}")`).first();
-    await expect(updatedWorkflowName).toBeVisible({ timeout: 5000 });
+    await expect(updatedWorkflowName).toBeVisible({ timeout: 7000 });
     console.log(`Workflow name successfully changed to "${newWorkflowName}"`);
 
     // Verify the breadcrumb still shows the correct structure (use exact text match)
@@ -684,18 +789,25 @@ export class WorkflowModulePage {
     await expect(updatedEditableSpan).toBeVisible();
     console.log('Updated workflow name maintains editable properties');
 
-    // Verify the Save Changes button is still present (may become enabled after name change)
-    const saveButton = this.page.locator('button:has-text("Save Changes")');
-    await expect(saveButton).toBeVisible();
+    // Verify the Save as Private and Save as Public buttons are still present (may become enabled after name change)
+    const saveAsPrivateButton = this.page.locator('button:has-text("Save as Private")');
+    const saveAsPublicButton = this.page.locator('button:has-text("Save as Public")');
 
-    // Check if the Save Changes button is now enabled after the name change
-    const isSaveButtonEnabled = await saveButton.isEnabled().catch(() => false);
-    if (isSaveButtonEnabled) {
-      console.log('Save Changes button is now enabled after workflow name change');
-      await expect(saveButton).toBeEnabled();
+    await expect(saveAsPrivateButton).toBeVisible();
+    await expect(saveAsPublicButton).toBeVisible();
+
+    // Check if the Save buttons are now enabled after the name change
+    const isPrivateButtonEnabled = await saveAsPrivateButton.isEnabled().catch(() => false);
+    const isPublicButtonEnabled = await saveAsPublicButton.isEnabled().catch(() => false);
+
+    if (isPrivateButtonEnabled && isPublicButtonEnabled) {
+      console.log('Save as Private and Save as Public buttons are now enabled after workflow name change');
+      await expect(saveAsPrivateButton).toBeEnabled();
+      await expect(saveAsPublicButton).toBeEnabled();
     } else {
-      console.log('Save Changes button remains disabled after workflow name change');
-      await expect(saveButton).toBeDisabled();
+      console.log('Save as Private and Save as Public buttons remain disabled after workflow name change');
+      await expect(saveAsPrivateButton).toBeDisabled();
+      await expect(saveAsPublicButton).toBeDisabled();
     }
 
     console.log('Workflow name change verification completed successfully');
@@ -707,11 +819,9 @@ export class WorkflowModulePage {
   async verifyClickAddFirstStep(): Promise<void> {
     console.log('Starting click Add first step button verification');
 
-    // Wait for the page to be ready
-    await this.page.waitForTimeout(1000);
-
-    // Check for workflow state - might have existing nodes or be empty
+    // Check for workflow state - might have existing nodes or be empty (wait for page to be ready)
     const centeredContainer = this.page.locator('div.flex.flex-col.items-center.justify-center.gap-8.p-12.text-center');
+    await centeredContainer.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
     const hasExistingNodes = await this.page.locator('div.react-flow__node').count() > 0;
 
     if (hasExistingNodes) {
@@ -835,10 +945,7 @@ export class WorkflowModulePage {
   async verifyAddFirstNode(): Promise<void> {
     console.log('Starting Add first node verification');
 
-    // Wait for React Flow to render the node
-    await this.page.waitForTimeout(1000);
-
-    // Verify React Flow pane container
+    // Verify React Flow pane container (wait for React Flow to render the node)
     const reactFlowPane = this.page.locator('div.react-flow__pane.draggable');
     await expect(reactFlowPane).toBeVisible({ timeout: 10000 });
     console.log('React Flow pane container is visible');
@@ -1000,9 +1107,6 @@ export class WorkflowModulePage {
   async verifyCrossIconAndSidebarToggle(): Promise<void> {
     console.log('Starting cross icon and sidebar toggle verification');
 
-    // Wait for sidebar to be visible first
-    await this.page.waitForTimeout(1000);
-
     // Verify the sidebar is visible with the correct styling
     const sidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-40.translate-x-0.w-\\[380px\\]');
     await expect(sidebar).toBeVisible({ timeout: 10000 });
@@ -1081,15 +1185,12 @@ export class WorkflowModulePage {
     await closeButton.click();
     console.log('Clicked cross icon to close sidebar');
 
-    // Wait for sidebar animation/transition
-    await this.page.waitForTimeout(1000);
-
-    // Verify sidebar is hidden - use multiple approaches with timeouts to avoid hanging
+    // Verify sidebar is hidden (wait for animation/transition)
     let isSidebarHidden = false;
 
     try {
       // First try: Check visibility with timeout
-      const sidebarVisible = await sidebar.isVisible({ timeout: 3000 });
+      const sidebarVisible = await sidebar.isVisible({ timeout: 4000 });
       if (!sidebarVisible) {
         isSidebarHidden = true;
         console.log('✅ Sidebar is not visible after clicking cross icon');
@@ -1133,14 +1234,11 @@ export class WorkflowModulePage {
     await selectTriggerNode.click();
     console.log('Clicked "Select trigger from sidebar" node');
 
-    // Wait for sidebar to reappear
-    await this.page.waitForTimeout(1000);
-
-    // Verify sidebar reappears with visible state
+    // Verify sidebar reappears with visible state (wait for sidebar to reappear)
     const sidebarReappeared = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-40.translate-x-0.w-\\[380px\\]');
 
     // Check if sidebar is visible again
-    const isSidebarBackVisible = await sidebarReappeared.isVisible().catch(() => false);
+    const isSidebarBackVisible = await sidebarReappeared.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (isSidebarBackVisible) {
       console.log('✅ Sidebar reappeared after clicking node');
@@ -1358,11 +1456,9 @@ export class WorkflowModulePage {
     await backButton.click();
     console.log('Clicked back button');
 
-    await this.page.waitForTimeout(1000);
-
     // Verify form submission panel disappears and triggers panel reappears
     const triggersPanel = this.page.locator('div:has-text("SELECT TRIGGERS")').first();
-    await expect(triggersPanel).toBeVisible();
+    await expect(triggersPanel).toBeVisible({ timeout: 3000 });
     console.log('✅ Triggers panel reappeared after clicking back button');
 
     // Step 4: Find and click the "On Form Submission" trigger to open configuration panel
@@ -1462,11 +1558,9 @@ export class WorkflowModulePage {
     await selectTriggerNode.click();
     console.log('Clicked "Select trigger from sidebar" node');
 
-    await this.page.waitForTimeout(1000);
-
     // Verify triggers panel reappears
     const triggersPanelReopened = this.page.locator('div:has-text("SELECT TRIGGERS")').first();
-    await expect(triggersPanelReopened).toBeVisible();
+    await expect(triggersPanelReopened).toBeVisible({ timeout: 3000 });
     console.log('✅ Triggers panel reopened');
 
     // Step 8: Final click on "On Form Submission" - use comprehensive approach
@@ -1932,12 +2026,9 @@ export class WorkflowModulePage {
   async verifyPostSaveState(): Promise<void> {
     console.log('Starting post-save state verification');
 
-    // Wait for the post-save state to be applied
-    await this.page.waitForTimeout(2000);
-
-    // Step 1: Verify the main workflow interface is visible
+    // Step 1: Verify the main workflow interface is visible (wait for post-save state)
     const workflowInterface = this.page.locator('div.w-full.h-full.flex.flex-col.bg-white.dark\\:bg-gray-900.relative');
-    await expect(workflowInterface).toBeVisible();
+    await expect(workflowInterface).toBeVisible({ timeout: 5000 });
     console.log('Main workflow interface is visible');
 
     // Step 2: Verify the header with breadcrumb and Save Changes button
@@ -1960,18 +2051,28 @@ export class WorkflowModulePage {
     await expect(workflowNameBreadcrumb).toBeVisible();
     console.log('Workflow name breadcrumb text is visible');
 
-    // Step 3: Verify Save Changes button is now ACTIVE (enabled with full opacity)
-    const saveChangesButton = header.locator('button:has-text("Save Changes")');
-    await expect(saveChangesButton).toBeVisible();
-    await expect(saveChangesButton).toBeEnabled();
-    console.log('Save Changes button is visible and enabled');
+    // Step 3: Verify Save as Private and Save as Public buttons are now ACTIVE (enabled with full opacity)
+    const saveAsPrivateButton = header.locator('button:has-text("Save as Private")');
+    const saveAsPublicButton = header.locator('button:has-text("Save as Public")');
 
-    // Verify button has active styling (opacity-100, not opacity-50)
-    await expect(saveChangesButton).toHaveClass(/opacity-100/);
-    await expect(saveChangesButton).toHaveClass(/bg-gray-900/);
-    await expect(saveChangesButton).toHaveClass(/hover:bg-gray-800/);
-    await expect(saveChangesButton).toHaveClass(/text-white/);
-    console.log('✅ Save Changes button has active styling (opacity-100)');
+    await expect(saveAsPrivateButton).toBeVisible();
+    await expect(saveAsPrivateButton).toBeEnabled();
+    console.log('Save as Private button is visible and enabled');
+
+    await expect(saveAsPublicButton).toBeVisible();
+    await expect(saveAsPublicButton).toBeEnabled();
+    console.log('Save as Public button is visible and enabled');
+
+    // Verify both buttons have active styling (opacity-100, not opacity-50)
+    await expect(saveAsPrivateButton).not.toHaveClass(/opacity-50/);
+    await expect(saveAsPrivateButton).toHaveClass(/bg-gray-900/);
+    await expect(saveAsPrivateButton).toHaveClass(/text-white/);
+    console.log('✅ Save as Private button has active styling (not opacity-50)');
+
+    await expect(saveAsPublicButton).not.toHaveClass(/opacity-50/);
+    await expect(saveAsPublicButton).toHaveClass(/bg-gray-900/);
+    await expect(saveAsPublicButton).toHaveClass(/text-white/);
+    console.log('✅ Save as Public button has active styling (not opacity-50)');
 
     // Step 4: Verify sidebar has disappeared
     console.log('Verifying sidebar disappearance');
@@ -2183,7 +2284,7 @@ export class WorkflowModulePage {
     console.log('Zoom in and zoom out buttons are visible');
 
     console.log('✅ Post-save state verification completed successfully');
-    console.log('✅ Save Changes button is active');
+    console.log('✅ Save as Private and Save as Public buttons are active');
     console.log('✅ Sidebar has disappeared');
     console.log('✅ Form submission node is present with configured title and description');
   }
@@ -2310,13 +2411,10 @@ export class WorkflowModulePage {
     await expect(saveButton).toBeVisible();
     await saveButton.click();
 
-    // Wait for save to complete
-    await this.page.waitForTimeout(2000);
-
-    // Step 5: Verify node still present with fallback values
+    // Step 5: Verify node still present with fallback values (wait for save to complete)
     console.log('Verifying node shows fallback values');
     const nodeAfterClear = this.page.locator('[data-id="form-submission"]');
-    await expect(nodeAfterClear).toBeVisible();
+    await expect(nodeAfterClear).toBeVisible({ timeout: 5000 });
 
     // Check fallback title and description in the node with flexible approach
     const nodeTitleFallback = nodeAfterClear.locator('h3:has-text("Form Submission")');
@@ -2367,12 +2465,11 @@ export class WorkflowModulePage {
     // Step 8: Save new configuration
     console.log('Saving new configuration');
     await saveButton.click();
-    await this.page.waitForTimeout(2000);
 
-    // Step 9: Verify node shows new non-empty data
+    // Step 9: Verify node shows new non-empty data (wait for save to complete)
     console.log('Verifying node shows new data');
     const nodeAfterUpdate = this.page.locator('[data-id="form-submission"]');
-    await expect(nodeAfterUpdate).toBeVisible();
+    await expect(nodeAfterUpdate).toBeVisible({ timeout: 5000 });
 
     // Check new title and description in the node
     const newNodeTitle = nodeAfterUpdate.locator('h3:has-text("Updated Form Title")');
@@ -2401,13 +2498,10 @@ export class WorkflowModulePage {
     await plusIconButton.click();
     console.log('Clicked plus icon on form submission node');
 
-    // Wait for sidebar to appear
-    await this.page.waitForTimeout(1000);
-
     // Step 2: Verify "What Happens Next?" sidebar appears with expected content
     console.log('Step 2: Verifying "What Happens Next?" sidebar content');
     const sidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-40.translate-x-0.w-\\[380px\\]');
-    await expect(sidebar).toBeVisible();
+    await expect(sidebar).toBeVisible({ timeout: 5000 });
 
     // Verify sidebar header
     const sidebarHeader = sidebar.locator('div.px-6.pt-5.pb-4.border-b.border-slate-200.dark\\:border-gray-700');
@@ -2525,12 +2619,9 @@ export class WorkflowModulePage {
       console.log('✅ Force clicked plus icon again');
     }
 
-    // Wait for sidebar to reappear
-    await this.page.waitForTimeout(1000);
-
-    // Verify sidebar reappears
+    // Verify sidebar reappears (wait for sidebar)
     const sidebarReappeared = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-40.translate-x-0.w-\\[380px\\]');
-    await expect(sidebarReappeared).toBeVisible();
+    await expect(sidebarReappeared).toBeVisible({ timeout: 3000 });
     console.log('✅ Sidebar reappeared');
 
     // Step 6: Click on AI Agent option
@@ -2539,13 +2630,10 @@ export class WorkflowModulePage {
     await aiAgentOptionToClick.click();
     console.log('Clicked AI Agent option');
 
-    // Wait for AI Agent configuration sidebar to appear
-    await this.page.waitForTimeout(1000);
-
     // Step 7: Verify AI Agent configuration sidebar
     console.log('Step 7: Verifying AI Agent configuration sidebar');
     const aiAgentConfigSidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-50.translate-x-0.w-\\[380px\\]');
-    await expect(aiAgentConfigSidebar).toBeVisible();
+    await expect(aiAgentConfigSidebar).toBeVisible({ timeout: 5000 });
 
     // Verify header with back button, title, and close button
     const configHeader = aiAgentConfigSidebar.locator('div.flex.items-center.border-b');
@@ -2925,25 +3013,44 @@ export class WorkflowModulePage {
     const aiAgentNode = this.page.locator('div.react-flow__node.react-flow__node-stepNode[data-id="ai-agent-2"][data-testid="rf__node-ai-agent-2"]');
     await expect(aiAgentNode).toBeVisible();
 
-    // Find the plus icon button below the AI agent node
-    const plusIconButton = aiAgentNode.locator('div.absolute.left-1\\/2.transform.-translate-x-1\\/2.flex.flex-col.items-center.cursor-pointer.z-50.pointer-events-auto div.bg-black.hover\\:bg-gray-800.rounded-full.flex.items-center.justify-center.transition-colors.shadow-lg');
-    await expect(plusIconButton).toBeVisible();
-    await plusIconButton.scrollIntoViewIfNeeded();
-    await plusIconButton.click();
-    console.log('Clicked plus icon on AI agent node');
+    // First, scroll the AI agent node into view
+    await aiAgentNode.evaluate((element) => {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
 
-    // Wait for sidebar to appear
-    await this.page.waitForTimeout(1000);
+    // Find the plus icon button below the AI agent node - try simpler locator first (wait for scroll to complete)
+    const plusIconContainer = aiAgentNode.locator('div.absolute.left-1\\/2.transform.-translate-x-1\\/2.flex.flex-col.items-center.cursor-pointer');
+    await expect(plusIconContainer).toBeVisible({ timeout: 5000 });
+    console.log('✅ Plus icon container is visible');
+
+    // Try to click using JavaScript click for more reliability
+    await plusIconContainer.evaluate((element) => {
+      const clickableElement = element.querySelector('div.bg-black') || element;
+      (clickableElement as HTMLElement).click();
+    });
+    console.log('✅ Clicked plus icon on AI agent node using JavaScript');
 
     // Step 2: Verify "What Happens Next?" sidebar appears
     console.log('Step 2: Verifying "What Happens Next?" sidebar appears');
-    const sidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-40.translate-x-0.w-\\[380px\\]');
-    await expect(sidebar).toBeVisible();
+
+    // Try multiple sidebar locator strategies
+    let sidebar = this.page.locator('div.fixed.right-0:has-text("What Happens Next?")').first();
+
+    // Check if sidebar is visible
+    const isSidebarVisible = await sidebar.isVisible().catch(() => false);
+
+    if (!isSidebarVisible) {
+      console.log('⚠️ Trying alternative sidebar locator...');
+      sidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0').filter({ hasText: 'What Happens Next?' }).first();
+    }
+
+    await expect(sidebar).toBeVisible({ timeout: 10000 });
+    console.log('✅ Sidebar is visible');
 
     // Verify "What Happens Next?" title
-    const sidebarTitle = sidebar.locator('div.text-sm.font-semibold.text-gray-700.dark\\:text-gray-300.tracking-wider.uppercase:has-text("What Happens Next?")');
+    const sidebarTitle = sidebar.locator('text="What Happens Next?"').first();
     await expect(sidebarTitle).toBeVisible();
-    console.log('✅ "What Happens Next?" sidebar is visible');
+    console.log('✅ "What Happens Next?" sidebar title is visible');
 
     // Step 3: Verify sidebar content options
     console.log('Step 3: Verifying sidebar content options');
@@ -2973,13 +3080,10 @@ export class WorkflowModulePage {
     await emailOption.click();
     console.log('Clicked Email option');
 
-    // Wait for Email configuration sidebar to appear
-    await this.page.waitForTimeout(1000);
-
     // Step 5: Verify Email configuration sidebar
     console.log('Step 5: Verifying Email configuration sidebar');
     const emailConfigSidebar = this.page.locator('div.fixed.top-\\[80px\\].right-0.h-\\[calc\\(100vh-80px\\)\\].bg-white.dark\\:bg-gray-900.border-l.border-slate-200.dark\\:border-gray-700.flex.flex-col.overflow-hidden.z-50.translate-x-0.w-\\[380px\\]');
-    await expect(emailConfigSidebar).toBeVisible();
+    await expect(emailConfigSidebar).toBeVisible({ timeout: 5000 });
 
     // Verify header with back button, title, and close button
     const configHeader = emailConfigSidebar.locator('div.flex.items-center.border-b');
@@ -3081,17 +3185,14 @@ export class WorkflowModulePage {
     await addEmailInput.press('Enter');
     console.log('Pressed Enter to add email');
 
-    // Wait for email to be added
-    await this.page.waitForTimeout(1000);
-
-    // Step 10: Verify email is added to the list
+    // Step 10: Verify email is added to the list (wait for email to be added)
     console.log('Step 10: Verifying email is added to the list');
     const emailListContainer = configContent.locator('div.space-y-2.mt-4');
     await expect(emailListContainer).toBeVisible();
 
     // Verify email item structure
     const emailItem = emailListContainer.locator('div.flex.items-center.justify-between.p-3.bg-gray-50.dark\\:bg-gray-800.rounded-lg');
-    await expect(emailItem).toBeVisible();
+    await expect(emailItem).toBeVisible({ timeout: 3000 });
 
     // Verify email avatar
     const emailAvatar = emailItem.locator('div.w-8.h-8.bg-pink-500.rounded-full.flex.items-center.justify-center.text-white.font-medium.text-sm:has-text("A")');
@@ -3141,12 +3242,9 @@ export class WorkflowModulePage {
     await addEmailInput.press('Enter');
     console.log('Added email again');
 
-    // Wait for email to be added
-    await this.page.waitForTimeout(1000);
-
     // Verify email is added back
     const emailItemAgain = emailListContainer.locator('div.flex.items-center.justify-between.p-3.bg-gray-50.dark\\:bg-gray-800.rounded-lg');
-    await expect(emailItemAgain).toBeVisible();
+    await expect(emailItemAgain).toBeVisible({ timeout: 3000 });
     console.log('✅ Email was added back to the list');
 
     // Verify Save Configuration button is enabled
@@ -3174,10 +3272,7 @@ export class WorkflowModulePage {
     // Step 16: Verify Email node appears with correct structure
     console.log('Step 16: Verifying Email node appears with correct structure');
 
-    // Wait for node to be created
-    await this.page.waitForTimeout(1000);
-
-    // Verify the specific Email node structure
+    // Verify the specific Email node structure (wait for node to be created)
     const emailNode = this.page.locator('div.react-flow__node.react-flow__node-stepNode.nopan.selected.selectable.draggable[data-id="email-3"][data-testid="rf__node-email-3"]');
     await expect(emailNode).toBeVisible({ timeout: 10000 });
     console.log('✅ Email node is visible with correct data attributes');
@@ -3377,19 +3472,100 @@ export class WorkflowModulePage {
 
   /**
    * Save workflow and verify save functionality
+   * @param privacy - Specify 'Private' or 'Public' to use the respective save button
    */
-  async saveAndVerifyWorkflow(): Promise<void> {
-    console.log('Starting save and verify workflow');
+  /**
+   * Click on the "Workflow" breadcrumb to navigate back
+   */
+  async clickWorkflowBreadcrumb(): Promise<void> {
+    console.log('Clicking Workflow breadcrumb to navigate back');
 
-    // Step 1: Click the Save Changes button
-    console.log('Step 1: Clicking Save Changes button');
-    const saveButton = this.page.locator('button:has-text("Save Changes")');
+    const breadcrumbContainer = this.page.locator('div.flex.items-center.justify-between.px-6.border-b.border-slate-200.dark\\:border-gray-700.bg-white.dark\\:bg-gray-900');
+    await expect(breadcrumbContainer).toBeVisible();
+
+    const workflowBreadcrumb = breadcrumbContainer.locator('span.cursor-pointer.hover\\:text-slate-700.dark\\:hover\\:text-gray-300:has-text("Workflow")');
+    await expect(workflowBreadcrumb).toBeVisible();
+    await workflowBreadcrumb.click();
+    console.log('✅ Clicked Workflow breadcrumb');
+
+    // Wait for navigation to complete
+    await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Verify unsaved work popup appears
+   */
+  async verifyUnsavedWorkPopup(): Promise<void> {
+    console.log('Verifying unsaved work popup appears');
+
+    const unsavedPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-2xl.shadow-xl.max-w-md.w-full.mx-4.p-8');
+    await expect(unsavedPopup).toBeVisible({ timeout: 6000 });
+    console.log('✅ Unsaved work popup is visible');
+
+    // Verify popup heading
+    const heading = unsavedPopup.locator('h2.text-xl.font-bold.text-gray-900.dark\\:text-gray-100.mb-3:has-text("Hold on — you have unsaved work")');
+    await expect(heading).toBeVisible();
+    console.log('✅ Popup heading verified: "Hold on — you have unsaved work"');
+
+    // Verify popup description
+    const description = unsavedPopup.locator('p.text-gray-600.dark\\:text-gray-400.text-base.leading-relaxed.mb-8:has-text("Refreshing now will discard your edits permanently")');
+    await expect(description).toBeVisible();
+    console.log('✅ Popup description verified');
+
+    // Verify both buttons are visible
+    const refreshButton = unsavedPopup.locator('button:has-text("Refresh")');
+    const cancelButton = unsavedPopup.locator('button:has-text("Cancel")');
+
+    await expect(refreshButton).toBeVisible();
+    await expect(cancelButton).toBeVisible();
+    console.log('✅ Both Refresh and Cancel buttons are visible');
+  }
+
+  /**
+   * Click Cancel button in unsaved work popup
+   */
+  async clickCancelInUnsavedPopup(): Promise<void> {
+    console.log('Clicking Cancel button in unsaved work popup');
+
+    const unsavedPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-2xl.shadow-xl.max-w-md.w-full.mx-4.p-8');
+    await expect(unsavedPopup).toBeVisible();
+
+    const cancelButton = unsavedPopup.locator('button.flex-1.px-6.py-3.text-white.bg-black.dark\\:bg-gray-700.rounded-full.font-medium.hover\\:bg-gray-800.dark\\:hover\\:bg-gray-600.transition-colors:has-text("Cancel")');
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+    console.log('✅ Clicked Cancel button');
+
+    // Verify popup is closed (wait for popup to close)
+    await expect(unsavedPopup).toBeHidden({ timeout: 4000 });
+    console.log('✅ Unsaved work popup is closed');
+  }
+
+  async saveAndVerifyWorkflow(privacy: 'Private' | 'Public' = 'Private'): Promise<void> {
+    console.log(`Starting save and verify workflow as ${privacy}`);
+
+    // Step 1: Click the appropriate Save button based on privacy parameter
+    console.log(`Step 1: Clicking Save as ${privacy} button`);
+    const saveButton = this.page.locator(`button:has-text("Save as ${privacy}")`);
     await expect(saveButton).toBeVisible();
     await expect(saveButton).toBeEnabled();
-    console.log('✅ Save Changes button is visible and enabled');
+    console.log(`✅ Save as ${privacy} button is visible and enabled`);
+
+    // Capture save timestamp before clicking
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    this.workflowData.saveTimestamp = `${month}/${day}/${year}, ${hours}:${minutes}:${seconds} ${ampm}`;
+    console.log(`✅ Captured save timestamp: ${this.workflowData.saveTimestamp}`);
 
     await saveButton.click();
-    console.log('✅ Save Changes button clicked');
+    console.log(`✅ Save as ${privacy} button clicked`);
 
     // Step 2: Verify success popup appears
     console.log('Step 2: Verifying success popup appears');
@@ -3465,23 +3641,28 @@ export class WorkflowModulePage {
       }
     }
 
-    // Step 5: Verify Save Changes button state after save
-    console.log('Step 5: Verifying Save Changes button state after save');
-    const saveButtonAfterSave = this.page.locator('button:has-text("Save Changes")');
+    // Step 5: Verify Save buttons state after save
+    console.log('Step 5: Verifying Save buttons state after save');
+    const saveAsPrivateButton = this.page.locator('button:has-text("Save as Private")');
+    const saveAsPublicButton = this.page.locator('button:has-text("Save as Public")');
 
     try {
-      await expect(saveButtonAfterSave).toBeVisible({ timeout: 3000 });
-      const isEnabled = await saveButtonAfterSave.isEnabled();
-      if (isEnabled) {
-        console.log('✅ Save Changes button remains enabled (workflow may have unsaved changes)');
+      await expect(saveAsPrivateButton).toBeVisible({ timeout: 3000 });
+      await expect(saveAsPublicButton).toBeVisible({ timeout: 3000 });
+
+      const isPrivateEnabled = await saveAsPrivateButton.isEnabled();
+      const isPublicEnabled = await saveAsPublicButton.isEnabled();
+
+      if (isPrivateEnabled && isPublicEnabled) {
+        console.log('✅ Save as Private and Save as Public buttons remain enabled (workflow may have unsaved changes)');
       } else {
-        console.log('✅ Save Changes button is now disabled (no unsaved changes)');
+        console.log('✅ Save as Private and Save as Public buttons are now disabled (no unsaved changes)');
       }
     } catch (error) {
-      console.log('⚠️ Save Changes button not visible after save - this may be normal UI behavior');
+      console.log('⚠️ Save buttons not visible after save - this may be normal UI behavior');
     }
 
-    console.log('✅ Save and verify workflow completed successfully');
+    console.log(`✅ Save and verify workflow as ${privacy} completed successfully`);
   }
 
   /**
@@ -3498,13 +3679,10 @@ export class WorkflowModulePage {
     await executeButton.click();
     console.log('Clicked Execute Workflow button');
 
-    // Wait for popup to appear
-    await this.page.waitForTimeout(2000);
-
     // Step 2: Verify execution popup appears with correct structure
     console.log('Step 2: Verifying execution popup appears');
     const executionPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-xl.shadow-xl.max-w-2xl.w-full.mx-4.relative');
-    await expect(executionPopup).toBeVisible();
+    await expect(executionPopup).toBeVisible({ timeout: 5000 });
     console.log('✅ Execution popup is visible');
 
     // Verify close button
@@ -3559,13 +3737,10 @@ export class WorkflowModulePage {
     await fileInput.setInputFiles(filePath);
     console.log('✅ Solar system PDF file uploaded');
 
-    // Wait for file to be processed
-    await this.page.waitForTimeout(2000);
-
-    // Step 7: Verify uploaded file appears in UI
+    // Step 7: Verify uploaded file appears in UI (wait for file to be processed)
     console.log('Step 7: Verifying uploaded file appears in UI');
     const uploadedFileContainer = uploadArea.locator('div.flex.items-center.gap-3.bg-white.dark\\:bg-gray-700.border.border-gray-200.dark\\:border-gray-600.rounded-lg.px-4.py-3.shadow-sm');
-    await expect(uploadedFileContainer).toBeVisible();
+    await expect(uploadedFileContainer).toBeVisible({ timeout: 5000 });
     console.log('✅ Uploaded file container is visible');
 
     // Verify file icon
@@ -3600,18 +3775,30 @@ export class WorkflowModulePage {
 
     // Step 9: Click Start Execution button
     console.log('Step 9: Clicking Start Execution button');
+
+    // Capture PDF execution timestamp before clicking Start Execution
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    this.workflowData.executionTimestamps.pdf = `${month}/${day}/${year}, ${hours}:${minutes}:${seconds} ${ampm}`;
+    console.log(`✅ Captured PDF execution timestamp: ${this.workflowData.executionTimestamps.pdf}`);
+
     await startExecutionButton.click();
     console.log('✅ Clicked Start Execution button');
-
-    // Wait for execution UI to update
-    await this.page.waitForTimeout(2000);
 
     // Step 10: Verify UI changes to processing state after execution starts
     console.log('Step 10: Verifying UI changes to processing state');
 
-    // Verify the processing spinner appears
+    // Verify the processing spinner appears (wait for execution UI to update)
     const processingSpinner = executionPopup.locator('div.w-12.h-12.border-4.border-gray-300.border-t-gray-600.rounded-full.animate-spin.mb-6');
-    await expect(processingSpinner).toBeVisible();
+    await expect(processingSpinner).toBeVisible({ timeout: 5000 });
     console.log('✅ Processing spinner is visible');
 
     // Verify "Processing the File" text
@@ -3645,15 +3832,14 @@ export class WorkflowModulePage {
     console.log('✅ Button container is right-aligned');
 
     // Step 11: Wait for processing to complete and verify success state
-    console.log('Step 11: Waiting for processing to complete (15 seconds)...');
-    await this.page.waitForTimeout(30000);
+    console.log('Step 11: Waiting for processing to complete (up to 2 minutes)...');
+
+    // Wait for success icon to appear (with timeout of 120 seconds)
+    const successIcon = executionPopup.locator('div.w-16.h-16.flex.items-center.justify-center.mb-6 img[alt="Success"]');
+    await expect(successIcon).toBeVisible({ timeout: 120000 });
+    console.log('✅ Success icon is visible');
 
     console.log('Verifying UI changes to success state');
-
-    // Verify success icon appears
-    const successIcon = executionPopup.locator('div.w-16.h-16.flex.items-center.justify-center.mb-6 img[alt="Success"]');
-    await expect(successIcon).toBeVisible();
-    console.log('✅ Success icon is visible');
 
     // Verify success icon has correct attributes
     const successIconSrc = await successIcon.getAttribute('src');
@@ -3706,5 +3892,779 @@ export class WorkflowModulePage {
     console.log('✅ Action buttons have proper spacing');
 
     console.log('✅ Execute workflow verification completed successfully');
+  }
+
+  /**
+   * Click on "All" filter tab to show all workflows
+   */
+  async clickAllFilterTab(): Promise<void> {
+    console.log('Clicking on "All" filter tab');
+
+    const filterTabsContainer = this.page.locator('div.flex.items-center.gap-1.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(filterTabsContainer).toBeVisible();
+
+    const allTab = filterTabsContainer.locator('button:has-text("All")');
+    await expect(allTab).toBeVisible();
+    await allTab.click();
+
+    // Wait for filter to apply
+    await this.page.waitForTimeout(1000);
+    console.log('Clicked "All" filter tab');
+  }
+
+  /**
+   * Click on "Public workflows" filter tab to show only public workflows
+   */
+  async clickPublicWorkflowsFilterTab(): Promise<void> {
+    console.log('Clicking on "Public workflows" filter tab');
+
+    const filterTabsContainer = this.page.locator('div.flex.items-center.gap-1.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
+    await expect(filterTabsContainer).toBeVisible();
+
+    const publicWorkflowsTab = filterTabsContainer.locator('button:has-text("Public workflows")');
+    await expect(publicWorkflowsTab).toBeVisible();
+    await publicWorkflowsTab.click();
+
+    // Wait for filter to apply
+    await this.page.waitForTimeout(1000);
+    console.log('Clicked "Public workflows" filter tab');
+  }
+
+  /**
+   * Verify that only public workflow cards are visible
+   */
+  async verifyOnlyPublicWorkflowsVisible(): Promise<void> {
+    console.log('Verifying only public workflows are visible');
+
+    const workflowCards = this.page.locator('div.bg-white.dark\\:bg-gray-800.border.border-gray-200.dark\\:border-gray-700.hover\\:shadow-md.transition-shadow.rounded-2xl.p-6.flex.flex-col.min-h-52.w-full.max-w-\\[400px\\]');
+    const cardCount = await workflowCards.count();
+
+    if (cardCount === 0) {
+      console.log('No workflow cards found');
+      return;
+    }
+
+    // Check each card has a public badge
+    for (let i = 0; i < cardCount; i++) {
+      const card = workflowCards.nth(i);
+      const publicBadge = card.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-blue-50.dark\\:bg-blue-900\\/30.text-blue-700.dark\\:text-blue-300.border.border-blue-200.dark\\:border-blue-700:has-text("Public")');
+
+      await expect(publicBadge).toBeVisible();
+      console.log(`Card ${i + 1} has public badge`);
+    }
+
+    console.log(`All ${cardCount} visible workflows are public`);
+  }
+
+  /**
+   * Verify workflow card privacy badge type
+   */
+  async verifyWorkflowCardPrivacyBadge(cardIndex: number, expectedType: 'Private' | 'Public'): Promise<void> {
+    console.log(`Verifying workflow card ${cardIndex} has ${expectedType} badge`);
+
+    const workflowCards = this.page.locator('div.bg-white.dark\\:bg-gray-800.border.border-gray-200.dark\\:border-gray-700.hover\\:shadow-md.transition-shadow.rounded-2xl.p-6.flex.flex-col.min-h-52.w-full.max-w-\\[400px\\]');
+    const card = workflowCards.nth(cardIndex);
+
+    if (expectedType === 'Private') {
+      const privateBadge = card.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-gray-50.dark\\:bg-gray-700.text-gray-600.dark\\:text-gray-400.border.border-gray-200.dark\\:border-gray-600:has-text("Private")');
+      await expect(privateBadge).toBeVisible();
+
+      const lockIcon = privateBadge.locator('svg.lucide-lock');
+      await expect(lockIcon).toBeVisible();
+      console.log(`Card ${cardIndex} has Private badge with lock icon`);
+    } else {
+      const publicBadge = card.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-blue-50.dark\\:bg-blue-900\\/30.text-blue-700.dark\\:text-blue-300.border.border-blue-200.dark\\:border-blue-700:has-text("Public")');
+      await expect(publicBadge).toBeVisible();
+
+      const usersIcon = publicBadge.locator('svg.lucide-users');
+      await expect(usersIcon).toBeVisible();
+      console.log(`Card ${cardIndex} has Public badge with users icon`);
+    }
+  }
+
+  /**
+   * Click Save as Private button
+   */
+  async clickSaveAsPrivate(): Promise<void> {
+    console.log('Clicking Save as Private button');
+
+    const saveAsPrivateButton = this.page.locator('button:has-text("Save as Private")');
+    await expect(saveAsPrivateButton).toBeVisible();
+    await expect(saveAsPrivateButton).toBeEnabled();
+
+    await saveAsPrivateButton.click();
+    console.log('✅ Save as Private button clicked');
+
+    // Wait for save action to complete
+    await this.page.waitForTimeout(2000);
+  }
+
+  /**
+   * Click Save as Public button
+   */
+  async clickSaveAsPublic(): Promise<void> {
+    console.log('Clicking Save as Public button');
+
+    const saveAsPublicButton = this.page.locator('button:has-text("Save as Public")');
+    await expect(saveAsPublicButton).toBeVisible();
+    await expect(saveAsPublicButton).toBeEnabled();
+
+    await saveAsPublicButton.click();
+    console.log('✅ Save as Public button clicked');
+
+    // Wait for save action to complete
+    await this.page.waitForTimeout(2000);
+  }
+
+  /**
+   * Verify both save buttons are visible and in the expected state
+   */
+  async verifySaveButtons(expectedState: 'enabled' | 'disabled'): Promise<void> {
+    console.log(`Verifying save buttons are ${expectedState}`);
+
+    const saveAsPrivateButton = this.page.locator('button:has-text("Save as Private")');
+    const saveAsPublicButton = this.page.locator('button:has-text("Save as Public")');
+
+    await expect(saveAsPrivateButton).toBeVisible();
+    await expect(saveAsPublicButton).toBeVisible();
+    console.log('Both save buttons are visible');
+
+    if (expectedState === 'enabled') {
+      await expect(saveAsPrivateButton).toBeEnabled();
+      await expect(saveAsPublicButton).toBeEnabled();
+      console.log('✅ Both Save as Private and Save as Public buttons are enabled');
+
+      // Verify enabled styling (not opacity-50, not cursor-not-allowed)
+      await expect(saveAsPrivateButton).not.toHaveClass(/opacity-50/);
+      await expect(saveAsPublicButton).not.toHaveClass(/opacity-50/);
+      console.log('✅ Both buttons have enabled styling');
+    } else {
+      await expect(saveAsPrivateButton).toBeDisabled();
+      await expect(saveAsPublicButton).toBeDisabled();
+      console.log('✅ Both Save as Private and Save as Public buttons are disabled');
+
+      // Verify disabled styling
+      await expect(saveAsPrivateButton).toHaveClass(/opacity-50/);
+      await expect(saveAsPrivateButton).toHaveClass(/cursor-not-allowed/);
+      await expect(saveAsPublicButton).toHaveClass(/opacity-50/);
+      await expect(saveAsPublicButton).toHaveClass(/cursor-not-allowed/);
+      console.log('✅ Both buttons have disabled styling');
+    }
+  }
+
+  /**
+   * Click "Upload Another" button after workflow execution completes successfully
+   */
+  async clickUploadAnotherButton(): Promise<void> {
+    console.log('Starting click Upload Another button');
+
+    // Locate the execution popup
+    const executionPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-xl.shadow-xl.max-w-2xl.w-full.mx-4.relative');
+    await expect(executionPopup).toBeVisible();
+    console.log('✅ Execution popup is visible');
+
+    // Locate and click the "Upload Another" button
+    const actionButtonsContainer = executionPopup.locator('div.flex.justify-end.gap-3.mt-6');
+    const uploadAnotherButton = actionButtonsContainer.locator('button:has-text("Upload Another")');
+
+    await expect(uploadAnotherButton).toBeVisible();
+    await expect(uploadAnotherButton).toBeEnabled();
+    console.log('✅ Upload Another button is visible and enabled');
+
+    await uploadAnotherButton.click();
+    console.log('✅ Clicked Upload Another button');
+
+    // Verify UI has returned to initial upload state (wait for UI to reset)
+    const uploadArea = executionPopup.locator('div.border.border-dashed.border-gray-300.dark\\:border-gray-600.rounded-xl');
+    await expect(uploadArea).toBeVisible({ timeout: 5000 });
+
+    const browseButton = uploadArea.locator('button:has-text("BROWSE FILES")');
+    await expect(browseButton).toBeVisible();
+    console.log('✅ UI reset to upload state - browse button is visible');
+
+    console.log('✅ Click Upload Another button completed successfully');
+  }
+
+  /**
+   * Upload a text file and wait for processing to complete
+   */
+  async uploadTextFileAndWait(): Promise<void> {
+    console.log('Starting upload text file and wait');
+
+    // Locate the execution popup
+    const executionPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-xl.shadow-xl.max-w-2xl.w-full.mx-4.relative');
+    await expect(executionPopup).toBeVisible();
+    console.log('✅ Execution popup is visible');
+
+    // Locate the upload area
+    const uploadArea = executionPopup.locator('div.border.border-dashed.border-gray-300.dark\\:border-gray-600.rounded-xl');
+    await expect(uploadArea).toBeVisible();
+    console.log('✅ Upload area is visible');
+
+    // Upload text file from documents data enrichment folder
+    console.log('Uploading text file from documents data enrichment folder');
+    const fileInput = executionPopup.locator('input[type="file"]');
+    await expect(fileInput).toBeAttached();
+
+    // Use a text file from the props folder (you may need to adjust the path)
+    const filePath = './props/data-enrichment.txt';
+    await fileInput.setInputFiles(filePath);
+    console.log('✅ Text file uploaded');
+
+    // Verify uploaded file appears in UI (wait for file to be processed)
+    const uploadedFileContainer = uploadArea.locator('div.flex.items-center.gap-3.bg-white.dark\\:bg-gray-700.border.border-gray-200.dark\\:border-gray-600.rounded-lg.px-4.py-3.shadow-sm');
+    await expect(uploadedFileContainer).toBeVisible({ timeout: 5000 });
+    console.log('✅ Uploaded file container is visible');
+
+    // Verify Start Execution button is enabled
+    const startExecutionButton = executionPopup.locator('button:has-text("Start Execution")');
+    await expect(startExecutionButton).toBeEnabled();
+    console.log('✅ Start Execution button is enabled');
+
+    // Capture TXT execution timestamp before clicking Start Execution
+    const now = new Date();
+    // Format: M/D/YYYY, h:mm:ss AM/PM
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    this.workflowData.executionTimestamps.txt = `${month}/${day}/${year}, ${hours}:${minutes}:${seconds} ${ampm}`;
+    console.log(`✅ Captured TXT execution timestamp: ${this.workflowData.executionTimestamps.txt}`);
+
+    // Click Start Execution button
+    console.log('Clicking Start Execution button');
+    await startExecutionButton.click();
+    console.log('✅ Clicked Start Execution button');
+
+    // Verify processing state (wait for processing to start)
+    const processingSpinner = executionPopup.locator('div.w-12.h-12.border-4.border-gray-300.border-t-gray-600.rounded-full.animate-spin.mb-6');
+    await expect(processingSpinner).toBeVisible({ timeout: 5000 });
+    console.log('✅ Processing spinner is visible');
+
+    // Verify success icon appears
+    const successIcon = executionPopup.locator('div.w-16.h-16.flex.items-center.justify-center.mb-6 img[alt="Success"]');
+    await expect(successIcon).toBeVisible({ timeout: 120000 });
+    console.log('✅ Success icon is visible');
+
+    console.log('✅ Upload text file and wait completed successfully');
+  }
+
+  /**
+   * Verify completion and click "View Workflow" button
+   */
+  async verifyCompletionAndClickViewWorkflow(): Promise<void> {
+    console.log('Starting verify completion and click View Workflow');
+
+    // Locate the execution popup
+    const executionPopup = this.page.locator('div.bg-white.dark\\:bg-gray-900.rounded-xl.shadow-xl.max-w-2xl.w-full.mx-4.relative');
+    await expect(executionPopup).toBeVisible();
+    console.log('✅ Execution popup is visible');
+
+    // Verify success icon appears
+    const successIcon = executionPopup.locator('div.w-16.h-16.flex.items-center.justify-center.mb-6 img[alt="Success"]');
+    await expect(successIcon).toBeVisible();
+    console.log('✅ Success icon is visible');
+
+    // Verify success message
+    const successMessage = executionPopup.locator('p.text-gray-900.dark\\:text-gray-100.text-lg.font-medium:has-text("Process completed successfully!")');
+    await expect(successMessage).toBeVisible();
+    console.log('✅ "Process completed successfully!" message is visible');
+
+    // Verify action buttons container
+    const actionButtonsContainer = executionPopup.locator('div.flex.justify-end.gap-3.mt-6');
+    await expect(actionButtonsContainer).toBeVisible();
+    console.log('✅ Action buttons container is visible');
+
+    // Verify and click "View Workflow" button
+    const viewWorkflowButton = actionButtonsContainer.locator('button:has-text("View Workflow")');
+    await expect(viewWorkflowButton).toBeVisible();
+    await expect(viewWorkflowButton).toBeEnabled();
+    console.log('✅ View Workflow button is visible and enabled');
+
+    await viewWorkflowButton.click();
+    console.log('✅ Clicked View Workflow button');
+
+    // Wait for navigation to workflow execution details page
+    await this.page.waitForTimeout(3000);
+
+    console.log('✅ Verify completion and click View Workflow completed successfully');
+  }
+
+  /**
+   * Verify workflow execution details screen with timestamp and workflow nodes
+   */
+  async verifyWorkflowExecutionDetailsScreen(): Promise<void> {
+    console.log('Starting verify workflow execution details screen');
+
+    // Verify we're on the workflow execution details page
+    const pageContainer = this.page.locator('div.w-full.h-full.flex.flex-col.bg-white.dark\\:bg-gray-900.relative');
+    await expect(pageContainer).toBeVisible();
+    console.log('✅ Page container is visible');
+
+    // Verify header with breadcrumb
+    const headerContainer = this.page.locator('div.flex.flex-col.items-start.justify-center.px-6.py-4.border-b.border-slate-200.dark\\:border-gray-700.bg-white.dark\\:bg-gray-900.min-h-\\[80px\\].gap-3');
+    await expect(headerContainer).toBeVisible();
+    console.log('✅ Header container is visible');
+
+    // Verify breadcrumb navigation
+    const breadcrumbContainer = headerContainer.locator('div.flex.items-center.gap-2.w-full');
+    await expect(breadcrumbContainer).toBeVisible();
+
+    // Verify breadcrumb parent div element
+    const breadcrumbParentDiv = headerContainer.locator('div.text-slate-500.dark\\:text-gray-400.text-sm.font-normal.leading-5');
+    await expect(breadcrumbParentDiv).toBeVisible();
+    console.log('✅ Breadcrumb parent div is visible');
+
+    // Verify "Workflow" clickable breadcrumb
+    const workflowBreadcrumb = breadcrumbParentDiv.locator('span.cursor-pointer.hover\\:text-slate-700.dark\\:hover\\:text-gray-300');
+    await expect(workflowBreadcrumb).toBeVisible();
+    const workflowBreadcrumbText = await workflowBreadcrumb.textContent();
+    expect(workflowBreadcrumbText?.trim()).toBe('Workflow');
+    console.log('✅ Workflow breadcrumb is visible with correct text');
+
+    // Verify workflow name and timestamp text
+    const workflowNameAndTimestamp = breadcrumbParentDiv.locator('span.text-\\[\\#3B4145\\].dark\\:text-gray-300.text-sm.font-medium.leading-5');
+    await expect(workflowNameAndTimestamp).toBeVisible();
+
+    const fullText = await workflowNameAndTimestamp.textContent();
+    console.log(`✅ Full breadcrumb text: ${fullText}`);
+
+    // Extract workflow name and timestamp from the text (format: " / Automation Workflow - 10/15/2025, 1:00:39 PM")
+    const match = fullText?.match(/\s*\/\s*(.+?)\s*-\s*(.+)$/);
+    expect(match).toBeTruthy();
+
+    if (match) {
+      const workflowName = match[1].trim();
+      const timestamp = match[2].trim();
+
+      // Verify workflow name is "Automation Workflow"
+      expect(workflowName).toBe('Automation Workflow');
+      console.log(`✅ Workflow name verified: "${workflowName}"`);
+
+      // Verify timestamp format: M/D/YYYY, h:mm:ss AM/PM
+      const timestampRegex = /^\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} (AM|PM)$/;
+      expect(timestamp).toMatch(timestampRegex);
+      console.log(`✅ Timestamp format verified: "${timestamp}"`);
+
+      // If we captured the TXT execution timestamp, verify it matches (allowing for small time differences)
+      if (this.workflowData.executionTimestamps.txt) {
+        // Parse both timestamps to compare
+        const expectedParts = this.workflowData.executionTimestamps.txt.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/);
+        const actualParts = timestamp.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/);
+
+        if (expectedParts && actualParts) {
+          // Check date matches exactly
+          expect(actualParts[1]).toBe(expectedParts[1]); // month
+          expect(actualParts[2]).toBe(expectedParts[2]); // day
+          expect(actualParts[3]).toBe(expectedParts[3]); // year
+          expect(actualParts[7]).toBe(expectedParts[7]); // AM/PM
+
+          // Check time is close (within a few seconds)
+          const expectedSeconds = parseInt(expectedParts[4]) * 3600 + parseInt(expectedParts[5]) * 60 + parseInt(expectedParts[6]);
+          const actualSeconds = parseInt(actualParts[4]) * 3600 + parseInt(actualParts[5]) * 60 + parseInt(actualParts[6]);
+          const timeDiff = Math.abs(expectedSeconds - actualSeconds);
+
+          // Allow up to 5 seconds difference
+          expect(timeDiff).toBeLessThanOrEqual(5);
+          console.log(`✅ Timestamp matches TXT execution time (expected: ${this.workflowData.executionTimestamps.txt}, actual: ${timestamp}, diff: ${timeDiff}s)`);
+        }
+      }
+    }
+
+    // Verify React Flow canvas is visible
+    const reactFlowWrapper = this.page.locator('div[data-testid="rf__wrapper"].react-flow');
+    await expect(reactFlowWrapper).toBeVisible();
+    console.log('✅ React Flow wrapper is visible');
+
+    // Verify workflow nodes are visible
+    const nodesContainer = reactFlowWrapper.locator('div.react-flow__nodes');
+    await expect(nodesContainer).toBeVisible();
+    console.log('✅ Nodes container is visible');
+
+    // Verify the three workflow nodes
+    const nodes = nodesContainer.locator('div.react-flow__node.react-flow__node-stepNode');
+    const nodeCount = await nodes.count();
+    expect(nodeCount).toBe(3);
+    console.log(`✅ Found ${nodeCount} workflow nodes`);
+
+    // Verify first node: Updated Form Title (Form Submission)
+    const firstNode = nodes.nth(0);
+    await expect(firstNode).toBeVisible();
+
+    const firstNodeTitle = firstNode.locator('h3:has-text("Updated Form Title")');
+    await expect(firstNodeTitle).toBeVisible();
+    console.log('✅ First node "Updated Form Title" is visible');
+
+    const firstNodeDesc = firstNode.locator('p:has-text("Upload a file in formats such as PDF or DOCX.")');
+    await expect(firstNodeDesc).toBeVisible();
+    console.log('✅ First node description is visible');
+
+    // Verify node has green border (completed state)
+    const firstNodeContainer = firstNode.locator('div.relative.cursor-pointer');
+    const firstNodeBorderStyle = await firstNodeContainer.getAttribute('style');
+    expect(firstNodeBorderStyle).toContain('border: 2px solid rgb(16, 185, 129)'); // Green border
+    expect(firstNodeBorderStyle).toContain('background: rgb(240, 253, 244)'); // Green background
+    console.log('✅ First node has green border indicating completed state');
+
+    // Verify second node: Document Summarizer (AI Agent)
+    const secondNode = nodes.nth(1);
+    await expect(secondNode).toBeVisible();
+
+    const secondNodeTitle = secondNode.locator('h3:has-text("Document Summarizer")');
+    await expect(secondNodeTitle).toBeVisible();
+    console.log('✅ Second node "Document Summarizer" is visible');
+
+    const secondNodeDesc = secondNode.locator('p:has-text("AI agent to analyze and summarize documents using vertex-gemini-2-5-flash.")');
+    await expect(secondNodeDesc).toBeVisible();
+    console.log('✅ Second node description is visible');
+
+    // Verify second node has green border (completed state)
+    const secondNodeContainer = secondNode.locator('div.relative.cursor-pointer');
+    const secondNodeBorderStyle = await secondNodeContainer.getAttribute('style');
+    expect(secondNodeBorderStyle).toContain('border: 2px solid rgb(16, 185, 129)');
+    expect(secondNodeBorderStyle).toContain('background: rgb(240, 253, 244)');
+    console.log('✅ Second node has green border indicating completed state');
+
+    // Verify third node: Email
+    const thirdNode = nodes.nth(2);
+    await expect(thirdNode).toBeVisible();
+
+    const thirdNodeTitle = thirdNode.locator('h3:has-text("Email")');
+    await expect(thirdNodeTitle).toBeVisible();
+    console.log('✅ Third node "Email" is visible');
+
+    const thirdNodeDesc = thirdNode.locator('p:has-text("Send automated email notifications to specified recipients.")');
+    await expect(thirdNodeDesc).toBeVisible();
+    console.log('✅ Third node description is visible');
+
+    // Verify third node has green border (completed state)
+    const thirdNodeContainer = thirdNode.locator('div.relative.cursor-pointer');
+    const thirdNodeBorderStyle = await thirdNodeContainer.getAttribute('style');
+    expect(thirdNodeBorderStyle).toContain('border: 2px solid rgb(16, 185, 129)');
+    expect(thirdNodeBorderStyle).toContain('background: rgb(240, 253, 244)');
+    console.log('✅ Third node has green border indicating completed state');
+
+    // Verify edges connecting the nodes
+    const edgesContainer = reactFlowWrapper.locator('div.react-flow__edges');
+    await expect(edgesContainer).toBeAttached({ timeout: 10000 });
+
+    const edges = edgesContainer.locator('svg g.react-flow__edge');
+    const edgeCount = await edges.count();
+    expect(edgeCount).toBe(2); // Two edges connecting three nodes
+    console.log(`✅ Found ${edgeCount} edges connecting the nodes`);
+
+    console.log('✅ Verify workflow execution details screen completed successfully');
+  }
+
+  /**
+   * Verify sidebar appears and can be closed with cross button
+   * @param nodeName - Name of the node for logging purposes
+   */
+  async verifySidebarToggle(nodeName: string): Promise<void> {
+    console.log(`Verifying sidebar toggle for: ${nodeName}`);
+
+    // Locate the sidebar
+    const sidebar = this.page.locator('div.h-full.bg-white.border-l.border-slate-200.flex.flex-col.overflow-hidden');
+
+    // Verify sidebar is visible and has expanded (translate-x-0 and w-[400px])
+    await expect(sidebar).toBeVisible({ timeout: 5000 });
+
+    // Verify sidebar has correct width (expanded state)
+    const sidebarClassList = await sidebar.getAttribute('class');
+    expect(sidebarClassList).toContain('w-[400px]');
+    expect(sidebarClassList).toContain('translate-x-0');
+    console.log('✅ Sidebar appeared and is expanded');
+
+    // Verify sidebar header with "EXECUTION DETAILS"
+    const sidebarHeader = sidebar.locator('div.px-6.pt-5.pb-4.border-b.border-slate-200');
+    await expect(sidebarHeader).toBeVisible();
+
+    const executionDetailsTitle = sidebarHeader.locator('div.text-sm.font-semibold.text-gray-700.tracking-wider.uppercase:has-text("EXECUTION DETAILS")');
+    await expect(executionDetailsTitle).toBeVisible();
+    console.log('✅ "EXECUTION DETAILS" header is visible');
+
+    // Locate and click the close (X) button
+    const closeButton = sidebarHeader.locator('button.p-1.hover\\:bg-gray-100.rounded-md');
+    await expect(closeButton).toBeVisible();
+
+    const closeIcon = closeButton.locator('svg.lucide.lucide-x.w-4.h-4.text-gray-500');
+    await expect(closeIcon).toBeVisible();
+    console.log('✅ Close button (X) is visible');
+
+    // Click the close button
+    await closeButton.click();
+    console.log('✅ Clicked close button');
+
+    // Wait for sidebar animation to complete
+    await this.page.waitForTimeout(500);
+
+    // Verify sidebar is now hidden (translate-x-full)
+    const sidebarClassListAfterClose = await sidebar.getAttribute('class');
+    expect(sidebarClassListAfterClose).toContain('translate-x-full');
+    console.log('✅ Sidebar closed successfully (translate-x-full)');
+
+    console.log(`✅ Sidebar toggle verified for: ${nodeName}\n`);
+  }
+
+  /**
+   * Verify node execution details by clicking each node and checking sidebar
+   */
+  async verifyNodeExecutionDetails(): Promise<void> {
+    console.log('Starting verify node execution details');
+
+    // Locate the React Flow canvas
+    const reactFlowWrapper = this.page.locator('div[data-testid="rf__wrapper"].react-flow');
+    await expect(reactFlowWrapper).toBeVisible();
+
+    // Locate the nodes container
+    const nodesContainer = reactFlowWrapper.locator('div.react-flow__nodes');
+    await expect(nodesContainer).toBeVisible();
+
+    // Get all three workflow nodes
+    const nodes = nodesContainer.locator('div.react-flow__node.react-flow__node-stepNode');
+    const nodeCount = await nodes.count();
+    expect(nodeCount).toBe(3);
+    console.log(`✅ Found ${nodeCount} workflow nodes to verify\n`);
+
+    // ===== FIRST NODE: Updated Form Title =====
+    console.log('📋 Clicking First Node: Updated Form Title');
+    const firstNode = nodes.nth(0);
+    await firstNode.click();
+    console.log('✅ Clicked first node');
+
+    // Wait for sidebar animation
+    await this.page.waitForTimeout(500);
+
+    // Verify sidebar toggle for first node
+    await this.verifySidebarToggle('Updated Form Title');
+
+    // ===== SECOND NODE: Document Summarizer =====
+    console.log('📋 Clicking Second Node: Document Summarizer');
+    const secondNode = nodes.nth(1);
+    await secondNode.click();
+    console.log('✅ Clicked second node');
+
+    // Wait for sidebar animation
+    await this.page.waitForTimeout(500);
+
+    // Verify sidebar toggle for second node
+    await this.verifySidebarToggle('Document Summarizer');
+
+    // ===== THIRD NODE: Email =====
+    console.log('📋 Clicking Third Node: Email');
+    const thirdNode = nodes.nth(2);
+    await thirdNode.click();
+    console.log('✅ Clicked third node');
+
+    // Wait for sidebar animation
+    await this.page.waitForTimeout(500);
+
+    // Verify sidebar toggle for third node
+    await this.verifySidebarToggle('Email');
+
+    console.log('✅ Verify node execution details completed successfully - All three nodes verified');
+  }
+
+  /**
+   * Click "Workflow" breadcrumb to navigate back to workflow page from execution details
+   */
+  async clickWorkflowBreadcrumbFromExecution(): Promise<void> {
+    console.log('Starting click workflow breadcrumb from execution details');
+
+    // Locate the header container
+    const headerContainer = this.page.locator('div.flex.flex-col.items-start.justify-center.px-6.py-4.border-b.border-slate-200.dark\\:border-gray-700.bg-white.dark\\:bg-gray-900.min-h-\\[80px\\].gap-3');
+    await expect(headerContainer).toBeVisible();
+    console.log('✅ Header container is visible');
+
+    // Locate the breadcrumb parent div
+    const breadcrumbParentDiv = headerContainer.locator('div.text-slate-500.dark\\:text-gray-400.text-sm.font-normal.leading-5');
+    await expect(breadcrumbParentDiv).toBeVisible();
+
+    // Locate the "Workflow" clickable breadcrumb
+    const workflowBreadcrumb = breadcrumbParentDiv.locator('span.cursor-pointer.hover\\:text-slate-700.dark\\:hover\\:text-gray-300');
+    await expect(workflowBreadcrumb).toBeVisible();
+
+    // Verify the text is "Workflow"
+    const breadcrumbText = await workflowBreadcrumb.textContent();
+    expect(breadcrumbText?.trim()).toBe('Workflow');
+    console.log('✅ "Workflow" breadcrumb is visible and has correct text');
+
+    // Click the breadcrumb
+    await workflowBreadcrumb.click();
+    console.log('✅ Clicked "Workflow" breadcrumb');
+
+    // Wait for navigation to complete
+    await this.page.waitForTimeout(2000);
+
+    // Verify we're back on the workflow page by checking for the workflow builder heading
+    const workflowBuilderHeading = this.page.locator('h1.text-3xl.font-display.text-gray-900.dark\\:text-gray-100.mb-8:has-text("Workflow Builder")');
+    await expect(workflowBuilderHeading).toBeVisible({ timeout: 10000 });
+    console.log('✅ Navigated back to workflow page - "Workflow Builder" heading is visible');
+
+    // Verify the workflow tabs are visible (Workflow and Executions)
+    const tabContainer = this.page.locator('div.flex.gap-8.border-b.border-gray-200.dark\\:border-gray-700');
+    await expect(tabContainer).toBeVisible();
+
+    const workflowTab = tabContainer.locator('button:has-text("Workflow")');
+    await expect(workflowTab).toBeVisible();
+
+    const executionsTab = tabContainer.locator('button:has-text("Executions")');
+    await expect(executionsTab).toBeVisible();
+    console.log('✅ Workflow and Executions tabs are visible');
+
+    console.log('✅ Click workflow breadcrumb from execution details completed successfully');
+  }
+
+  /**
+   * Verify workflow template appears in the templates page with correct name and timestamp
+   */
+  async verifyWorkflowTemplateAppears(): Promise<void> {
+    console.log('Starting verify workflow template appears');
+
+    // Verify we're on the workflow page
+    const workflowBuilderHeading = this.page.locator('h1.text-3xl.font-display.text-gray-900.dark\\:text-gray-100.mb-8:has-text("Workflow Builder")');
+    await expect(workflowBuilderHeading).toBeVisible();
+    console.log('✅ On workflow page - "Workflow Builder" heading is visible');
+
+    // Verify "YOUR WORKFLOWS" section is visible
+    const yourWorkflowsHeading = this.page.locator('h2.text-gray-900.dark\\:text-gray-400.uppercase:has-text("YOUR WORKFLOWS")');
+    await expect(yourWorkflowsHeading).toBeVisible();
+    console.log('✅ "YOUR WORKFLOWS" section is visible');
+
+    // Find the grid container that holds workflow cards
+    const gridContainer = yourWorkflowsHeading.locator('xpath=../../div[contains(@class, "grid") and contains(@class, "gap-4") and contains(@class, "w-full")]');
+    await expect(gridContainer).toBeVisible();
+    console.log('✅ Grid container for workflow cards is visible');
+
+    // Look for workflow cards
+    const workflowCards = gridContainer.locator('div.bg-white.dark\\:bg-gray-800.border.border-gray-200.dark\\:border-gray-700.hover\\:shadow-md.transition-shadow.rounded-2xl.p-6.flex.flex-col.min-h-52.w-full.max-w-\\[400px\\]');
+    const cardCount = await workflowCards.count();
+    console.log(`✅ Found ${cardCount} workflow card(s)`);
+
+    // Verify at least one card exists
+    expect(cardCount).toBeGreaterThan(0);
+    console.log('✅ At least one workflow card exists');
+
+    // Find the card with title "Automation Workflow"
+    let foundCard = null;
+    let cardIndex = -1;
+
+    for (let i = 0; i < cardCount; i++) {
+      const card = workflowCards.nth(i);
+      const workflowTitle = card.locator('h3.font-semibold.text-gray-900.dark\\:text-gray-100.text-base.leading-tight');
+      const titleText = await workflowTitle.textContent();
+
+      if (titleText?.trim() === 'Automation Workflow') {
+        foundCard = card;
+        cardIndex = i;
+        console.log(`✅ Found "Automation Workflow" card at index ${i}`);
+        break;
+      }
+    }
+
+    // Verify we found the card
+    expect(foundCard).not.toBeNull();
+    console.log('✅ "Automation Workflow" template card found');
+
+    if (foundCard) {
+      // Verify the workflow title
+      const workflowTitle = foundCard.locator('h3.font-semibold.text-gray-900.dark\\:text-gray-100.text-base.leading-tight:has-text("Automation Workflow")');
+      await expect(workflowTitle).toBeVisible();
+      console.log('✅ Workflow title "Automation Workflow" is visible');
+
+      // Verify Private badge
+      const privateBadge = foundCard.locator('div.flex.items-center.gap-1.px-2.py-1.rounded-full.text-xs.font-medium.bg-gray-50.dark\\:bg-gray-700.text-gray-600.dark\\:text-gray-400.border.border-gray-200.dark\\:border-gray-600:has-text("Private")');
+      await expect(privateBadge).toBeVisible();
+      console.log('✅ Private badge is visible');
+
+      // Verify lock icon in private badge
+      const lockIcon = privateBadge.locator('svg.lucide-lock');
+      await expect(lockIcon).toBeVisible();
+      console.log('✅ Lock icon is visible in Private badge');
+
+      // Verify edited date/timestamp
+      const editedDateElement = foundCard.locator('p.text-sm.text-gray-500.dark\\:text-gray-400');
+      await expect(editedDateElement).toBeVisible();
+      const editedDateText = await editedDateElement.textContent();
+      console.log(`✅ Edited date element is visible: "${editedDateText}"`);
+
+      // If we captured the save timestamp, verify it matches
+      if (this.workflowData.saveTimestamp) {
+        // The edited date format should be like "Edited at M/D/YYYY HH:mm" (24-hour format)
+        expect(editedDateText).toContain('Edited');
+        console.log('✅ Date text contains "Edited" prefix');
+
+        // Extract the timestamp part (after "Edited at ")
+        const timestampMatch = editedDateText?.match(/Edited\s+at\s+(.+)$/);
+        if (timestampMatch) {
+          const displayedTimestamp = timestampMatch[1].trim();
+          console.log(`Displayed timestamp: ${displayedTimestamp}`);
+          console.log(`Expected timestamp: ${this.workflowData.saveTimestamp}`);
+
+          // Parse both timestamps to compare
+          // Saved timestamp format: M/D/YYYY, h:mm:ss AM/PM
+          const savedParts = this.workflowData.saveTimestamp.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/);
+          // Displayed timestamp format: M/D/YYYY HH:mm (24-hour)
+          const displayedParts = displayedTimestamp.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/);
+
+          if (savedParts && displayedParts) {
+            // Check date matches exactly
+            expect(displayedParts[1]).toBe(savedParts[1]); // month
+            expect(displayedParts[2]).toBe(savedParts[2]); // day
+            expect(displayedParts[3]).toBe(savedParts[3]); // year
+
+            // Convert saved 12-hour time to 24-hour for comparison
+            let savedHour = parseInt(savedParts[4]);
+            const savedMinute = parseInt(savedParts[5]);
+            const ampm = savedParts[7];
+
+            if (ampm === 'PM' && savedHour !== 12) {
+              savedHour += 12;
+            } else if (ampm === 'AM' && savedHour === 12) {
+              savedHour = 0;
+            }
+
+            const displayedHour = parseInt(displayedParts[4]);
+            const displayedMinute = parseInt(displayedParts[5]);
+
+            // Check time is close (within a few minutes, since UI doesn't show seconds)
+            const savedTotalMinutes = savedHour * 60 + savedMinute;
+            const displayedTotalMinutes = displayedHour * 60 + displayedMinute;
+            const timeDiff = Math.abs(displayedTotalMinutes - savedTotalMinutes);
+
+            // Allow up to 1 minute difference
+            expect(timeDiff).toBeLessThanOrEqual(1);
+            console.log(`✅ Timestamp matches save time (expected: ${this.workflowData.saveTimestamp}, actual: ${displayedTimestamp}, diff: ${timeDiff} min)`);
+          } else {
+            console.log('⚠️ Could not parse timestamps for detailed comparison');
+            // At least verify the format is correct (24-hour format)
+            expect(displayedTimestamp).toMatch(/^\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}$/);
+            console.log('✅ Timestamp format is correct');
+          }
+        }
+      } else {
+        console.log('⚠️ No save timestamp was captured, skipping timestamp comparison');
+        // At least verify the format (24-hour format without seconds)
+        expect(editedDateText).toMatch(/Edited\s+at\s+\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}$/);
+        console.log('✅ Edited date format is correct');
+      }
+
+      // Verify Run button
+      const runButton = foundCard.locator('button.bg-gray-800.hover\\:bg-gray-700.text-white.rounded-full:has-text("Run")');
+      await expect(runButton).toBeVisible();
+      console.log('✅ Run button is visible');
+
+      // Verify View button
+      const viewButton = foundCard.locator('button.bg-white.hover\\:bg-gray-50.text-gray-800.border.border-gray-300.rounded-full:has-text("View")');
+      await expect(viewButton).toBeVisible();
+      console.log('✅ View button is visible');
+    }
+
+    console.log('✅ Verify workflow template appears completed successfully');
   }
 }
