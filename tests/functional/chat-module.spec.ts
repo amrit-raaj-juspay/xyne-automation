@@ -116,5 +116,185 @@ test.describe('Chat Module Tests', () => {
     // Use the page object method to edit chat title
     await chatPage.editChatTitle();
   });
+
+  testHigh('verify file upload functionality - PDF file', {
+    dependsOn: ['verify pencil icon functionality - edit chat title'],
+    tags: ['@core', '@chat', '@upload', '@pdf'],
+    description: 'Verify PDF file upload functionality and API response'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Upload PDF file and verify API response
+    const pdfPath = 'props/Solar-System-PDF.pdf';
+    const uploadResult = await chatPage.uploadFileAndVerifyAPI(pdfPath, {
+      uploadApiEndpoint: '/api/v1/files/upload-attachment',
+      timeout: 30000,
+      expectedStatusCode: 200,
+      requiredKeys: ['fileId', 'fileName', 'fileSize']
+    });
+    
+    console.log('📋 PDF Upload Result:', uploadResult);
+    expect(uploadResult.fileName).toBe('Solar-System-PDF.pdf');
+    expect(uploadResult.uploadResponse).toBeTruthy();
+    
+    // Send message with uploaded PDF and verify chat API response
+    const chatResult = await chatPage.sendMessageWithUploadedFile(
+      'Please analyze this PDF document and provide a summary.',
+      {
+        chatApiEndpoint: '/api/v1/chat',
+        timeout: 60000,
+        expectedStatusCode: 200,
+        requiredKeys: ['chat', 'messages']
+      }
+    );
+    
+    console.log('📋 Chat with PDF Result:', chatResult);
+    expect(chatResult).toBeTruthy();
+  });
+
+  testHigh('verify file upload functionality - TXT file', {
+    dependsOn: ['verify file upload functionality - PDF file'],
+    tags: ['@core', '@chat', '@upload', '@txt'],
+    description: 'Verify TXT file upload functionality and API response'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Upload TXT file and verify API response
+    const txtPath = 'documents/test-file.txt';
+    const uploadResult = await chatPage.uploadFileAndVerifyAPI(txtPath, {
+      uploadApiEndpoint: '/api/v1/files/upload-attachment',
+      timeout: 30000,
+      expectedStatusCode: 200,
+      requiredKeys: ['fileId', 'fileName', 'fileSize']
+    });
+    
+    console.log('📋 TXT Upload Result:', uploadResult);
+    expect(uploadResult.fileName).toBe('test-file.txt');
+    expect(uploadResult.uploadResponse).toBeTruthy();
+    
+    // Send message with uploaded TXT and verify chat API response
+    const chatResult = await chatPage.sendMessageWithUploadedFile(
+      'Please read this text file and summarize its contents.',
+      {
+        chatApiEndpoint: '/api/v1/chat',
+        timeout: 60000,
+        expectedStatusCode: 200,
+        requiredKeys: ['chat', 'messages']
+      }
+    );
+    
+    console.log('📋 Chat with TXT Result:', chatResult);
+    expect(chatResult).toBeTruthy();
+  });
+
+  testHigh('verify file upload functionality - MD file', {
+    dependsOn: ['verify file upload functionality - TXT file'],
+    tags: ['@core', '@chat', '@upload', '@markdown'],
+    description: 'Verify Markdown file upload functionality and API response'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Upload MD file and verify API response
+    const mdPath = 'documents/test-file.md';
+    const uploadResult = await chatPage.uploadFileAndVerifyAPI(mdPath, {
+      uploadApiEndpoint: '/api/v1/files/upload-attachment',
+      timeout: 30000,
+      expectedStatusCode: 200,
+      requiredKeys: ['fileId', 'fileName', 'fileSize']
+    });
+    
+    console.log('📋 MD Upload Result:', uploadResult);
+    expect(uploadResult.fileName).toBe('test-file.md');
+    expect(uploadResult.uploadResponse).toBeTruthy();
+    
+    // Send message with uploaded MD and verify chat API response
+    const chatResult = await chatPage.sendMessageWithUploadedFile(
+      'Please parse this markdown file and explain its structure.',
+      {
+        chatApiEndpoint: '/api/v1/chat',
+        timeout: 60000,
+        expectedStatusCode: 200,
+        requiredKeys: ['chat', 'messages']
+      }
+    );
+    
+    console.log('📋 Chat with MD Result:', chatResult);
+    expect(chatResult).toBeTruthy();
+  });
+
+  testHigh('verify file upload functionality - DOCX file', {
+    dependsOn: ['verify file upload functionality - MD file'],
+    tags: ['@core', '@chat', '@upload', '@docx'],
+    description: 'Verify DOCX file upload functionality and API response'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Upload DOCX file and verify API response
+    const docxPath = 'documents/Data Enrichment.docx';
+    const uploadResult = await chatPage.uploadFileAndVerifyAPI(docxPath, {
+      uploadApiEndpoint: '/api/v1/files/upload-attachment',
+      timeout: 30000,
+      expectedStatusCode: 200,
+      requiredKeys: ['fileId', 'fileName', 'fileSize']
+    });
+    
+    console.log('📋 DOCX Upload Result:', uploadResult);
+    expect(uploadResult.fileName).toBe('Data Enrichment.docx');
+    expect(uploadResult.uploadResponse).toBeTruthy();
+    
+    // Send message with uploaded DOCX and verify chat API response
+    const chatResult = await chatPage.sendMessageWithUploadedFile(
+      'Please extract and analyze the content from this Word document.',
+      {
+        chatApiEndpoint: '/api/v1/chat',
+        timeout: 60000,
+        expectedStatusCode: 200,
+        requiredKeys: ['chat', 'messages']
+      }
+    );
+    
+    console.log('📋 Chat with DOCX Result:', chatResult);
+    expect(chatResult).toBeTruthy();
+  });
+
+  testHigh('verify file upload functionality - CSV file', {
+    dependsOn: ['verify file upload functionality - DOCX file'],
+    tags: ['@core', '@chat', '@upload', '@csv'],
+    description: 'Verify CSV file upload functionality and API response'
+  }, async ({ sharedPage }) => {
+    const { page } = sharedPage;
+    const chatPage = new ChatModulePage(page);
+    
+    // Upload CSV file and verify API response
+    const csvPath = 'documents/test-file.csv';
+    const uploadResult = await chatPage.uploadFileAndVerifyAPI(csvPath, {
+      uploadApiEndpoint: '/api/v1/files/upload-attachment',
+      timeout: 30000,
+      expectedStatusCode: 200,
+      requiredKeys: ['fileId', 'fileName', 'fileSize']
+    });
+    
+    console.log('📋 CSV Upload Result:', uploadResult);
+    expect(uploadResult.fileName).toBe('test-file.csv');
+    expect(uploadResult.uploadResponse).toBeTruthy();
+    
+    // Send message with uploaded CSV and verify chat API response
+    const chatResult = await chatPage.sendMessageWithUploadedFile(
+      'Please analyze this CSV data and provide insights about the employee information.',
+      {
+        chatApiEndpoint: '/api/v1/chat',
+        timeout: 60000,
+        expectedStatusCode: 200,
+        requiredKeys: ['chat', 'messages']
+      }
+    );
+    
+    console.log('📋 Chat with CSV Result:', chatResult);
+    expect(chatResult).toBeTruthy();
+  });
   
 });
