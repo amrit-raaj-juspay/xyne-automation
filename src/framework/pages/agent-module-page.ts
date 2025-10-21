@@ -20,7 +20,7 @@ export class AgentModulePage {
     console.log('Shared page title:', await this.page.title());
 
     // Wait for page to load
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // TC_XY_AG_04: Validate search bar presence
     const searchInputField = this.page.locator('input[placeholder*="Search agents"]');
@@ -154,8 +154,8 @@ export class AgentModulePage {
       console.log('CREATE button clicked successfully');
     }
 
-    // Wait to see the interaction
-    await this.page.waitForTimeout(3000);
+    // Wait to see the interaction - wait for form to appear
+    await this.page.locator('h1:has-text("CREATE AGENT"), input#agentName').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 
     console.log('Agent create button verification and click test completed');
   }
@@ -167,7 +167,7 @@ export class AgentModulePage {
     console.log('Starting create agent form elements verification test');
 
     // Wait for the create agent form to load
-    await this.page.waitForTimeout(3000);
+    await this.page.locator('h1:has-text("CREATE AGENT")').waitFor({ state: 'visible', timeout: 5000 });
 
     // Verify the back button (arrow left) is present
     const backButton = this.page.locator('svg[class*="lucide-arrow-left"]').locator('..');
@@ -330,7 +330,7 @@ export class AgentModulePage {
 
     // Scroll to the bottom to ensure the Create Agent button is visible
     await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('button:has-text("Create Agent")').waitFor({ state: 'visible', timeout: 3000 });
 
     // Verify the Create Agent button is present and enabled
     const createAgentButton = this.page.locator('button:has-text("Create Agent")');
@@ -342,8 +342,8 @@ export class AgentModulePage {
     await createAgentButton.click();
     console.log('Create Agent button clicked successfully');
 
-    // Wait for 3 seconds to see the interaction/response
-    await this.page.waitForTimeout(3000);
+    // Wait for success popup or navigation
+    await this.page.locator('[role="status"][aria-live="off"], .text-sm.font-semibold:has-text("Success")').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 
     console.log('Create agent with form data test completed');
   }
@@ -355,7 +355,7 @@ export class AgentModulePage {
     console.log('Starting success popup verification test');
 
     // Wait for the success popup to appear
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[role="status"][aria-live="off"]').waitFor({ state: 'visible', timeout: 5000 });
 
     // Verify success popup appears
     const successPopup = this.page.locator('[role="status"][aria-live="off"]');
@@ -377,8 +377,8 @@ export class AgentModulePage {
     await expect(closeButton).toBeVisible();
     console.log('Close button is visible in success popup');
 
-    // Wait for 1 more second to see the popup
-    await this.page.waitForTimeout(1000);
+    // Ensure popup remains visible
+    await expect(successPopup).toBeVisible({ timeout: 2000 });
 
     console.log('Success popup verification test completed');
   }
@@ -395,7 +395,7 @@ export class AgentModulePage {
 
     // Navigate back to agents list to verify the agent was created
     await this.page.goto('/agent');
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     console.log('Navigated back to agents list page');
 
     // Verify the newly created agent appears in ALL tab (should be active by default)
@@ -420,7 +420,7 @@ export class AgentModulePage {
     console.log('Clicked on MADE-BY-ME tab');
 
     // Wait for the tab content to load
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("MADE-BY-ME")[aria-selected="true"], button:has-text("MADE-BY-ME").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Verify the newly created agent appears in MADE-BY-ME tab
     const createdAgentInMadeByMe = this.page.getByRole('heading', { name: testAgentName, exact: true }).first();
@@ -458,7 +458,7 @@ export class AgentModulePage {
       console.log(`✅ Entered search term: "${testAgentName}"`);
 
       // Wait for search results to filter
-      await this.page.waitForTimeout(2000);
+      await this.page.locator(`[role="heading"]:has-text("${testAgentName}")`).first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
       // Verify that the searched agent is still displayed
       const searchedAgent = this.page.getByRole('heading', { name: testAgentName, exact: true }).first();
@@ -471,7 +471,7 @@ export class AgentModulePage {
       await searchInput.click();
       await searchInput.fill('');
       console.log('✅ Search cleared');
-      await this.page.waitForTimeout(1000);
+      await this.page.locator(`[role="heading"]:has-text("${testAgentName}")`).first().waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
     } else {
       console.log('⚠️ Search input not found - search functionality test skipped');
     }
@@ -499,8 +499,8 @@ export class AgentModulePage {
         await starButtonForFav.click();
         console.log('✅ Clicked star button to favorite agent');
 
-        // Wait for the favorite action to process
-        await this.page.waitForTimeout(2000);
+        // Wait for the favorite action to process - wait for attribute change
+        await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
 
         // Check if the star state changed to favorited
         const firstClickFillState = await starSvg.getAttribute('fill');
@@ -514,7 +514,7 @@ export class AgentModulePage {
           console.log('✅ Clicked star button again to unfavorite agent');
 
           // Wait for the unfavorite action to process
-          await this.page.waitForTimeout(2000);
+          await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
 
           // Check if the star state changed back to unfavorited
           const secondClickFillState = await starSvg.getAttribute('fill');
@@ -530,7 +530,7 @@ export class AgentModulePage {
           // First, favorite the agent again for persistence test
           await starButtonForFav.click();
           console.log('✅ Favorited agent again for persistence test');
-          await this.page.waitForTimeout(2000);
+          await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
 
           // Verify agent is favorited before reload
           const beforeReloadFillState = await starSvg.getAttribute('fill');
@@ -539,7 +539,7 @@ export class AgentModulePage {
           // Reload the page
           await this.page.reload();
           console.log('✅ Page reloaded');
-          await this.page.waitForTimeout(3000);
+          await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
           // Find the agent again after reload
           const agentAfterReload = this.page.getByRole('heading', { name: testAgentName, exact: true }).first();
@@ -591,7 +591,7 @@ export class AgentModulePage {
 
     // Ensure we're on the agent list page
     await this.page.goto('/agent');
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     console.log('Navigated to agents list page');
 
     // Click on ALL tab to ensure we're in the correct tab
@@ -601,7 +601,7 @@ export class AgentModulePage {
     console.log('Clicked on ALL tab');
 
     // Wait for tab content to load
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("ALL")[aria-selected="true"], button:has-text("ALL").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Find and click on the agent name/heading
     const agentNameHeading = this.page.getByRole('heading', { name: testAgentName, exact: true }).first();
@@ -610,7 +610,7 @@ export class AgentModulePage {
     console.log(`Clicked on agent name: "${testAgentName}"`);
 
     // Wait for agent details page to load
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // Verify we're on the agent details page by checking the URL
     const currentUrl = this.page.url();
@@ -698,15 +698,12 @@ export class AgentModulePage {
     await fileInput.setInputFiles(solarSystemPdfPath);
     console.log('Solar system PDF file directly added to input element');
 
-    // Wait for the file to be processed/uploaded
-    await this.page.waitForTimeout(3000);
+    // Wait for the file to be processed/uploaded - wait for file indicator
+    await this.page.locator('div:has-text("Solar-System-PDF.pdf"), span:has-text("Solar-System-PDF.pdf"), [title*="Solar-System-PDF.pdf"]').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 
     // Verify file upload indicators or success state
     // Look for file upload progress or completion indicators
     const uploadedFile = this.page.locator('div:has-text("Solar-System-PDF.pdf"), span:has-text("Solar-System-PDF.pdf"), [title*="Solar-System-PDF.pdf"]');
-
-    // Give some time for the upload to complete and UI to update
-    await this.page.waitForTimeout(2000);
 
     // Check if file upload was successful by looking for the file name or upload indicator
     const isFileVisible = await uploadedFile.isVisible().catch(() => false);
@@ -863,7 +860,7 @@ export class AgentModulePage {
     console.log('Clicked on chat input to focus');
 
     // Wait a moment for the input to be ready
-    await this.page.waitForTimeout(1000);
+    await chatInput.waitFor({ state: 'attached', timeout: 2000 });
 
     // Type the question in the chat input
     await chatInput.fill(question);
@@ -884,8 +881,8 @@ export class AgentModulePage {
     await sendButton.click();
     console.log('Clicked send button to send the question');
 
-    // Wait for the message to be processed
-    await this.page.waitForTimeout(3000);
+    // Wait for the message to be processed - wait for user message bubble
+    await this.page.locator('div.rounded-\\[16px\\].bg-\\[\\#F0F2F4\\].text-\\[\\#1C1D1F\\].self-end').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 
     // Verify the chat input is cleared after sending
     const inputTextAfterSend = await chatInput.textContent();
@@ -928,9 +925,9 @@ export class AgentModulePage {
   async verifyConversationWithAIResponseAboutPlanets(): Promise<void> {
     console.log('Starting verification of conversation with AI response about planets');
 
-    // Wait 5 seconds for the AI response to be generated
-    console.log('Waiting 10 seconds for AI response to be generated...');
-    await this.page.waitForTimeout(10000);
+    // Wait for the AI response to be generated
+    console.log('Waiting for AI response to be generated...');
+    await this.page.locator('div.markdown-content').waitFor({ state: 'visible', timeout: 15000 });
 
     // Verify we're still on the agent details page
     // const currentUrl = this.page.url();
@@ -972,8 +969,8 @@ export class AgentModulePage {
     await expect(aiResponseSection).toBeVisible();
     console.log('AI response section is visible');
 
-    await this.page.waitForTimeout(10000);
-
+    // Wait for response content to fully load
+    await this.page.locator('text=Mercury, text=Neptune').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     // Define the 8 planet names to verify
     const planetNames = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
@@ -1034,14 +1031,14 @@ export class AgentModulePage {
     // Refresh the page to ensure latest state
     await this.page.reload();
     console.log('Page refreshed for edit test');
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // Ensure we're in MADE-BY-ME tab after refresh
     const madeByMeTab = this.page.locator('button:has-text("MADE-BY-ME")');
     await expect(madeByMeTab).toBeVisible();
     await madeByMeTab.click();
     console.log('Clicked on MADE-BY-ME tab after refresh');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("MADE-BY-ME")[aria-selected="true"], button:has-text("MADE-BY-ME").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Find the created agent and click edit button
     const testAgentName = 'Test Automation Agent';
@@ -1082,7 +1079,7 @@ export class AgentModulePage {
     }
 
     // Wait for edit form to load
-    await this.page.waitForTimeout(3000);
+    await this.page.locator('input#agentName').waitFor({ state: 'visible', timeout: 5000 });
 
     // Verify we're on the edit page by checking for form elements
     const nameInput = this.page.locator('input#agentName');
@@ -1117,7 +1114,7 @@ export class AgentModulePage {
 
     // Scroll to find the Save Changes button
     await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('button:has-text("Save Changes")').waitFor({ state: 'visible', timeout: 3000 });
 
     // Find and click the Save Changes button
     const saveButton = this.page.locator('button:has-text("Save Changes")');
@@ -1127,7 +1124,7 @@ export class AgentModulePage {
     console.log('Clicked Save Changes button');
 
     // Verify the success popup appears
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[role="status"][aria-live="off"]').waitFor({ state: 'visible', timeout: 5000 });
 
     // Check for success popup with the specific structure from your HTML
     const successPopup = this.page.locator('[role="status"][aria-live="off"]');
@@ -1149,8 +1146,8 @@ export class AgentModulePage {
     await expect(closeButton).toBeVisible();
     console.log('Close button is visible in success popup');
 
-    // Wait to see the popup before test completes
-    await this.page.waitForTimeout(2000);
+    // Ensure popup remains visible
+    await expect(successPopup).toBeVisible({ timeout: 3000 });
 
     console.log('Edit agent and verify success test completed');
   }
@@ -1166,7 +1163,7 @@ export class AgentModulePage {
     const updatedAgentDescription = 'This is an updated test agent description modified by automation testing.';
 
     // Wait for page to load after redirect from edit
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // Verify we're on the agents page
     const currentUrl = this.page.url();
@@ -1180,7 +1177,7 @@ export class AgentModulePage {
     console.log('Clicked on MADE-BY-ME tab');
 
     // Wait for the tab content to load
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("MADE-BY-ME")[aria-selected="true"], button:has-text("MADE-BY-ME").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Check what agents are actually visible in MADE-BY-ME tab
     const allAgentHeadings = await this.page.getByRole('heading').all();
@@ -1247,7 +1244,7 @@ export class AgentModulePage {
     console.log('Clicked on ALL tab');
 
     // Wait for the tab content to load
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("ALL")[aria-selected="true"], button:has-text("ALL").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Try to find the agent in ALL tab (could be updated or original name)
     let updatedAgentName_All = this.page.getByRole('heading', { name: updatedAgentName, exact: true });
@@ -1299,7 +1296,7 @@ export class AgentModulePage {
     // Switch back to MADE-BY-ME tab for the delete test
     await madeByMeTab.click();
     console.log('Switched back to MADE-BY-ME tab');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("MADE-BY-ME")[aria-selected="true"], button:has-text("MADE-BY-ME").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     console.log('Edited agent details verification test completed');
   }
@@ -1344,7 +1341,7 @@ export class AgentModulePage {
     console.log('Clicked delete button');
 
     // Wait for the confirmation dialog to appear
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 3000 });
 
     // Handle the delete confirmation dialog
     const deleteDialog = this.page.locator('[role="dialog"]');
@@ -1389,7 +1386,7 @@ export class AgentModulePage {
     // Click delete button again to test X close functionality
     await deleteButton.click();
     console.log('Clicked delete button again for X close test');
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 3000 });
 
     // Wait for dialog to reappear
     await expect(deleteDialog).toBeVisible({ timeout: 5000 });
@@ -1411,7 +1408,7 @@ export class AgentModulePage {
     // Click delete button one final time for actual deletion
     await deleteButton.click();
     console.log('Clicked delete button for final deletion');
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 3000 });
 
     // Wait for dialog to appear for final deletion
     await expect(deleteDialog).toBeVisible({ timeout: 5000 });
@@ -1426,7 +1423,7 @@ export class AgentModulePage {
     // Wait for the dialog to close and deletion to complete
     await expect(deleteDialog).not.toBeVisible({ timeout: 5000 });
     console.log('Delete dialog closed, waiting for deletion to process...');
-    await this.page.waitForTimeout(3000); // Increased wait time for deletion to process
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // Check how many agents exist after deletion - specifically looking for updated agent name
     console.log(`Verifying deletion of updated agent: "${deletedAgentName}"`);
@@ -1443,7 +1440,7 @@ export class AgentModulePage {
     const allTab = this.page.locator('button:has-text("ALL")');
     await allTab.click();
     console.log('Switched to ALL tab to verify deletion');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('button:has-text("ALL")[aria-selected="true"], button:has-text("ALL").bg-white').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
     // Verify the agent is not visible in ALL tab either
     const deletedAgent_All = this.page.getByRole('heading', { name: deletedAgentName, exact: true }).first();

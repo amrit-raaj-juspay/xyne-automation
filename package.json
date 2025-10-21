@@ -30,7 +30,6 @@
     "test:history-module": "playwright test tests/functional/history-module.spec.ts --workers=1 --project=chromium --headed",
     "test:workflow-module": "playwright test tests/functional/workflow-module.spec.ts --workers=1 --project=chromium --headed",
     "test:sidebar-module": "playwright test tests/functional/sidebar-module.spec.ts --workers=1 --project=chromium --headed",
-
     "test:google-login:headless": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium",
     "test:login:safe": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium --headed",
     "test:login:safe:headless": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium",
@@ -73,9 +72,12 @@
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "cheerio": "^1.1.2",
+    "docx": "^9.5.1",
     "eslint": "^8.50.0",
+    "pptxgenjs": "^4.0.1",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.0"
+    "typescript": "^5.2.0",
+    "xlsx": "^0.18.5"
   },
   "dependencies": {
     "@slack/web-api": "^7.10.0",

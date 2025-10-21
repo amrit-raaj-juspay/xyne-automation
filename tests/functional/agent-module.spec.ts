@@ -55,7 +55,7 @@ test.describe('Agent Module Tests', () => {
     console.log('✅ Hovered over agent navigation link');
 
     // Wait for tooltip to appear
-    await page.waitForTimeout(1000);
+    await page.locator('[role="tooltip"]:has-text("Agents"), .tooltip:has-text("Agents")').first().waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
 
     // Verify tooltip with text "Agents" appears
     const tooltip = page.locator('[role="tooltip"]:has-text("Agents"), .tooltip:has-text("Agents"), [data-tooltip]:has-text("Agents")');
@@ -76,10 +76,10 @@ test.describe('Agent Module Tests', () => {
     console.log('✅ Clicked agent navigation link');
 
     // Wait for navigation and verify we're on the agent page
-    await page.waitForTimeout(2000);
+    await page.waitForURL('**/agent', { timeout: 5000 }).catch(() => {});
     const currentUrl = page.url();
     expect(currentUrl).toContain('/agent');
-    await page.waitForTimeout(20000);
+    await page.waitForLoadState('networkidle', { timeout: 25000 }).catch(() => {});
     console.log('✅ Successfully navigated to agent page:', currentUrl);
   });
 
@@ -197,10 +197,10 @@ test.describe('Agent Module Tests', () => {
     console.log('✅ Clicked agent navigation link');
 
     // Wait for navigation and verify we're on the agent page
-    await page.waitForTimeout(2000);
+    await page.waitForURL('**/agent', { timeout: 5000 }).catch(() => {});
     const currentUrl = page.url();
     expect(currentUrl).toContain('/agent');
-    await page.waitForTimeout(20000);
+    await page.waitForLoadState('networkidle', { timeout: 25000 }).catch(() => {});
     console.log('✅ Successfully navigated to agent page:', currentUrl);
   });
 

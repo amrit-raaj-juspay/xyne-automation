@@ -312,41 +312,96 @@ test.describe('Workflow Module Tests', () => {
     await workflowPage.saveAndVerifyWorkflow();
   });
 
-  testHigh('execute workflow', {
+  testHigh('execute workflow with PDF', {
     dependsOn: ['save and verify saved workflow'],
-    tags: ['@core', '@workflow', '@execute', '@file-upload'],
-    description: 'Click execute button, verify popup appears with correct workflow name, upload solar system PDF, and start execution'
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@pdf'],
+    description: 'Click execute button, verify popup appears with correct workflow name, upload PDF file, and start execution'
   }, async ({ sharedPage }) => {
-    console.log('🚀 Starting execute workflow test');
+    console.log('🚀 Starting execute workflow test with PDF');
 
     const workflowPage = new WorkflowModulePage(sharedPage.page);
     await workflowPage.executeWorkflow();
   });
 
-  testHigh('click upload another button', {
-    dependsOn: ['execute workflow'],
-    tags: ['@core', '@workflow', '@execute', '@upload-another'],
-    description: 'Click "Upload Another" button after workflow execution completes successfully'
+  testHigh('execute TXT file', {
+    dependsOn: ['execute workflow with PDF'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@txt', '@supported'],
+    description: 'Execute workflow with TXT file (supported format)'
   }, async ({ sharedPage }) => {
-    console.log('🚀 Starting click upload another button test');
+    console.log('🚀 Starting TXT file execution test');
 
     const workflowPage = new WorkflowModulePage(sharedPage.page);
-    await workflowPage.clickUploadAnotherButton();
+    await workflowPage.executeSubsequentFile('./props/data-enrichment.txt', 'data-enrichment.txt', 'txt');
   });
 
-  testHigh('upload text file and wait for completion', {
-    dependsOn: ['click upload another button'],
-    tags: ['@core', '@workflow', '@execute', '@file-upload', '@text-file'],
-    description: 'Upload text file from documents data enrichment folder, start execution, and wait 30 seconds for completion'
+  testHigh('execute DOCX file', {
+    dependsOn: ['execute TXT file'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@docx', '@supported'],
+    description: 'Execute workflow with DOCX file (supported format)'
   }, async ({ sharedPage }) => {
-    console.log('🚀 Starting upload text file and wait test');
+    console.log('🚀 Starting DOCX file execution test');
 
     const workflowPage = new WorkflowModulePage(sharedPage.page);
-    await workflowPage.uploadTextFileAndWait();
+    await workflowPage.executeSubsequentFile('./props/test-automation-guide.docx', 'test-automation-guide.docx', 'docx');
+  });
+
+  testHigh('verify CSV unsupported file error', {
+    dependsOn: ['execute DOCX file'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@csv', '@unsupported', '@error'],
+    description: 'Upload CSV file and verify unsupported file type error is displayed'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting CSV unsupported file error test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.executeUnsupportedFile('./props/employee-data.csv', 'employee-data.csv', 'csv', true); // true = click "Upload Another" first
+  });
+
+  testHigh('verify MD unsupported file error', {
+    dependsOn: ['verify CSV unsupported file error'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@md', '@unsupported', '@error'],
+    description: 'Upload Markdown file and verify unsupported file type error is displayed'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting MD unsupported file error test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.executeUnsupportedFile('./props/test-automation-guide.md', 'test-automation-guide.md', 'md');
+  });
+
+  testHigh('verify XLSX unsupported file error', {
+    dependsOn: ['verify MD unsupported file error'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@xlsx', '@unsupported', '@error'],
+    description: 'Upload XLSX file and verify unsupported file type error is displayed'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting XLSX unsupported file error test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.executeUnsupportedFile('./props/employee-data.xlsx', 'employee-data.xlsx', 'xlsx');
+  });
+
+  testHigh('verify PPTX unsupported file error', {
+    dependsOn: ['verify XLSX unsupported file error'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@pptx', '@unsupported', '@error'],
+    description: 'Upload PPTX file and verify unsupported file type error is displayed'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting PPTX unsupported file error test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.executeUnsupportedFile('./props/business-presentation.pptx', 'business-presentation.pptx', 'pptx');
+  });
+
+  testHigh('execute DOC file', {
+    dependsOn: ['verify PPTX unsupported file error'],
+    tags: ['@core', '@workflow', '@execute', '@file-upload', '@doc', '@supported'],
+    description: 'Execute workflow with DOC file (supported format) - final successful execution before viewing workflow'
+  }, async ({ sharedPage }) => {
+    console.log('🚀 Starting DOC file execution test');
+
+    const workflowPage = new WorkflowModulePage(sharedPage.page);
+    await workflowPage.executeSubsequentFile('./props/test-automation-guide.doc', 'test-automation-guide.doc', 'doc', true); // true = skip "Upload Another" (upload area already visible after error)
   });
 
   testHigh('verify completion and click view workflow', {
-    dependsOn: ['upload text file and wait for completion'],
+    dependsOn: ['execute DOC file'],
     tags: ['@core', '@workflow', '@execute', '@view-workflow'],
     description: 'Verify workflow execution completed successfully and click "View Workflow" button'
   }, async ({ sharedPage }) => {
