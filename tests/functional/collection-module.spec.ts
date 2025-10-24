@@ -1,297 +1,421 @@
-import { test, testHighest, testHigh, expect } from '@/framework/core/test-fixtures';
+/**
+ * Collection Module Test - Using Test Orchestrator with Page Object Model
+ */
+
+import { TestOrchestrator } from '@/framework/utils/test-orchestrator';
+import { step } from '@/framework/utils/step-tracker';
 import { LoginHelper } from '@/framework/pages/login-helper';
 import { CollectionModulePage } from '@/framework/pages/collection-module-page';
 
-// Configure tests to run sequentially and share browser context
-test.describe.configure({ mode: 'serial' });
-
-test.describe('Collection Module Tests', () => {
-  
-  testHighest('user login', {
-    tags: ['@critical', '@auth', '@collection'],
-    description: 'Authenticate user for collection module access'
-  }, async ({ sharedPage }) => {
-    console.log('🚀 Starting login test');
-    const { page } = sharedPage;
-    
-    // Check if already logged in to avoid unnecessary login attempts
-    const alreadyLoggedIn = await LoginHelper.isLoggedIn(page);
-    if (alreadyLoggedIn) {
-      console.log('✅ Already logged in, skipping login process');
-      return;
-    }
-    
-    // Perform login using LoginHelper
-    const loginSuccess = await LoginHelper.performLogin(page);
-    expect(loginSuccess, 'Login should be successful').toBe(true);
-    
-    console.log('✅ Login completed successfully');
-    console.log('Current URL after login:', page.url());
-  });
-
-  testHigh('navigate to collections page via sidebar icon', {
-    dependsOn: ['user login'],
-    tags: ['@navigation', '@sidebar', '@collection'],
-    description: 'Navigate to collections page using sidebar collections icon'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting navigation to collections page test');
-    
-    await collectionPage.navigateToCollectionsPage();
-    
-    console.log('Navigation to collections page completed successfully');
-  });
-
-  testHigh('verify collections page elements', {
-    dependsOn: ['navigate to collections page via sidebar icon'],
-    tags: ['@ui', '@verification', '@collection'],
-    description: 'Verify all main elements are present on collections page'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting collections page elements verification test');
-    
-    await collectionPage.verifyCollectionsPageElements();
-    
-    console.log('Collections page elements verification completed');
-  });
-
-  testHigh('verify collections sidebar navigation is highlighted', {
-    dependsOn: ['verify collections page elements'],
-    tags: ['@ui', '@sidebar', '@navigation'],
-    description: 'Verify collections icon is highlighted when on collections page'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting collections sidebar highlight verification test');
-    
-    await collectionPage.verifyCollectionsSidebarHighlight();
-    
-    console.log('Collections sidebar highlight verification completed');
-  });
-
-  testHigh('click new collection button and verify modal opens', {
-    dependsOn: ['verify collections sidebar navigation is highlighted'],
-    tags: ['@ui', '@modal', '@collection'],
-    description: 'Click NEW COLLECTION button and verify modal opens with all elements'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting new collection button click test');
-    
-    await collectionPage.clickNewCollectionButton();
-    await collectionPage.verifyCreateCollectionModal();
-    
-    console.log('New collection button click and modal verification completed');
-  });
-
-  testHigh('add collection title', {
-    dependsOn: ['click new collection button and verify modal opens'],
-    tags: ['@ui', '@input', '@collection'],
-    description: 'Add a collection title in the modal input field'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting collection title addition test');
-    
-    const collectionTitle = await collectionPage.addCollectionTitle();
-    console.log(`Collection title "${collectionTitle}" added successfully`);
-    
-    console.log('Collection title addition test completed');
-  });
-
-  testHigh('select file and upload', {
-    dependsOn: ['add collection title'],
-    tags: ['@ui', '@upload', '@file'],
-    description: 'Select a file and upload it to the collection'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting file selection and upload test');
-    
-    await collectionPage.selectFileAndUpload();
-    
-    console.log('File selection and upload test completed');
-  });
-
-  testHigh('refresh page and verify collection', {
-    dependsOn: ['select file and upload'],
-    tags: ['@ui', '@verification', '@persistence'],
-    description: 'Refresh page and verify the uploaded collection persists'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting page refresh test');
-    
-    await collectionPage.refreshPageAndVerifyCollection();
-    
-    console.log('Page refresh test completed');
-  });
-
-  testHigh('click 3-dot menu and select Edit option', {
-    dependsOn: ['refresh page and verify collection'],
-    tags: ['@ui', '@menu', '@edit'],
-    description: 'Click 3-dot menu and select Edit option to modify collection name'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting 3-dot menu Edit test');
-    
-    const updatedTitle = await collectionPage.clickThreeDotMenuAndEdit();
-    if (updatedTitle) {
-      console.log(`Collection successfully updated to: "${updatedTitle}"`);
-    }
-    
-    console.log('3-dot menu Edit test completed');
-  });
-
-  testHigh('click on uploaded file to open document viewer', {
-    dependsOn: ['click 3-dot menu and select Edit option'],
-    tags: ['@ui', '@document', '@navigation'],
-    description: 'Click on uploaded file to open document viewer'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting file click test');
-    
-    // Wait for page to be fully loaded
-    await page.waitForTimeout(2000);
-    
-    // Find and click on the uploaded file
-    const uploadedFileRow = page.locator('div.col-span-5.flex.items-center.hover\\:cursor-pointer:has(span:has-text("Data Enrichment.docx"))').first();
-    await expect(uploadedFileRow).toBeVisible({ timeout: 10000 });
-    console.log('Uploaded file row "Data Enrichment.docx" found');
-    
-    // Click on the file row to open document viewer
-    await uploadedFileRow.click();
-    console.log('Clicked on "Data Enrichment.docx" file');
-    
-    // Wait for document viewer to load
-    await page.waitForTimeout(5000);
-    console.log('Waited for document viewer to load');
-    
-    // Verify document viewer opened
-    await collectionPage.verifyDocumentViewer();
-    
-    console.log('Document viewer opened successfully - staying on this page for chat validation');
-  });
-
-  testHigh('validate chat response for required services', {
-    dependsOn: ['click on uploaded file to open document viewer'],
-    tags: ['@chat', '@validation', '@critical'],
-    description: 'Interact with chat and validate response contains required services'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting chat validation test - already on document viewer page');
-    
-    // We're already on the document viewer page from the previous test
-    // Just interact with chat and validate response (this can fail independently)
-    await collectionPage.interactWithChat();
-    
-    console.log('Chat validation test completed');
-  });
-
-  testHigh('navigate back to collections page', {
-    dependsOn: ['click on uploaded file to open document viewer'],
-    tags: ['@navigation', '@ui', '@collections'],
-    description: 'Navigate back to collections page from document viewer'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting navigation back to collections page');
-    
-    // Navigate back to collections page (this ensures we're on the right page for subsequent tests)
-    await collectionPage.navigateBackToCollections();
-    
-    console.log('Successfully navigated back to collections page');
-  });
-
-  testHigh('click + button', {
-    dependsOn: ['navigate back to collections page'],
-    tags: ['@ui', '@button', '@plus'],
-    description: 'Click the + (plus) button on the page'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting + button click test');
-    
-    await collectionPage.clickPlusButton();
-    
-    console.log('+ button click test completed');
-  });
-
-  testHigh('click X (cross) button', {
-    dependsOn: ['click + button'],
-    tags: ['@ui', '@button', '@cross'],
-    description: 'Click the X (cross) button on the page'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting X (cross) button click test');
-    
-    await collectionPage.clickCrossButton();
-    
-    console.log('X (cross) button click test completed');
-  });
-
-  testHigh('click + button again', {
-    dependsOn: ['click X (cross) button'],
-    tags: ['@ui', '@button', '@plus'],
-    description: 'Click the + (plus) button again after clicking cross button'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting + button click test (second time)');
-    
-    await collectionPage.clickPlusButton();
-    
-    console.log('+ button click test (second time) completed');
-  });
-
-  testHigh('select euler-team folder and upload', {
-    dependsOn: ['click + button again'],
-    tags: ['@ui', '@upload', '@folder'],
-    description: 'Select euler-team folder and upload it to the collection'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting euler-team folder selection and upload test');
-    
-    await collectionPage.selectScreeningFeedbackFileAndUpload();
-    
-    console.log('euler-team folder selection and upload test completed');
-  });
-
-  testHigh('click 3-dot menu and select Delete option', {
-    dependsOn: ['select euler-team folder and upload'],
-    tags: ['@ui', '@menu', '@delete'],
-    description: 'Click 3-dot menu and select Delete option to remove collection'
-  }, async ({ sharedPage }) => {
-    const { page } = sharedPage;
-    const collectionPage = new CollectionModulePage(page);
-    
-    console.log('Starting 3-dot menu Delete test');
-    
-    await collectionPage.clickThreeDotMenuAndDelete();
-    
-    console.log('3-dot menu Delete test completed');
-  });
-
+const orchestrator = new TestOrchestrator({
+  useSharedPage: true,
+  continueOnFailure: true,
+  sequential: true,
+  logLevel: 'detailed'
 });
+
+orchestrator.createSuite('Collection Module Tests', [
+  {
+    name: 'user login',
+    metadata: { priority: 'highest', tags: ['@critical', '@auth', '@collection'] },
+    testFunction: async ({ sharedPage }) => {
+      const { page } = sharedPage;
+      await step('Starting login test', async () => {
+        console.log('Starting login test');
+      });
+
+      // Check if already logged in to avoid unnecessary login attempts
+      const alreadyLoggedIn = await step('Check if already logged in', async () => {
+        return await LoginHelper.isLoggedIn(page);
+      });
+
+      if (alreadyLoggedIn) {
+        await step('Skip login - already authenticated', async () => {
+          console.log('Already logged in, skipping login process');
+        });
+        return;
+      }
+
+      // Perform login using LoginHelper
+      const loginSuccess = await step('Perform user login', async () => {
+        return await LoginHelper.performLogin(page);
+      });
+
+      if (!loginSuccess) {
+        throw new Error('Login should be successful');
+      }
+
+      await step('Log completion status', async () => {
+        console.log('Login completed successfully');
+        console.log('Current URL after login:', page.url());
+      });
+    }
+  },
+
+  {
+    name: 'navigate to collections page via sidebar icon',
+    dependencies: ['user login'],
+    metadata: { priority: 'high', tags: ['@navigation', '@sidebar', '@collection'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting navigation to collections page', async () => {
+        console.log('Starting navigation to collections page test');
+      });
+
+      await step('Navigate to collections page', async () => {
+        await collectionPage.navigateToCollectionsPage();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Navigation to collections page completed successfully');
+      });
+    }
+  },
+
+  {
+    name: 'verify collections page elements',
+    dependencies: ['navigate to collections page via sidebar icon'],
+    metadata: { priority: 'high', tags: ['@ui', '@verification', '@collection'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting collections page elements verification', async () => {
+        console.log('Starting collections page elements verification test');
+      });
+
+      await step('Verify collections page elements', async () => {
+        await collectionPage.verifyCollectionsPageElements();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Collections page elements verification completed');
+      });
+    }
+  },
+
+  {
+    name: 'verify collections sidebar navigation is highlighted',
+    dependencies: ['verify collections page elements'],
+    metadata: { priority: 'high', tags: ['@ui', '@sidebar', '@navigation'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting collections sidebar highlight verification', async () => {
+        console.log('Starting collections sidebar highlight verification test');
+      });
+
+      await step('Verify collections sidebar highlight', async () => {
+        await collectionPage.verifyCollectionsSidebarHighlight();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Collections sidebar highlight verification completed');
+      });
+    }
+  },
+
+  {
+    name: 'click new collection button and verify modal opens',
+    dependencies: ['verify collections sidebar navigation is highlighted'],
+    metadata: { priority: 'high', tags: ['@ui', '@modal', '@collection'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting new collection button click', async () => {
+        console.log('Starting new collection button click test');
+      });
+
+      await step('Click new collection button', async () => {
+        await collectionPage.clickNewCollectionButton();
+      });
+
+      await step('Verify create collection modal', async () => {
+        await collectionPage.verifyCreateCollectionModal();
+      });
+
+      await step('Log completion', async () => {
+        console.log('New collection button click and modal verification completed');
+      });
+    }
+  },
+
+  {
+    name: 'add collection title',
+    dependencies: ['click new collection button and verify modal opens'],
+    metadata: { priority: 'high', tags: ['@ui', '@input', '@collection'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting collection title addition', async () => {
+        console.log('Starting collection title addition test');
+      });
+
+      const collectionTitle = await step('Add collection title', async () => {
+        return await collectionPage.addCollectionTitle();
+      });
+
+      await step('Log completion', async () => {
+        console.log(`Collection title "${collectionTitle}" added successfully`);
+        console.log('Collection title addition test completed');
+      });
+    }
+  },
+
+  {
+    name: 'select file and upload',
+    dependencies: ['add collection title'],
+    metadata: { priority: 'high', tags: ['@ui', '@upload', '@file'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting file selection and upload', async () => {
+        console.log('Starting file selection and upload test');
+      });
+
+      await step('Select file and upload', async () => {
+        await collectionPage.selectFileAndUpload();
+      });
+
+      await step('Log completion', async () => {
+        console.log('File selection and upload test completed');
+      });
+    }
+  },
+
+  {
+    name: 'refresh page and verify collection',
+    dependencies: ['select file and upload'],
+    metadata: { priority: 'high', tags: ['@ui', '@verification', '@persistence'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting page refresh', async () => {
+        console.log('Starting page refresh test');
+      });
+
+      await step('Refresh page and verify collection', async () => {
+        await collectionPage.refreshPageAndVerifyCollection();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Page refresh test completed');
+      });
+    }
+  },
+
+  {
+    name: 'click 3-dot menu and select Edit option',
+    dependencies: ['refresh page and verify collection'],
+    metadata: { priority: 'high', tags: ['@ui', '@menu', '@edit'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting 3-dot menu Edit', async () => {
+        console.log('Starting 3-dot menu Edit test');
+      });
+
+      const updatedTitle = await step('Click 3-dot menu and edit', async () => {
+        return await collectionPage.clickThreeDotMenuAndEdit();
+      });
+
+      await step('Log completion', async () => {
+        if (updatedTitle) {
+          console.log(`Collection successfully updated to: "${updatedTitle}"`);
+        }
+        console.log('3-dot menu Edit test completed');
+      });
+    }
+  },
+
+  {
+    name: 'click on uploaded file to open document viewer',
+    dependencies: ['click 3-dot menu and select Edit option'],
+    metadata: { priority: 'high', tags: ['@ui', '@document', '@navigation'] },
+    testFunction: async ({ sharedPage }) => {
+      const { page } = sharedPage;
+      const collectionPage = new CollectionModulePage(page);
+
+      await step('Starting file click test', async () => {
+        console.log('Starting file click test');
+      });
+
+      await step('Wait for page to be fully loaded', async () => {
+        await page.waitForTimeout(2000);
+      });
+
+      await step('Find and click uploaded file', async () => {
+        const uploadedFileRow = page.locator('div.col-span-5.flex.items-center.hover\\:cursor-pointer:has(span:has-text("Data Enrichment.docx"))').first();
+        const isVisible = await uploadedFileRow.isVisible({ timeout: 10000 });
+        if (!isVisible) {
+          throw new Error('Uploaded file row "Data Enrichment.docx" not found');
+        }
+        console.log('Uploaded file row "Data Enrichment.docx" found');
+
+        await uploadedFileRow.click();
+        console.log('Clicked on "Data Enrichment.docx" file');
+      });
+
+      await step('Wait for document viewer to load', async () => {
+        await page.waitForTimeout(5000);
+        console.log('Waited for document viewer to load');
+      });
+
+      await step('Verify document viewer opened', async () => {
+        await collectionPage.verifyDocumentViewer();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Document viewer opened successfully - staying on this page for chat validation');
+      });
+    }
+  },
+
+  {
+    name: 'validate chat response for required services',
+    dependencies: ['click on uploaded file to open document viewer'],
+    metadata: { priority: 'high', tags: ['@chat', '@validation', '@critical'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting chat validation', async () => {
+        console.log('Starting chat validation test - already on document viewer page');
+      });
+
+      await step('Interact with chat and validate', async () => {
+        await collectionPage.interactWithChat();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Chat validation test completed');
+      });
+    }
+  },
+
+  {
+    name: 'navigate back to collections page',
+    dependencies: ['click on uploaded file to open document viewer'],
+    metadata: { priority: 'high', tags: ['@navigation', '@ui', '@collections'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting navigation back to collections', async () => {
+        console.log('Starting navigation back to collections page');
+      });
+
+      await step('Navigate back to collections', async () => {
+        await collectionPage.navigateBackToCollections();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Successfully navigated back to collections page');
+      });
+    }
+  },
+
+  {
+    name: 'click + button',
+    dependencies: ['navigate back to collections page'],
+    metadata: { priority: 'high', tags: ['@ui', '@button', '@plus'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting + button click', async () => {
+        console.log('Starting + button click test');
+      });
+
+      await step('Click plus button', async () => {
+        await collectionPage.clickPlusButton();
+      });
+
+      await step('Log completion', async () => {
+        console.log('+ button click test completed');
+      });
+    }
+  },
+
+  {
+    name: 'click X (cross) button',
+    dependencies: ['click + button'],
+    metadata: { priority: 'high', tags: ['@ui', '@button', '@cross'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting X (cross) button click', async () => {
+        console.log('Starting X (cross) button click test');
+      });
+
+      await step('Click cross button', async () => {
+        await collectionPage.clickCrossButton();
+      });
+
+      await step('Log completion', async () => {
+        console.log('X (cross) button click test completed');
+      });
+    }
+  },
+
+  {
+    name: 'click + button again',
+    dependencies: ['click X (cross) button'],
+    metadata: { priority: 'high', tags: ['@ui', '@button', '@plus'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting + button click (second time)', async () => {
+        console.log('Starting + button click test (second time)');
+      });
+
+      await step('Click plus button', async () => {
+        await collectionPage.clickPlusButton();
+      });
+
+      await step('Log completion', async () => {
+        console.log('+ button click test (second time) completed');
+      });
+    }
+  },
+
+  {
+    name: 'select euler-team folder and upload',
+    dependencies: ['click + button again'],
+    metadata: { priority: 'high', tags: ['@ui', '@upload', '@folder'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting euler-team folder selection and upload', async () => {
+        console.log('Starting euler-team folder selection and upload test');
+      });
+
+      await step('Select screening feedback file and upload', async () => {
+        await collectionPage.selectScreeningFeedbackFileAndUpload();
+      });
+
+      await step('Log completion', async () => {
+        console.log('euler-team folder selection and upload test completed');
+      });
+    }
+  },
+
+  {
+    name: 'click 3-dot menu and select Delete option',
+    dependencies: ['select euler-team folder and upload'],
+    runRegardless: true,
+    metadata: { priority: 'high', tags: ['@ui', '@menu', '@delete'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting 3-dot menu Delete', async () => {
+        console.log('Starting 3-dot menu Delete test');
+      });
+
+      await step('Click 3-dot menu and delete', async () => {
+        await collectionPage.clickThreeDotMenuAndDelete();
+      });
+
+      await step('Log completion', async () => {
+        console.log('3-dot menu Delete test completed');
+      });
+    }
+  }
+]);

@@ -2,7 +2,8 @@
  * Chat Module Page Object - Contains all chat-related page interactions
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { expect } from '@/framework/utils/instrumented-page';
 import { ApiValidationService } from '../utils/api-validation-service';
 import { APIMonitor } from '../utils/api-monitor';
 

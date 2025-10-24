@@ -2,7 +2,8 @@
  * Workflow Module Page Object - Contains all workflow-related page interactions
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { expect } from '@/framework/utils/instrumented-page';
 import { ApiValidationService } from '../utils/api-validation-service';
 
 export class WorkflowModulePage {
