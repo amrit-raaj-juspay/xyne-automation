@@ -20,7 +20,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html', { outputFolder: 'reports/html-report' }],
+    ['./src/framework/core/orchestrator-reporter.ts'], // MUST be first to fix test statuses before other reporters
+    ['blob', { outputDir: 'reports/blob-report' }], // Capture ALL step details including clicks, fills, expects
+    ['html', { outputFolder: 'reports/playwright-html', open: 'never' }], // Capture detailed step data
     ['json', { outputFile: 'reports/test-results.json' }],
     ['junit', { outputFile: 'reports/junit-results.xml' }],
     ['list'],

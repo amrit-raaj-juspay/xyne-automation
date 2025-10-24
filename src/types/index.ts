@@ -249,13 +249,67 @@ export interface TestMetadata {
 export interface TestExecutionResult {
   testName: string;
   fullTitle: string; // Complete test path including describe blocks
-  status: 'passed' | 'failed' | 'skipped';
+  status: 'passed' | 'failed' | 'skipped' | 'timedOut';
   reason?: string; // For skipped tests: "dependency failed: login test"
   dependents?: string[]; // Tests that depend on this one
   duration?: number;
   error?: string;
   priority?: TestPriority;
   dependencies?: string[];
+  screenshotPath?: string; // Path to screenshot for failed tests (used by orchestrator reporter)
+
+  // Additional details for comprehensive reporting (like Playwright HTML report)
+  startTime?: string; // ISO timestamp when test started
+  endTime?: string; // ISO timestamp when test ended
+  retries?: number; // Number of times test was retried
+
+  // Enhanced step structure with nested substeps support
+  steps?: Array<{
+    title: string;
+    duration: number;
+    error?: string;
+    category?: string;
+    location?: string;
+    startTime?: string;
+    errorStack?: string;
+    steps?: Array<any>; // Nested substeps (recursive structure)
+  }>;
+
+  // Attachments from Playwright (screenshots, videos, traces)
+  attachments?: Array<{
+    name: string;
+    path?: string;
+    body?: Buffer;
+    contentType: string;
+  }>;
+
+  // Error details
+  errorDetails?: {
+    message: string;
+    stack?: string;
+    location?: {
+      file: string;
+      line: number;
+      column: number;
+    };
+  };
+
+  // Additional Playwright testInfo fields
+  errors?: Array<{
+    message?: string;
+    stack?: string;
+    value?: string;
+  }>;
+  annotations?: Array<{
+    type: string;
+    description?: string;
+  }>;
+  tags?: string[];
+  retry?: number;
+  parallelIndex?: number;
+  workerIndex?: number;
+  stdout?: string[];
+  stderr?: string[];
 }
 
 export interface DependencyNode {
@@ -264,7 +318,7 @@ export interface DependencyNode {
   priority: TestPriority;
   dependencies: string[];
   dependents: string[];
-  status: 'pending' | 'running' | 'passed' | 'failed' | 'skipped';
+  status: 'pending' | 'running' | 'passed' | 'failed' | 'skipped' | 'timedOut';
   metadata?: TestMetadata;
 }
 

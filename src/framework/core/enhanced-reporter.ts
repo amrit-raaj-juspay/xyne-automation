@@ -85,7 +85,7 @@ export default class EnhancedReporter implements Reporter {
     }
     
     this.generateEnhancedReport();
-    
+
     console.log('\n📊 Enhanced Reporter: Test execution completed');
     console.log('📈 Priority and Dependency Statistics:');
     console.log(`   Highest Priority: ${this.stats.highest.total} tests (${this.stats.highest.passed} passed, ${this.stats.highest.failed} failed, ${this.stats.highest.skipped} skipped)`);
@@ -95,8 +95,53 @@ export default class EnhancedReporter implements Reporter {
     console.log(`   Total Dependency Skips: ${this.stats.totalDependencySkips}`);
     console.log(`   Tests with Dependencies: ${this.stats.dependencyChains}`);
 
+    // Generate orchestrator HTML report before sending Slack notification
+    await this.generateOrchestratorReport();
+
     // Send Slack notification
     await this.sendSlackNotification();
+  }
+
+  /**
+   * Build priority stats from orchestrator results (accurate test status)
+   */
+  private buildStatsFromOrchestratorResults(tests: any[]): PriorityExecutionStats {
+    const stats: PriorityExecutionStats = {
+      highest: { total: 0, passed: 0, failed: 0, skipped: 0 },
+      high: { total: 0, passed: 0, failed: 0, skipped: 0 },
+      medium: { total: 0, passed: 0, failed: 0, skipped: 0 },
+      low: { total: 0, passed: 0, failed: 0, skipped: 0 },
+      totalDependencySkips: 0,
+      dependencyChains: 0
+    };
+
+    for (const test of tests) {
+      const priority: TestPriority = test.priority || 'medium';
+      const priorityStats = stats[priority];
+
+      priorityStats.total++;
+
+      // Use orchestrator's accurate test status
+      switch (test.status) {
+        case 'passed':
+          priorityStats.passed++;
+          break;
+        case 'failed':
+          priorityStats.failed++;
+          break;
+        case 'skipped':
+          priorityStats.skipped++;
+          if (test.reason?.includes('dependency') || test.reason?.includes('Dependencies')) {
+            stats.totalDependencySkips++;
+          }
+          break;
+      }
+    }
+
+    // Count dependency chains
+    stats.dependencyChains = tests.filter(t => t.dependencies && t.dependencies.length > 0).length;
+
+    return stats;
   }
 
   private buildStatsFromPlaywrightResults(result: FullResult): PriorityExecutionStats {
@@ -259,6 +304,55 @@ export default class EnhancedReporter implements Reporter {
   }
 
   /**
+   * Generate orchestrator HTML report
+   */
+  private async generateOrchestratorReport(): Promise<void> {
+    const orchestratorResultsPath = path.join('reports', 'orchestrator-results.json');
+    const playwrightResultsPath = path.join('reports', 'test-results.json');
+
+    // Only generate if orchestrator results exist
+    if (!fs.existsSync(orchestratorResultsPath)) {
+      console.log('⚠️  Orchestrator results not found, skipping custom report generation');
+      return;
+    }
+
+    try {
+      console.log('📊 Generating detailed step report...');
+      const { execSync } = require('child_process');
+
+      // Check if blob report exists (contains detailed steps)
+      const blobReportPath = path.join('reports', 'blob-report');
+
+      if (fs.existsSync(blobReportPath)) {
+        // Generate Playwright-style UI report with collapsible steps
+        execSync('node scripts/generate-playwright-ui-report.js --no-open', {
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        console.log('✅ Playwright-style UI report generated');
+      } else if (fs.existsSync(playwrightResultsPath)) {
+        // Fallback to enhanced Playwright-style report
+        execSync('node scripts/generate-playwright-style-orchestrator-report.js --no-open', {
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        console.log('✅ Enhanced Playwright-style orchestrator report generated');
+      } else {
+        console.log('⚠️  No detailed test data found, falling back to basic report');
+        // Fallback to basic orchestrator report
+        execSync('node scripts/generate-orchestrator-report.js --no-open', {
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        console.log('✅ Basic orchestrator report generated');
+      }
+    } catch (error) {
+      console.error('❌ Error generating orchestrator report:', error);
+      console.log('⚠️  Continuing with Slack notification using available data');
+    }
+  }
+
+  /**
    * Send Slack notification with test execution results
    */
   private async sendSlackNotification(): Promise<void> {
@@ -266,14 +360,55 @@ export default class EnhancedReporter implements Reporter {
 
     try {
       const config = configManager.getConfig();
-      const summary = this.generateSummary();
-      
+
+      // Check if orchestrator results exist and use them instead
+      const orchestratorResultsPath = path.join('reports', 'orchestrator-results.json');
+      let summary = this.generateSummary();
+
+      // Prefer detailed step report, then Playwright-style, then basic report
+      let htmlReportPath = path.join('reports', 'detailed-step-report.html');
+      if (!fs.existsSync(htmlReportPath)) {
+        htmlReportPath = path.join('reports', 'orchestrator-playwright-report.html');
+      }
+      if (!fs.existsSync(htmlReportPath)) {
+        htmlReportPath = path.join('reports', 'orchestrator-custom-report.html');
+      }
+
+      if (fs.existsSync(orchestratorResultsPath)) {
+        console.log('📊 Using orchestrator results for Slack notification (accurate test status)');
+        const orchestratorResults = JSON.parse(fs.readFileSync(orchestratorResultsPath, 'utf-8'));
+        const tests = Object.values(orchestratorResults) as any[];
+
+        // Calculate summary from orchestrator results (accurate status)
+        summary = {
+          totalTests: tests.length,
+          totalPassed: tests.filter(t => t.status === 'passed').length,
+          totalFailed: tests.filter(t => t.status === 'failed').length,
+          totalSkipped: tests.filter(t => t.status === 'skipped').length,
+          dependencySkips: tests.filter(t => t.status === 'skipped' && t.reason?.includes('dependency')).length,
+          dependencyChains: this.stats.dependencyChains,
+          passRate: 0
+        };
+        summary.passRate = summary.totalTests > 0 ? Math.round((summary.totalPassed / summary.totalTests) * 100) : 0;
+
+        // Calculate priority stats from orchestrator results (accurate status)
+        this.stats = this.buildStatsFromOrchestratorResults(tests);
+
+        console.log('✅ Orchestrator summary:', summary);
+        console.log('✅ Orchestrator priority stats:', this.stats);
+      } else {
+        console.log('⚠️  Orchestrator results not found, using Playwright results');
+        // Fall back to Playwright's default HTML report if orchestrator report doesn't exist
+        htmlReportPath = path.join('reports', 'html-report', 'index.html');
+      }
+
       // Determine module name from test file paths or environment
       const moduleName = this.determineModuleName();
       
       // Look for the dynamic HTML report directory created by the script
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       let playwrightHtmlReportPath = path.join('reports', `html-report-${moduleName}-${timestamp}`, 'index.html');
+
       let finalHtmlReportPath: string | undefined;
       
       // First try to find the dynamic HTML report directory
@@ -293,31 +428,93 @@ export default class EnhancedReporter implements Reporter {
         }
       }
       
-      // Create a zip archive of the HTML report directory with module-specific naming
-      if (htmlReportDir && fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
+      // Priority 1: Try custom orchestrator report if it exists
+      if (fs.existsSync(htmlReportPath)) {
+        // Create a zip file for the custom orchestrator report for portability
+        try {
+          const reportFileName = path.basename(htmlReportPath, '.html');
+          const zipReportPath = path.join('reports', `${reportFileName}-${moduleName}.zip`);
+
+          console.log('📦 Creating zip archive of the custom orchestrator HTML report...');
+
+          // Create a temporary directory to organize files for zipping
+          const tempDir = path.join('reports', `temp-${reportFileName}`);
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+          }
+
+          // Copy the HTML file to temp directory
+          const tempHtmlPath = path.join(tempDir, 'index.html');
+          fs.copyFileSync(htmlReportPath, tempHtmlPath);
+
+          // Check if there's a data directory with the same name
+          const dataDir = path.join('reports', 'data');
+          const tempDataDir = path.join(tempDir, 'data');
+
+          if (fs.existsSync(dataDir)) {
+            // Copy data directory if it exists
+            fs.cpSync(dataDir, tempDataDir, { recursive: true });
+            console.log(`📂 Including data directory with images`);
+          }
+
+          // Create zip archive from temp directory
+          await createZipArchive({
+            sourceDir: tempDir,
+            outputFile: zipReportPath,
+            verbose: true
+          });
+
+          // Clean up temp directory
+          fs.rmSync(tempDir, { recursive: true, force: true });
+
+          finalHtmlReportPath = zipReportPath;
+          console.log('✅ Custom orchestrator HTML report archive created successfully');
+        } catch (zipError) {
+          console.error('❌ Error creating custom orchestrator report archive:', zipError);
+          // Fallback to the non-archived report path
+          finalHtmlReportPath = htmlReportPath;
+        }
+      }
+      // Priority 2: Try dynamic HTML report directory with module-specific naming
+      else if (htmlReportDir && fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
         try {
           const zipReportPath = path.join('reports', `${htmlReportDir}.zip`);
-          console.log('📦 Creating zip archive of the HTML report...');
+          console.log('📦 Creating zip archive of the module-specific HTML report...');
           await createZipArchive({
             sourceDir: path.dirname(playwrightHtmlReportPath),
             outputFile: zipReportPath,
             verbose: true
           });
           finalHtmlReportPath = zipReportPath;
-          console.log('✅ HTML report archive created successfully');
+          console.log('✅ Module-specific HTML report archive created successfully');
         } catch (zipError) {
           console.error('❌ Error creating HTML report archive:', zipError);
           // Fallback to the non-archived report path
           finalHtmlReportPath = playwrightHtmlReportPath;
         }
-      } else {
-        // Fallback to default path if dynamic path not found
-        const fallbackPath = path.join('reports', 'html-report', 'index.html');
-        if (fs.existsSync(path.dirname(fallbackPath))) {
-          finalHtmlReportPath = fallbackPath;
+      }
+      // Priority 3: Fallback to default Playwright HTML report
+      else {
+        const fallbackPlaywrightPath = path.join('reports', 'html-report', 'index.html');
+        if (fs.existsSync(path.dirname(fallbackPlaywrightPath))) {
+          try {
+            const zipReportPath = path.join('reports', 'html-report.zip');
+            console.log('📦 Creating zip archive of the default HTML report...');
+            await createZipArchive({
+              sourceDir: path.dirname(fallbackPlaywrightPath),
+              outputFile: zipReportPath,
+              verbose: true
+            });
+            finalHtmlReportPath = zipReportPath;
+            console.log('✅ Default HTML report archive created successfully');
+          } catch (zipError) {
+            console.error('❌ Error creating HTML report archive:', zipError);
+            // Fallback to the non-archived report path
+            finalHtmlReportPath = fallbackPlaywrightPath;
+          }
         }
       }
-      
+
       const slackData: SlackNotificationData = {
         totalTests: summary.totalTests || 0,
         totalPassed: summary.totalPassed || 0,

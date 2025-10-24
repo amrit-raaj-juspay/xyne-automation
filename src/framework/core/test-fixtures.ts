@@ -9,6 +9,7 @@ import { sharedBrowserManager, SharedScope } from './shared-browser-manager';
 import { dependencyManager } from './dependency-manager';
 import { TestMetadata, TestExecutionResult } from '@/types';
 import { APIMonitor } from '../utils/api-monitor';
+import { wrapPageWithInstrumentation } from '../utils/instrumented-page';
 import path from 'path';
 
 // Define custom fixture types
@@ -123,6 +124,7 @@ export const test = base.extend<CustomFixtures>({
         // Fall back to regular page if shared mode is disabled
         const context = await browser.newContext();
         page = await context.newPage();
+        // NOTE: Instrumentation disabled (see comment below)
         shouldCleanupPage = true;
       } else {
         // Get default scope from configuration
@@ -137,45 +139,73 @@ export const test = base.extend<CustomFixtures>({
         shouldCleanupPage = false;
       }
 
-      // Initialize API monitor (TEMPORARILY DISABLED)
-      // apiMonitor = new APIMonitor(page, testName);
-      // await apiMonitor.startMonitoring(testName);
-
       console.log(`🔗 Using shared page for test: ${testName}`);
 
-      await use({ page, apiMonitor });
+      // Wrap page with instrumentation for detailed step tracking
+      const instrumentedPage = wrapPageWithInstrumentation(page);
+
+      await use({ page: instrumentedPage, apiMonitor });
 
       // Test passed
-      const duration = Date.now() - startTime;
-      testResult = {
-        testName,
-        fullTitle: testInfo.titlePath.join(' > '),
-        status: 'passed',
-        duration,
-        priority: dependencyManager.getTestMetadata(testName)?.priority,
-        dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
-      };
+      // NOTE: For orchestrated tests, result recording is handled by the orchestrator
+      // Only record here for non-orchestrated tests
+      const isOrchestrated = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
 
-      console.log(`✅ Test passed: ${testName} (${duration}ms)`);
+      if (!isOrchestrated) {
+        const duration = Date.now() - startTime;
+        testResult = {
+          testName,
+          fullTitle: testInfo.titlePath.join(' > '),
+          status: 'passed',
+          duration,
+          priority: dependencyManager.getTestMetadata(testName)?.priority,
+          dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
+        };
+
+        console.log(`✅ Test passed: ${testName} (${duration}ms)`);
+      }
 
     } catch (error) {
       // Test failed
-      const duration = Date.now() - startTime;
-      testResult = {
-        testName,
-        fullTitle: testInfo.titlePath.join(' > '),
-        status: 'failed',
-        duration,
-        error: error instanceof Error ? error.message : String(error),
-        priority: dependencyManager.getTestMetadata(testName)?.priority,
-        dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
-      };
+      // Take screenshot on failure (use original page, not instrumented)
+      if (page) {
+        try {
+          console.log(`📸 Attempting to capture screenshot for failed test: ${testName}`);
+          const screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
+          console.log(`📸 Screenshot path: ${screenshotPath}`);
+          await page.screenshot({ path: screenshotPath, fullPage: true });
+          await testInfo.attach('screenshot', { path: screenshotPath, contentType: 'image/png' });
+          console.log(`📸 Screenshot captured and attached successfully: ${screenshotPath}`);
+        } catch (screenshotError) {
+          console.error(`❌ Failed to capture screenshot:`, screenshotError);
+        }
+      } else {
+        console.log(`⚠️  No page object available for screenshot`);
+      }
 
-      console.log(`❌ Test failed: ${testName} (${duration}ms) - ${testResult.error}`);
-      
-      // Record the failure immediately before re-throwing
-      dependencyManager.recordTestResult(testResult);
-      
+      // NOTE: For orchestrated tests, error handling is done by the orchestrator
+      // Only handle errors here for non-orchestrated tests
+      const isOrchestrated = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
+
+      if (!isOrchestrated) {
+        const duration = Date.now() - startTime;
+        testResult = {
+          testName,
+          fullTitle: testInfo.titlePath.join(' > '),
+          status: 'failed',
+          duration,
+          error: error instanceof Error ? error.message : String(error),
+          priority: dependencyManager.getTestMetadata(testName)?.priority,
+          dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
+        };
+
+        console.log(`❌ Test failed: ${testName} (${duration}ms) - ${testResult.error}`);
+
+        // Record the failure immediately
+        dependencyManager.recordTestResult(testResult);
+      }
+
+      // Always re-throw errors - orchestrator will handle them appropriately
       throw error;
 
     } finally {
@@ -190,13 +220,18 @@ export const test = base.extend<CustomFixtures>({
       }
 
       // Record test result for dependency tracking (if not already recorded in catch block)
-      if (testResult && testResult.status !== 'failed') {
+      // NOTE: For orchestrated tests, the orchestrator handles all result recording
+      const isOrchestrated = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
+      if (!isOrchestrated && testResult && testResult.status !== 'failed') {
         dependencyManager.recordTestResult(testResult);
       }
 
-      // Clean up non-shared pages
-      if (shouldCleanupPage && page) {
+      // Clean up non-shared pages (only if not in orchestrated mode)
+      const continueOnFailure = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
+      if (shouldCleanupPage && page && !continueOnFailure) {
         await page.context().close();
+      } else if (shouldCleanupPage && page && continueOnFailure) {
+        console.log(`🛡️ Skipped page cleanup due to orchestrated mode`);
       }
     }
   },
@@ -378,6 +413,7 @@ interface PublicSharedBrowserManager {
   cleanupInstance(instanceKey: string): Promise<void>;
   cleanupByScope(scope: SharedScope, fileId?: string, suiteId?: string): Promise<void>;
   cleanupAll(): Promise<void>;
+  restorePageCloseFunctionality(instanceKey?: string): void;
   getStats(): {
     totalInstances: number;
     byScope: Record<SharedScope, number>;

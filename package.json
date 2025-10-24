@@ -26,6 +26,8 @@
     "test:google-login": "playwright test tests/functional/simple-google-login.spec.ts --workers=1 --project=chromium --headed",
     "test:chat-module": "playwright test tests/functional/chat-module.spec.ts --workers=1 --project=chromium --headed",
     "test:agent-module": "playwright test tests/functional/agent-module.spec.ts --workers=1 --project=chromium --headed",
+    "report:detailed": "node scripts/generate-playwright-ui-report.js",
+    "test:agent-with-report": "npm run test:agent-module && npm run report:detailed",
     "test:collection-module": "playwright test tests/functional/collection-module.spec.ts --workers=1 --project=chromium --headed",
     "test:history-module": "playwright test tests/functional/history-module.spec.ts --workers=1 --project=chromium --headed",
     "test:workflow-module": "playwright test tests/functional/workflow-module.spec.ts --workers=1 --project=chromium --headed",
