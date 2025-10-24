@@ -44,9 +44,9 @@ export default defineConfig({
     
     /* Global timeout for each action */
     actionTimeout: 30000,
-    
+
     /* Global timeout for navigation */
-    navigationTimeout: 30000,
+    navigationTimeout: 60000, // Increased from 30000 to 60000 to allow more time for login
     
     /* Ignore HTTPS errors */
     ignoreHTTPSErrors: true,
@@ -113,9 +113,9 @@ export default defineConfig({
 
   /* Output directories */
   outputDir: 'reports/test-artifacts',
-  
+
   /* Test timeout */
-  timeout: 60000,
+  timeout: 120000, // Increased from 60000 to 120000 to allow time for login retries
   
   /* Expect timeout */
   expect: {

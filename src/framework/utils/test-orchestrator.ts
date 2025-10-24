@@ -76,6 +76,22 @@ export class TestOrchestrator {
       this.log(`🎭 Starting orchestrated test suite: "${suiteName}"`, 'detailed');
       this.log(`📋 Suite contains ${tests.length} tests with conditional execution`, 'detailed');
 
+      // Pre-register all tests in suiteResults so they appear in reports even if not executed
+      // This is critical for accurate reporting when tests don't run due to worker termination (timeouts in serial mode)
+      tests.forEach((testConfig) => {
+        this.suiteResults.set(testConfig.name, {
+          testName: testConfig.name,
+          fullTitle: testConfig.name,
+          status: 'skipped',
+          reason: 'Test did not execute (suite stopped early)',
+          duration: 0,
+          priority: testConfig.metadata?.priority,
+          dependencies: this.extractDependencyNames(testConfig.dependencies),
+          startTime: new Date().toISOString(),
+          endTime: new Date().toISOString()
+        });
+      });
+
       // Set global flag for shared page fixture to know about continueOnFailure mode
       (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__ = suiteOptions.continueOnFailure;
 
@@ -148,26 +164,33 @@ export class TestOrchestrator {
             }
 
             // Take screenshot manually BEFORE marking test as failed
+            // Only if page is still open (not closed by timeout)
             const screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
             try {
-              await sharedPage.page.screenshot({ path: screenshotPath, fullPage: true });
-              testInfo.attachments.push({
-                name: 'screenshot',
-                path: screenshotPath,
-                contentType: 'image/png'
-              });
-
-              // Update the result with screenshot path and attachments for the reporter
-              const result = this.suiteResults.get(testName);
-              if (result) {
-                result.screenshotPath = screenshotPath;
-                result.attachments = result.attachments || [];
-                result.attachments.push({
+              // Check if page is still open before taking screenshot
+              const pageOpen = sharedPage?.page && !sharedPage.page.isClosed();
+              if (pageOpen) {
+                await sharedPage.page.screenshot({ path: screenshotPath, fullPage: true });
+                testInfo.attachments.push({
                   name: 'screenshot',
                   path: screenshotPath,
                   contentType: 'image/png'
                 });
-                this.suiteResults.set(testName, result);
+
+                // Update the result with screenshot path and attachments for the reporter
+                const result = this.suiteResults.get(testName);
+                if (result) {
+                  result.screenshotPath = screenshotPath;
+                  result.attachments = result.attachments || [];
+                  result.attachments.push({
+                    name: 'screenshot',
+                    path: screenshotPath,
+                    contentType: 'image/png'
+                  });
+                  this.suiteResults.set(testName, result);
+                }
+              } else {
+                console.log(`⚠️  Page closed - screenshot not available (likely timeout)`);
               }
             } catch (screenshotError) {
               console.error('Failed to capture screenshot:', screenshotError);
