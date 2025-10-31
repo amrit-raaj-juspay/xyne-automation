@@ -575,7 +575,7 @@ export class ApiValidationService {
         }
       };
 
-      this.page.on('response', responseHandler);
+      this.page!.on('response', responseHandler);
     });
   }
 

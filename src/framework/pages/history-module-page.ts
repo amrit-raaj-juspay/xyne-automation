@@ -1,4 +1,5 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { expect } from '@/framework/utils/instrumented-page';
 
 export class HistoryModulePage {
   private page: Page;

@@ -86,10 +86,18 @@ class SharedBrowserManager {
 
     // Return existing instance if available
     const existingInstance = this.sharedInstances.get(instanceKey);
-    if (existingInstance && !existingInstance.page.isClosed()) {
-      existingInstance.lastUsed = new Date();
-      console.log(`🔄 Reusing shared ${scope} page: ${instanceKey}`);
-      return existingInstance.page;
+    if (existingInstance) {
+      // In orchestrated mode, always try to reuse even if page appears closed
+      const isOrchestratedMode = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
+
+      if (!existingInstance.page.isClosed()) {
+        existingInstance.lastUsed = new Date();
+        console.log(`🔄 Reusing shared ${scope} page: ${instanceKey}`);
+        return existingInstance.page;
+      } else if (isOrchestratedMode) {
+        console.log(`⚠️ Page was closed but attempting to preserve session in orchestrated mode`);
+        // Don't create a new instance, try to recover
+      }
     }
 
     // Create new shared instance
@@ -117,11 +125,35 @@ class SharedBrowserManager {
 
     this.sharedInstances.set(instanceKey, newInstance);
 
-    // Set up cleanup handlers
-    page.on('close', () => {
-      console.log(`🗑️ Shared page closed: ${instanceKey}`);
-      this.sharedInstances.delete(instanceKey);
-    });
+    // Set up cleanup handlers only for non-orchestrated tests
+    const isOrchestratedMode = (globalThis as any).__ORCHESTRATOR_CONTINUE_ON_FAILURE__;
+
+    if (!isOrchestratedMode) {
+      page.on('close', () => {
+        console.log(`🗑️ Shared page closed: ${instanceKey}`);
+        this.sharedInstances.delete(instanceKey);
+      });
+    } else {
+      console.log(`🔒 Page close protection enabled for orchestrated mode: ${instanceKey}`);
+
+      // Override page.close() to prevent closure during orchestrated tests
+      const originalPageClose = page.close.bind(page);
+      const originalContextClose = context.close.bind(context);
+
+      page.close = async () => {
+        console.log(`🛡️ Prevented page close in orchestrated mode: ${instanceKey}`);
+        return Promise.resolve();
+      };
+
+      context.close = async () => {
+        console.log(`🛡️ Prevented context close in orchestrated mode: ${instanceKey}`);
+        return Promise.resolve();
+      };
+
+      // Store original close methods for cleanup later
+      (page as any).__originalClose = originalPageClose;
+      (context as any).__originalClose = originalContextClose;
+    }
 
     return page;
   }
@@ -138,6 +170,39 @@ class SharedBrowserManager {
     }
   ): Promise<Page> {
     return this.getSharedPage(browser, scope, { ...options, forceNew: true });
+  }
+
+  /**
+   * Restore original page close functionality
+   */
+  restorePageCloseFunctionality(instanceKey?: string): void {
+    if (instanceKey) {
+      const instance = this.sharedInstances.get(instanceKey);
+      if (instance) {
+        if ((instance.page as any).__originalClose) {
+          instance.page.close = (instance.page as any).__originalClose;
+          delete (instance.page as any).__originalClose;
+        }
+        if ((instance.context as any).__originalClose) {
+          instance.context.close = (instance.context as any).__originalClose;
+          delete (instance.context as any).__originalClose;
+        }
+        console.log(`🔓 Restored close functionality: ${instanceKey}`);
+      }
+    } else {
+      // Restore for all instances
+      this.sharedInstances.forEach((instance, key) => {
+        if ((instance.page as any).__originalClose) {
+          instance.page.close = (instance.page as any).__originalClose;
+          delete (instance.page as any).__originalClose;
+        }
+        if ((instance.context as any).__originalClose) {
+          instance.context.close = (instance.context as any).__originalClose;
+          delete (instance.context as any).__originalClose;
+        }
+        console.log(`🔓 Restored close functionality: ${key}`);
+      });
+    }
   }
 
   /**

@@ -45,11 +45,28 @@ fi
 
 echo "Using Node.js version: $(node --version)"
 echo "Using npm version: $(npm --version)"
+
+# ============================================
+# ORCHESTRATOR-BASED PARALLEL STAGGERED EXECUTION
+# ============================================
+# Run all modules in PARALLEL with staggered start times
+# Each module runs in its own background process (worker)
+# Modules start with 40-second delays between them
+# All modules use their own TestOrchestrator with continueOnFailure
+
+echo "--------------------------------------------------"
+echo "🎭 Running All Modules in Parallel with Staggered Start"
+echo "Cron Run ID: $CRON_RUN_ID"
+echo "--------------------------------------------------"
+
 # Directory containing the test files
 TEST_DIR="tests/functional"
 
-# Find all test spec files in the directory
-TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts")
+# Find all test spec files (excluding meta orchestrator files) and sort them
+TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts" \
+  ! -name "all-modules-orchestrated.spec.ts" \
+  ! -name "all-modules-staggered.spec.ts" \
+  | sort)
 
 # Check if any test files were found
 if [ -z "$TEST_FILES" ]; then
@@ -57,24 +74,36 @@ if [ -z "$TEST_FILES" ]; then
   exit 1
 fi
 
-# Array to store the process IDs (PIDs) of the background jobs
+echo "📋 Found test modules:"
+for file in $TEST_FILES; do
+  echo "   - $file"
+done
+echo "--------------------------------------------------"
+
+# Create timestamp for unique file naming
+TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S-%3NZ")
+
+# Stagger delay in seconds (time between starting each module)
+STAGGER_DELAY=40
+
+# Array to store background process IDs
 pids=()
 
-# Loop through each test file and run it in the background
+# Counter for delay
+delay_count=0
+
+echo "🔄 Starting modules in parallel with ${STAGGER_DELAY}s stagger delay"
+echo "--------------------------------------------------"
+
+# Loop through each module and start with staggered delay
 for file in $TEST_FILES; do
-  echo "--------------------------------------------------"
-  echo "Starting test: $file (Cron Run ID: $CRON_RUN_ID)"
-  echo "--------------------------------------------------"
-  
-  # Extract module name from file path for unique naming
-  MODULE_NAME=$(basename "$file" .spec.ts)
-  export MODULE_NAME
-  
-  # Create timestamp for unique file naming
-  TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S-%3NZ")
-  
-  # Create a temporary config file with unique output paths
-  TEMP_CONFIG="playwright.config.${MODULE_NAME}.${TIMESTAMP}.js"
+  MODULE=$(basename "$file" .spec.ts)
+  export MODULE_NAME=$MODULE
+
+  echo "▶️  Scheduling module: $MODULE (starts in $((delay_count * STAGGER_DELAY))s)"
+
+  # Create module-specific config
+  TEMP_CONFIG="playwright.config.${MODULE}.${TIMESTAMP}.js"
   cat > "$TEMP_CONFIG" << EOF
 import { defineConfig } from '@playwright/test';
 import baseConfig from './playwright.config.ts';
@@ -82,52 +111,89 @@ import baseConfig from './playwright.config.ts';
 export default defineConfig({
   ...baseConfig,
   reporter: [
-    ['html', { outputFolder: 'reports/html-report-${MODULE_NAME}-${TIMESTAMP}', open: 'never' }],
-    ['json', { outputFile: 'reports/test-results-${MODULE_NAME}-${TIMESTAMP}.json' }],
-    ['junit', { outputFile: 'reports/junit-results-${MODULE_NAME}-${TIMESTAMP}.xml' }],
+    ['./src/framework/core/orchestrator-reporter.ts'], // MUST be first to fix test statuses before other reporters
+    ['blob', { outputDir: 'reports/blob-report-${MODULE}' }], // Capture ALL step details including clicks, fills, expects
+    ['json', { outputFile: 'reports/test-results-${MODULE}-${TIMESTAMP}.json' }],
+    ['junit', { outputFile: 'reports/junit-results-${MODULE}-${TIMESTAMP}.xml' }],
     ['list'],
     ['./src/framework/core/enhanced-reporter.ts']
   ],
-  outputDir: 'reports/test-artifacts-${MODULE_NAME}-${TIMESTAMP}'
+  outputDir: 'reports/test-artifacts-${MODULE}-${TIMESTAMP}'
 });
 EOF
-  
-  # Run the test in the background with the temporary config
-  npx playwright test "$file" --project=chromium --config="$TEMP_CONFIG" &
+
+  # Start module in background with stagger delay
+  # Each module runs as a separate worker (background process)
+  (
+    # Wait for stagger delay before starting this module
+    if [ $delay_count -gt 0 ]; then
+      sleep $((delay_count * STAGGER_DELAY))
+    fi
+
+    echo ""
+    echo "--------------------------------------------------"
+    echo "🚀 Starting module: $MODULE (Worker $((delay_count + 1)))"
+    echo "--------------------------------------------------"
+
+    # Run the module test
+    npx playwright test "$file" --project=chromium --config="$TEMP_CONFIG"
+    module_exit=$?
+
+    echo ""
+    echo "--------------------------------------------------"
+    if [ $module_exit -eq 0 ]; then
+      echo "✅ Module $MODULE completed successfully"
+    else
+      echo "⚠️  Module $MODULE had failures (orchestrator continued on failure)"
+    fi
+    echo "--------------------------------------------------"
+
+    # Clean up config file after completion
+    rm -f "$TEMP_CONFIG"
+
+    exit $module_exit
+  ) &
+
+  # Store the background process ID
   pids+=($!)
-  
-  # Clean up the temporary config file after a delay (in background)
-  (sleep 300 && rm -f "$TEMP_CONFIG") &
-  pids+=($!)
-  echo "Waiting for 40 seconds before starting the next test..."
-  sleep 40
+
+  delay_count=$((delay_count + 1))
 done
 
+echo ""
 echo "--------------------------------------------------"
-echo "All tests started with shared Cron Run ID: $CRON_RUN_ID"
-echo "Waiting for all tests to complete..."
-echo "PIDs: ${pids[*]}"
+echo "📊 All $delay_count modules scheduled with staggered starts"
+echo "⏱️  Total stagger time: $((delay_count * STAGGER_DELAY)) seconds"
+echo "🔧 Worker PIDs: ${pids[*]}"
+echo "⏳ Waiting for all modules to complete..."
 echo "--------------------------------------------------"
 
-# Wait for all background processes to finish and check their exit codes
+# Wait for all background processes and collect exit codes
 exit_code=0
+completed=0
+total=${#pids[@]}
+
 for pid in "${pids[@]}"; do
-  if ! wait "$pid"; then
-    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    echo "Test with PID $pid failed. Check logs for details."
-    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  if wait "$pid"; then
+    completed=$((completed + 1))
+    echo "✅ Worker $pid completed successfully ($completed/$total)"
+  else
+    completed=$((completed + 1))
+    echo "⚠️  Worker $pid had failures ($completed/$total)"
     exit_code=1
   fi
 done
 
+echo ""
 echo "--------------------------------------------------"
-echo "Batch $CRON_RUN_ID completed"
+echo "🏁 Batch $CRON_RUN_ID completed"
+echo "📊 Modules completed: $total/$total"
 if [ $exit_code -eq 0 ]; then
-  echo "✅ All tests in batch completed successfully."
+  echo "✅ All modules completed successfully."
 else
-  echo "❌ One or more tests in batch failed."
+  echo "⚠️  Some modules had failures (but all ran with orchestrator continueOnFailure)."
 fi
-echo "📊 Check database for detailed results with Cron Run ID: $CRON_RUN_ID"
+echo "📊 Check individual module reports and database for detailed results"
 echo "--------------------------------------------------"
 
 # Wait for database writes to complete before generating PDF

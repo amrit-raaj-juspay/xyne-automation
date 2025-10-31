@@ -2,7 +2,8 @@
  * Sidebar Module Page Object - Contains all sidebar-related page interactions
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { expect } from '@/framework/utils/instrumented-page';
 import { BasePage } from '@/framework/core/base-page';
 
 export class SidebarModulePage extends BasePage {

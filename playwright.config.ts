@@ -20,7 +20,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html', { outputFolder: 'reports/html-report' }],
+    ['./src/framework/core/orchestrator-reporter.ts'], // MUST be first to fix test statuses before other reporters
+    ['blob', { outputDir: 'reports/blob-report' }], // Capture ALL step details including clicks, fills, expects
     ['json', { outputFile: 'reports/test-results.json' }],
     ['junit', { outputFile: 'reports/junit-results.xml' }],
     ['list'],
@@ -42,9 +43,9 @@ export default defineConfig({
     
     /* Global timeout for each action */
     actionTimeout: 30000,
-    
+
     /* Global timeout for navigation */
-    navigationTimeout: 30000,
+    navigationTimeout: 60000, // Increased from 30000 to 60000 to allow more time for login
     
     /* Ignore HTTPS errors */
     ignoreHTTPSErrors: true,
@@ -111,9 +112,9 @@ export default defineConfig({
 
   /* Output directories */
   outputDir: 'reports/test-artifacts',
-  
+
   /* Test timeout */
-  timeout: 60000,
+  timeout: 120000, // Increased from 60000 to 120000 to allow time for login retries
   
   /* Expect timeout */
   expect: {
