@@ -271,35 +271,51 @@ export default class EnhancedReporter implements Reporter {
       // Determine module name from test file paths or environment
       const moduleName = this.determineModuleName();
       
-      // Look for the dynamic HTML report directory created by the script
+      // Find the HTML report directory - could be static or dynamic (from run-staggered-tests-server.sh)
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      let playwrightHtmlReportPath = path.join('reports', `html-report-${moduleName}-${timestamp}`, 'index.html');
+      let htmlReportDir: string | undefined;
+      let playwrightHtmlReportPath: string | undefined;
       let finalHtmlReportPath: string | undefined;
       
-      // First try to find the dynamic HTML report directory
       const reportsDir = 'reports';
-      let htmlReportDir: string | undefined;
       
+      // First, try to find dynamic HTML report directory for this module (most recent)
       if (fs.existsSync(reportsDir)) {
-        const reportDirs = fs.readdirSync(reportsDir).filter(dir => 
-          dir.startsWith(`html-report-${moduleName}-`) && 
-          fs.statSync(path.join(reportsDir, dir)).isDirectory()
-        );
+        const reportDirs = fs.readdirSync(reportsDir)
+          .filter(dir => {
+            const fullPath = path.join(reportsDir, dir);
+            return dir.startsWith(`html-report-${moduleName}-`) && 
+                   fs.statSync(fullPath).isDirectory();
+          })
+          .sort() // Sort alphabetically (timestamps sort chronologically)
+          .reverse(); // Get most recent first
         
         if (reportDirs.length > 0) {
-          // Use the most recent directory (last in alphabetical order due to timestamp)
-          htmlReportDir = reportDirs.sort().pop();
-          playwrightHtmlReportPath = path.join(reportsDir, htmlReportDir!, 'index.html');
+          htmlReportDir = path.join(reportsDir, reportDirs[0]);
+          playwrightHtmlReportPath = path.join(htmlReportDir, 'index.html');
+          console.log(`📂 Found dynamic HTML report directory: ${reportDirs[0]}`);
         }
       }
       
-      // Create a zip archive of the HTML report directory with module-specific naming
-      if (htmlReportDir && fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
+      // Fallback to static HTML report directory if dynamic not found
+      if (!htmlReportDir) {
+        const staticHtmlReportDir = path.join(reportsDir, 'html-report');
+        if (fs.existsSync(staticHtmlReportDir)) {
+          htmlReportDir = staticHtmlReportDir;
+          playwrightHtmlReportPath = path.join(htmlReportDir, 'index.html');
+          console.log('📂 Using static HTML report directory');
+        }
+      }
+      
+      // Create a zip archive of the HTML report directory
+      if (htmlReportDir && fs.existsSync(htmlReportDir)) {
         try {
-          const zipReportPath = path.join('reports', `${htmlReportDir}.zip`);
+          const zipReportPath = path.join(reportsDir, `html-report-${moduleName}-${timestamp}.zip`);
           console.log('📦 Creating zip archive of the HTML report...');
+          console.log(`   Source: ${htmlReportDir}`);
+          console.log(`   Output: ${zipReportPath}`);
           await createZipArchive({
-            sourceDir: path.dirname(playwrightHtmlReportPath),
+            sourceDir: htmlReportDir,
             outputFile: zipReportPath,
             verbose: true
           });
@@ -308,14 +324,13 @@ export default class EnhancedReporter implements Reporter {
         } catch (zipError) {
           console.error('❌ Error creating HTML report archive:', zipError);
           // Fallback to the non-archived report path
-          finalHtmlReportPath = playwrightHtmlReportPath;
+          if (playwrightHtmlReportPath && fs.existsSync(playwrightHtmlReportPath)) {
+            finalHtmlReportPath = playwrightHtmlReportPath;
+          }
         }
-      } else {
-        // Fallback to default path if dynamic path not found
-        const fallbackPath = path.join('reports', 'html-report', 'index.html');
-        if (fs.existsSync(path.dirname(fallbackPath))) {
-          finalHtmlReportPath = fallbackPath;
-        }
+      } else if (playwrightHtmlReportPath && fs.existsSync(playwrightHtmlReportPath)) {
+        // Fallback to the HTML report path if directory exists but wasn't zipped
+        finalHtmlReportPath = playwrightHtmlReportPath;
       }
       
       const slackData: SlackNotificationData = {
