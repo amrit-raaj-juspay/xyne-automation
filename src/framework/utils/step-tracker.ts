@@ -183,12 +183,56 @@ export function resetStepTracker(): StepTracker {
 }
 
 /**
- * Helper function to track a step
+ * Helper function to track a step with location capture
  * Uses Playwright's native test.step() so steps appear in testInfo
+ * Automatically appends caller location to step title
  */
 export async function step<T>(
   title: string,
   fn: () => Promise<T> | T
 ): Promise<T> {
+  // Capture caller location from stack trace (if not already in title)
+  if (!title.includes('—')) {
+    const location = getCallerLocation();
+    if (location) {
+      title = `${title}${location}`;
+    }
+  }
+
   return await test.step(title, fn);
+}
+
+/**
+ * Get caller location from stack trace
+ * Returns format: "— filename.ts:123"
+ */
+function getCallerLocation(): string | undefined {
+  const stack = new Error().stack;
+  if (!stack) return undefined;
+
+  const lines = stack.split('\n');
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Skip internal framework files
+    if (line.includes('step-tracker') ||
+        line.includes('instrumented-page') ||
+        line.includes('node_modules') ||
+        line.includes('test-fixtures')) {
+      continue;
+    }
+
+    // Extract file and line number
+    const match = line.match(/\((.+):(\d+):(\d+)\)|at\s+(.+):(\d+):(\d+)/);
+    if (match) {
+      const filePath = match[1] || match[4];
+      const lineNum = match[2] || match[5];
+
+      // Get relative path from project root
+      const fileName = filePath.split('/').pop();
+      return `— ${fileName}:${lineNum}`;
+    }
+  }
+
+  return undefined;
 }

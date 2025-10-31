@@ -16,7 +16,12 @@ import path from 'path';
 
 // Global storage for orchestrator results
 // This will be populated by the orchestrator during test execution
-const ORCHESTRATOR_RESULTS_FILE = 'reports/orchestrator-results.json';
+// Support module-specific files for parallel execution
+const getOrchestratorResultsFile = () => {
+  const moduleName = process.env.MODULE_NAME || 'default';
+  return `reports/orchestrator-results-${moduleName}.json`;
+};
+const ORCHESTRATOR_RESULTS_FILE = getOrchestratorResultsFile();
 
 interface OrchestratorResult {
   testName: string;
@@ -50,6 +55,11 @@ class OrchestratorReporter implements Reporter {
 
   onTestEnd(test: TestCase, result: TestResult) {
     const testName = test.title;
+
+    // Exclude the orchestrator summary test from reports
+    if (testName === '📊 Test Suite Summary') {
+      return;
+    }
 
     // Reload orchestrator results to get the latest status for this test
     try {

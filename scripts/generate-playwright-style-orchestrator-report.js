@@ -15,10 +15,13 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-// File paths
+// Get module name from environment variable (for parallel staggered runs)
+const moduleName = process.env.MODULE_NAME || 'default';
+
+// File paths - use module-specific paths when MODULE_NAME is set
 const PLAYWRIGHT_RESULTS = path.join(process.cwd(), 'reports/test-results.json');
-const ORCHESTRATOR_RESULTS = path.join(process.cwd(), 'reports/orchestrator-results.json');
-const OUTPUT_FILE = path.join(process.cwd(), 'reports/orchestrator-playwright-report.html');
+const ORCHESTRATOR_RESULTS = path.join(process.cwd(), `reports/orchestrator-results-${moduleName}.json`);
+const OUTPUT_FILE = path.join(process.cwd(), `reports/orchestrator-playwright-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
 
 // Check if required files exist
 if (!fs.existsSync(PLAYWRIGHT_RESULTS)) {
@@ -52,6 +55,11 @@ function extractPlaywrightTests(playwrightData) {
       // Process specs in this suite
       if (suite.specs) {
         for (const spec of suite.specs) {
+          // Skip the orchestrator summary test
+          if (spec.title === '📊 Test Suite Summary') {
+            continue;
+          }
+
           for (const test of spec.tests) {
             const result = test.results[0]; // Get first result (we don't retry in orchestrator mode)
 

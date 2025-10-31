@@ -420,7 +420,6 @@ orchestrator.createSuite('History Module Tests', [
   {
     name: 'click delete button to delete chat',
     dependencies: ['click ellipsis menu on first chat entry after rename'],
-    runRegardless: true,
     metadata: { priority: 'high', tags: ['@ui', '@delete', '@destructive'] },
     testFunction: async ({ sharedPage }) => {
       const historyPage = new HistoryModulePage(sharedPage.page);

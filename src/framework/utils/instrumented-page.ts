@@ -52,6 +52,36 @@ import { Page, Locator, expect as playwrightExpect } from '@playwright/test';
 import { step } from './step-tracker';
 
 /**
+ * Capture caller location from stack trace
+ */
+function getCallerLocation(): string | undefined {
+  const stack = new Error().stack;
+  if (!stack) return undefined;
+
+  // Split stack into lines and find the first line outside this file
+  const lines = stack.split('\n');
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i];
+    // Skip lines from instrumented-page.ts and node_modules
+    if (line.includes('instrumented-page') || line.includes('node_modules')) {
+      continue;
+    }
+
+    // Extract file and line number - patterns like:
+    // at functionName (/path/to/file.ts:123:45)
+    // at /path/to/file.ts:123:45
+    const match = line.match(/\((.+):(\d+):(\d+)\)|at\s+(.+):(\d+):(\d+)/);
+    if (match) {
+      const filePath = match[1] || match[4];
+      const lineNum = match[2] || match[5];
+      const fileName = filePath.split('/').pop();
+      return `— ${fileName}:${lineNum}`;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Instrumented expect() that captures assertions as test steps
  * This wraps Playwright's expect() to automatically log all assertions in reports
  */
@@ -95,7 +125,8 @@ export function expect(actual: any) {
       assertionMethods.forEach(method => {
         notExpect[method] = async function(...args: any[]) {
           const argStr = args.length > 0 ? `(${JSON.stringify(args[0])})` : '()';
-          const stepTitle = `expect(${targetDescription}).not.${method}${argStr}`;
+          const location = getCallerLocation();
+          const stepTitle = `expect(${targetDescription}).not.${method}${argStr}${location || ''}`;
 
           return await step(stepTitle, async () => {
             return await (expectResult.not as any)[method](...args);
@@ -112,7 +143,8 @@ export function expect(actual: any) {
       wrappedExpect[method] = async function(...args: any[]) {
         // Format the step title with method name and arguments
         const argStr = args.length > 0 ? `(${JSON.stringify(args[0]).substring(0, 30)})` : '()';
-        const stepTitle = `expect(${targetDescription}).${method}${argStr}`;
+        const location = getCallerLocation();
+        const stepTitle = `expect(${targetDescription}).${method}${argStr}${location || ''}`;
 
         return await step(stepTitle, async () => {
           return await (expectResult as any)[method](...args);

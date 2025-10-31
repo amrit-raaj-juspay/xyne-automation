@@ -432,7 +432,9 @@ export class TestOrchestrator {
         fs.mkdirSync(resultsDir, { recursive: true });
       }
 
-      const resultsFile = path.join(resultsDir, 'orchestrator-results.json');
+      // Use module-specific file name to avoid conflicts in parallel execution
+      const moduleName = process.env.MODULE_NAME || 'default';
+      const resultsFile = path.join(resultsDir, `orchestrator-results-${moduleName}.json`);
       const resultsObj = Object.fromEntries(this.suiteResults.entries());
       fs.writeFileSync(resultsFile, JSON.stringify(resultsObj, null, 2));
     } catch (error) {
@@ -581,11 +583,21 @@ export class TestOrchestrator {
         if (step.error) {
           stepData.error = step.error.message || String(step.error);
           stepData.errorStack = step.error.stack;
+
+          // Extract location from error stack if not in step.location
+          if (!step.location && step.error.stack) {
+            const location = this.extractLocationFromStack(step.error.stack);
+            if (location) {
+              stepData.location = location;
+            }
+          }
         }
 
-        // Add location if available
+        // Add location if available (Playwright includes this for some step types)
         if (step.location) {
-          stepData.location = `${step.location.file}:${step.location.line}`;
+          const file = step.location.file || '';
+          const fileName = file.split('/').pop() || file; // Get just the filename
+          stepData.location = `${fileName}:${step.location.line}`;
         }
 
         // ✨ RECURSIVELY EXTRACT NESTED SUBSTEPS
@@ -600,6 +612,29 @@ export class TestOrchestrator {
     };
 
     return extractStepsRecursive(testInfo.steps);
+  }
+
+  /**
+   * Extract file location from error stack trace
+   */
+  private extractLocationFromStack(stack: string): string | undefined {
+    // Match pattern like: at functionName (/path/to/file.ts:123:45)
+    const locationMatch = stack.match(/at\s+.*?\s+\((.+?):(\d+):(\d+)\)/);
+    if (locationMatch) {
+      const filePath = locationMatch[1];
+      const fileName = filePath.split('/').pop() || filePath;
+      return `${fileName}:${locationMatch[2]}`;
+    }
+
+    // Alternative pattern: at /path/to/file.ts:123:45
+    const altMatch = stack.match(/at\s+(.+?):(\d+):(\d+)/);
+    if (altMatch) {
+      const filePath = altMatch[1];
+      const fileName = filePath.split('/').pop() || filePath;
+      return `${fileName}:${altMatch[2]}`;
+    }
+
+    return undefined;
   }
 
   /**

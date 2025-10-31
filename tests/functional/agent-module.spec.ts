@@ -264,7 +264,6 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'delete agent and verify removal',
     dependencies: ['verify edited agent details in tabs'],
-    runRegardless: true,
     metadata: { priority: 'medium', tags: ['@core', '@agent', '@delete'] },
     testFunction: async ({ sharedPage }) => {
       await step('Delete agent and verify removal', async () => {

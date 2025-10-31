@@ -7,7 +7,6 @@ import { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/rep
 import { dependencyManager } from './dependency-manager';
 import { PriorityExecutionStats, TestPriority, TestMetadata } from '@/types';
 import { slackNotifier, SlackNotificationData, SlackNotificationResult } from '../utils/slack-notifier';
-import { createZipArchive } from '../utils/zip-utils';
 import { configManager } from './config-manager';
 import { databaseService } from '../utils/database-service';
 import { pdfReportService } from '../utils/pdf-report-service';
@@ -24,8 +23,14 @@ export default class EnhancedReporter implements Reporter {
 
   onTestEnd(test: TestCase, result: TestResult) {
     const testName = test.title;
+
+    // Exclude the orchestrator summary test from reports
+    if (testName === '📊 Test Suite Summary') {
+      return;
+    }
+
     const metadata = dependencyManager.getTestMetadata(testName);
-    
+
     // Store the actual Playwright test result
     this.testResults.set(testName, { result, metadata, testCase: test });
     
@@ -100,6 +105,65 @@ export default class EnhancedReporter implements Reporter {
 
     // Send Slack notification
     await this.sendSlackNotification();
+
+    // Print custom report location
+    this.printCustomReportInfo();
+  }
+
+  /**
+   * Print information about how to open custom reports
+   */
+  private printCustomReportInfo(): void {
+    console.log('\n');
+    console.log('╔═══════════════════════════════════════════════════════════════════════════╗');
+    console.log('║                  📊 CUSTOM ORCHESTRATOR REPORT GENERATED                  ║');
+    console.log('╚═══════════════════════════════════════════════════════════════════════════╝');
+
+    // Use module-specific paths if MODULE_NAME is set (for parallel runs)
+    const moduleName = process.env.MODULE_NAME || 'default';
+    const reports = [];
+
+    // Check for detailed step report (module-specific or default)
+    const detailedStepReport = path.join('reports', `detailed-step-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+    if (fs.existsSync(detailedStepReport)) {
+      reports.push({
+        name: 'Detailed Step Report (Recommended)',
+        file: detailedStepReport,
+        command: `open ${detailedStepReport}`
+      });
+    }
+
+    // Check for Playwright-style orchestrator report (module-specific or default)
+    const playwrightStyleReport = path.join('reports', `orchestrator-playwright-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+    if (fs.existsSync(playwrightStyleReport)) {
+      reports.push({
+        name: 'Playwright-Style Orchestrator Report',
+        file: playwrightStyleReport,
+        command: `open ${playwrightStyleReport}`
+      });
+    }
+
+    // Check for basic orchestrator report (module-specific or default)
+    const basicReport = path.join('reports', `orchestrator-custom-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+    if (fs.existsSync(basicReport)) {
+      reports.push({
+        name: 'Basic Orchestrator Report',
+        file: basicReport,
+        command: `open ${basicReport}`
+      });
+    }
+
+    if (reports.length > 0) {
+      console.log('\n');
+      console.log('📊 To open the CUSTOM ORCHESTRATOR REPORT with detailed steps, run:');
+      console.log('');
+      console.log(`   ${reports[0].command}`);
+      console.log('');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    } else {
+      console.log('\n⚠️  No custom orchestrator reports found in reports/ directory\n');
+    }
   }
 
   /**
@@ -307,7 +371,9 @@ export default class EnhancedReporter implements Reporter {
    * Generate orchestrator HTML report
    */
   private async generateOrchestratorReport(): Promise<void> {
-    const orchestratorResultsPath = path.join('reports', 'orchestrator-results.json');
+    // Use module-specific paths if MODULE_NAME is set (for parallel runs)
+    const moduleName = process.env.MODULE_NAME || 'default';
+    const orchestratorResultsPath = path.join('reports', `orchestrator-results-${moduleName}.json`);
     const playwrightResultsPath = path.join('reports', 'test-results.json');
 
     // Only generate if orchestrator results exist
@@ -321,20 +387,23 @@ export default class EnhancedReporter implements Reporter {
       const { execSync } = require('child_process');
 
       // Check if blob report exists (contains detailed steps)
-      const blobReportPath = path.join('reports', 'blob-report');
+      // Use module-specific blob path for parallel runs
+      const blobReportPath = path.join('reports', `blob-report${moduleName !== 'default' ? '-' + moduleName : ''}`);
 
       if (fs.existsSync(blobReportPath)) {
         // Generate Playwright-style UI report with collapsible steps
         execSync('node scripts/generate-playwright-ui-report.js --no-open', {
           stdio: 'inherit',
-          cwd: process.cwd()
+          cwd: process.cwd(),
+          env: { ...process.env, MODULE_NAME: moduleName }
         });
         console.log('✅ Playwright-style UI report generated');
       } else if (fs.existsSync(playwrightResultsPath)) {
         // Fallback to enhanced Playwright-style report
         execSync('node scripts/generate-playwright-style-orchestrator-report.js --no-open', {
           stdio: 'inherit',
-          cwd: process.cwd()
+          cwd: process.cwd(),
+          env: { ...process.env, MODULE_NAME: moduleName }
         });
         console.log('✅ Enhanced Playwright-style orchestrator report generated');
       } else {
@@ -342,7 +411,8 @@ export default class EnhancedReporter implements Reporter {
         // Fallback to basic orchestrator report
         execSync('node scripts/generate-orchestrator-report.js --no-open', {
           stdio: 'inherit',
-          cwd: process.cwd()
+          cwd: process.cwd(),
+          env: { ...process.env, MODULE_NAME: moduleName }
         });
         console.log('✅ Basic orchestrator report generated');
       }
@@ -362,16 +432,19 @@ export default class EnhancedReporter implements Reporter {
       const config = configManager.getConfig();
 
       // Check if orchestrator results exist and use them instead
-      const orchestratorResultsPath = path.join('reports', 'orchestrator-results.json');
+      // Use module-specific paths if MODULE_NAME is set (for parallel runs)
+      const moduleName = process.env.MODULE_NAME || 'default';
+      const orchestratorResultsPath = path.join('reports', `orchestrator-results-${moduleName}.json`);
       let summary = this.generateSummary();
 
       // Prefer detailed step report, then Playwright-style, then basic report
-      let htmlReportPath = path.join('reports', 'detailed-step-report.html');
+      // Use module-specific names for parallel runs
+      let htmlReportPath = path.join('reports', `detailed-step-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
       if (!fs.existsSync(htmlReportPath)) {
-        htmlReportPath = path.join('reports', 'orchestrator-playwright-report.html');
+        htmlReportPath = path.join('reports', `orchestrator-playwright-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
       }
       if (!fs.existsSync(htmlReportPath)) {
-        htmlReportPath = path.join('reports', 'orchestrator-custom-report.html');
+        htmlReportPath = path.join('reports', `orchestrator-custom-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
       }
 
       if (fs.existsSync(orchestratorResultsPath)) {
@@ -402,9 +475,6 @@ export default class EnhancedReporter implements Reporter {
         htmlReportPath = path.join('reports', 'html-report', 'index.html');
       }
 
-      // Determine module name from test file paths or environment
-      const moduleName = this.determineModuleName();
-      
       // Look for the dynamic HTML report directory created by the script
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       let playwrightHtmlReportPath = path.join('reports', `html-report-${moduleName}-${timestamp}`, 'index.html');
@@ -430,88 +500,20 @@ export default class EnhancedReporter implements Reporter {
       
       // Priority 1: Try custom orchestrator report if it exists
       if (fs.existsSync(htmlReportPath)) {
-        // Create a zip file for the custom orchestrator report for portability
-        try {
-          const reportFileName = path.basename(htmlReportPath, '.html');
-          const zipReportPath = path.join('reports', `${reportFileName}-${moduleName}.zip`);
-
-          console.log('📦 Creating zip archive of the custom orchestrator HTML report...');
-
-          // Create a temporary directory to organize files for zipping
-          const tempDir = path.join('reports', `temp-${reportFileName}`);
-          if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });
-          }
-
-          // Copy the HTML file to temp directory
-          const tempHtmlPath = path.join(tempDir, 'index.html');
-          fs.copyFileSync(htmlReportPath, tempHtmlPath);
-
-          // Check if there's a data directory with the same name
-          const dataDir = path.join('reports', 'data');
-          const tempDataDir = path.join(tempDir, 'data');
-
-          if (fs.existsSync(dataDir)) {
-            // Copy data directory if it exists
-            fs.cpSync(dataDir, tempDataDir, { recursive: true });
-            console.log(`📂 Including data directory with images`);
-          }
-
-          // Create zip archive from temp directory
-          await createZipArchive({
-            sourceDir: tempDir,
-            outputFile: zipReportPath,
-            verbose: true
-          });
-
-          // Clean up temp directory
-          fs.rmSync(tempDir, { recursive: true, force: true });
-
-          finalHtmlReportPath = zipReportPath;
-          console.log('✅ Custom orchestrator HTML report archive created successfully');
-        } catch (zipError) {
-          console.error('❌ Error creating custom orchestrator report archive:', zipError);
-          // Fallback to the non-archived report path
-          finalHtmlReportPath = htmlReportPath;
-        }
+        console.log('📄 Using custom orchestrator HTML report (no zipping)');
+        finalHtmlReportPath = htmlReportPath;
       }
       // Priority 2: Try dynamic HTML report directory with module-specific naming
-      else if (htmlReportDir && fs.existsSync(path.dirname(playwrightHtmlReportPath))) {
-        try {
-          const zipReportPath = path.join('reports', `${htmlReportDir}.zip`);
-          console.log('📦 Creating zip archive of the module-specific HTML report...');
-          await createZipArchive({
-            sourceDir: path.dirname(playwrightHtmlReportPath),
-            outputFile: zipReportPath,
-            verbose: true
-          });
-          finalHtmlReportPath = zipReportPath;
-          console.log('✅ Module-specific HTML report archive created successfully');
-        } catch (zipError) {
-          console.error('❌ Error creating HTML report archive:', zipError);
-          // Fallback to the non-archived report path
-          finalHtmlReportPath = playwrightHtmlReportPath;
-        }
+      else if (htmlReportDir && fs.existsSync(playwrightHtmlReportPath)) {
+        console.log('📄 Using module-specific HTML report (no zipping)');
+        finalHtmlReportPath = playwrightHtmlReportPath;
       }
       // Priority 3: Fallback to default Playwright HTML report
       else {
         const fallbackPlaywrightPath = path.join('reports', 'html-report', 'index.html');
-        if (fs.existsSync(path.dirname(fallbackPlaywrightPath))) {
-          try {
-            const zipReportPath = path.join('reports', 'html-report.zip');
-            console.log('📦 Creating zip archive of the default HTML report...');
-            await createZipArchive({
-              sourceDir: path.dirname(fallbackPlaywrightPath),
-              outputFile: zipReportPath,
-              verbose: true
-            });
-            finalHtmlReportPath = zipReportPath;
-            console.log('✅ Default HTML report archive created successfully');
-          } catch (zipError) {
-            console.error('❌ Error creating HTML report archive:', zipError);
-            // Fallback to the non-archived report path
-            finalHtmlReportPath = fallbackPlaywrightPath;
-          }
+        if (fs.existsSync(fallbackPlaywrightPath)) {
+          console.log('📄 Using default Playwright HTML report (no zipping)');
+          finalHtmlReportPath = fallbackPlaywrightPath;
         }
       }
 

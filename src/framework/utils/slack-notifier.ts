@@ -254,23 +254,29 @@ export class SlackNotifier {
    */
   private async uploadAPICallsFiles(threadTs?: string): Promise<void> {
     const apiCallsDir = path.join(process.cwd(), 'reports', 'api-calls');
-    
+
     if (!fs.existsSync(apiCallsDir)) {
       console.log('📊 No API calls directory found');
       return;
     }
 
-    // Check if there's a marker file indicating API monitoring was used in this test run
-    const apiMarkerFile = path.join(apiCallsDir, '.api-monitoring-active');
-    
+    // Check for module-specific marker file indicating API monitoring was used in this test run
+    const moduleName = process.env.MODULE_NAME || 'default';
+    const apiMarkerFile = path.join(apiCallsDir, `.api-monitoring-active-${moduleName}`);
+
     if (!fs.existsSync(apiMarkerFile)) {
       console.log('📊 No API monitoring marker found - test suite does not use API monitoring');
       return;
     }
 
     // Get all API call files (no time filtering - rely on marker file)
+    // Filter to exclude marker files and already-consolidated files
     const apiCallsFiles = fs.readdirSync(apiCallsDir)
-      .filter(file => file.endsWith('.json') && !file.startsWith('consolidated-') && file !== '.api-monitoring-active')
+      .filter(file =>
+        file.endsWith('.json') &&
+        !file.startsWith('consolidated-') &&
+        !file.startsWith('.api-monitoring-active')
+      )
       .sort();
 
     if (apiCallsFiles.length === 0) {
@@ -315,13 +321,13 @@ export class SlackNotifier {
 
     console.log(`📊 Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
 
-    // Save consolidated file with consistent naming (will overwrite previous)
-    const consolidatedFileName = `consolidated-api-calls-latest.json`;
+    // Save module-specific consolidated file
+    const consolidatedFileName = `consolidated-api-calls-${moduleName}.json`;
     const consolidatedFilePath = path.join(apiCallsDir, consolidatedFileName);
-    
+
     try {
       fs.writeFileSync(consolidatedFilePath, JSON.stringify(consolidatedAPICalls, null, 2));
-      
+
       // Upload the consolidated file as thread reply
       await this.uploadFile(
         consolidatedFilePath,
@@ -329,16 +335,16 @@ export class SlackNotifier {
         `📊 API Calls Summary: ${totalCalls} total calls (${successfulCalls} successful, ${failedCalls} failed)`,
         threadTs
       );
-      
+
       console.log(`✅ Consolidated ${apiCallsFiles.length} API calls files into single upload`);
-      
-      // Clean up marker file after successful upload
+
+      // Clean up module-specific marker file after successful upload
       try {
         fs.unlinkSync(apiMarkerFile);
       } catch (error) {
         console.warn('⚠️ Could not remove API monitoring marker file:', error);
       }
-      
+
     } catch (error) {
       console.error(`❌ Error creating consolidated file: ${error}`);
     }

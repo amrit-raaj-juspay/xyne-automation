@@ -11,8 +11,12 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const RESULTS_FILE = path.join(process.cwd(), 'reports/orchestrator-results.json');
-const OUTPUT_FILE = path.join(process.cwd(), 'reports/orchestrator-custom-report.html');
+// Get module name from environment variable (for parallel staggered runs)
+const moduleName = process.env.MODULE_NAME || 'default';
+
+// File paths - use module-specific paths when MODULE_NAME is set
+const RESULTS_FILE = path.join(process.cwd(), `reports/orchestrator-results-${moduleName}.json`);
+const OUTPUT_FILE = path.join(process.cwd(), `reports/orchestrator-custom-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
 
 // Check if results file exists
 if (!fs.existsSync(RESULTS_FILE)) {
@@ -23,7 +27,8 @@ if (!fs.existsSync(RESULTS_FILE)) {
 
 // Read results
 const results = JSON.parse(fs.readFileSync(RESULTS_FILE, 'utf-8'));
-const tests = Object.values(results);
+// Filter out the orchestrator summary test
+const tests = Object.values(results).filter(test => test.testName !== '📊 Test Suite Summary');
 
 // Calculate summary
 const summary = {

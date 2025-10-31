@@ -14,11 +14,37 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-// File paths
-const BLOB_DIR = path.join(process.cwd(), 'reports/blob-report');
-const ORCHESTRATOR_RESULTS = path.join(process.cwd(), 'reports/orchestrator-results.json');
-const OUTPUT_FILE = path.join(process.cwd(), 'reports/detailed-step-report.html');
-const MERGED_JSON = path.join(process.cwd(), 'reports/merged-blob-report.json');
+// Get module name from environment variable (for parallel staggered runs)
+const moduleName = process.env.MODULE_NAME || 'default';
+
+// File paths - use module-specific paths when MODULE_NAME is set
+const BLOB_DIR = path.join(process.cwd(), `reports/blob-report${moduleName !== 'default' ? '-' + moduleName : ''}`);
+const ORCHESTRATOR_RESULTS = path.join(process.cwd(), `reports/orchestrator-results-${moduleName}.json`);
+const OUTPUT_FILE = path.join(process.cwd(), `reports/detailed-step-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+const MERGED_JSON = path.join(process.cwd(), `reports/merged-blob-report${moduleName !== 'default' ? '-' + moduleName : ''}.json`);
+
+// Helper function to find the latest module-specific test results file
+function findLatestTestResultsFile() {
+  const reportsDir = path.join(process.cwd(), 'reports');
+  if (moduleName !== 'default') {
+    // For parallel runs, look for the latest test-results-{module}-*.json file
+    const pattern = `test-results-${moduleName}-`;
+    const files = fs.readdirSync(reportsDir)
+      .filter(f => f.startsWith(pattern) && f.endsWith('.json'))
+      .map(f => ({
+        name: f,
+        path: path.join(reportsDir, f),
+        mtime: fs.statSync(path.join(reportsDir, f)).mtime
+      }))
+      .sort((a, b) => b.mtime - a.mtime);
+
+    if (files.length > 0) {
+      return files[0].path;
+    }
+  }
+  // Fallback to default test-results.json
+  return path.join(reportsDir, 'test-results.json');
+}
 
 console.log('📖 Generating Playwright-style UI report...');
 
@@ -40,20 +66,20 @@ if (useBlobReport) {
     console.log('✓ Blob reports merged successfully');
   } catch (error) {
     console.log('   Falling back to test-results.json');
-    const fallbackPath = path.join(process.cwd(), 'reports/test-results.json');
+    const fallbackPath = findLatestTestResultsFile();
     if (fs.existsSync(fallbackPath)) {
       fs.copyFileSync(fallbackPath, MERGED_JSON);
-      console.log('✓ Using fallback test-results.json');
+      console.log(`✓ Using fallback test results: ${path.basename(fallbackPath)}`);
     } else {
       console.error('❌ No test results found');
       process.exit(1);
     }
   }
 } else {
-  const fallbackPath = path.join(process.cwd(), 'reports/test-results.json');
+  const fallbackPath = findLatestTestResultsFile();
   if (fs.existsSync(fallbackPath)) {
     fs.copyFileSync(fallbackPath, MERGED_JSON);
-    console.log('✓ Using test-results.json');
+    console.log(`✓ Using test results: ${path.basename(fallbackPath)}`);
   } else {
     console.error('❌ No test results found');
     process.exit(1);
@@ -77,6 +103,11 @@ function extractTests(data) {
     for (const suite of suites) {
       if (suite.specs) {
         for (const spec of suite.specs) {
+          // Skip the orchestrator summary test
+          if (spec.title === '📊 Test Suite Summary') {
+            continue;
+          }
+
           for (const test of spec.tests) {
             const result = test.results[0];
             tests.push({
@@ -208,6 +239,65 @@ function escapeHtml(text) {
   return withoutAnsi.replace(/[&<>"']/g, m => map[m]);
 }
 
+// Cache for source file contents
+const sourceFileCache = new Map();
+
+/**
+ * Read source file and get code snippet with context
+ * Returns array of {lineNumber, text, isCurrent} for lines around the target
+ */
+function getCodeSnippet(filePath, lineNumber) {
+  try {
+    // Try to resolve relative path from project root
+    const fullPath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath);
+
+    // Check cache first
+    if (!sourceFileCache.has(fullPath)) {
+      if (!fs.existsSync(fullPath)) {
+        // Try without leading ../
+        const altPath = filePath.replace(/^\.\.\//, '');
+        const altFullPath = path.join(process.cwd(), altPath);
+        if (fs.existsSync(altFullPath)) {
+          const content = fs.readFileSync(altFullPath, 'utf-8');
+          sourceFileCache.set(fullPath, content.split('\n'));
+        } else {
+          return null;
+        }
+      } else {
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        sourceFileCache.set(fullPath, content.split('\n'));
+      }
+    }
+
+    const lines = sourceFileCache.get(fullPath);
+    if (!lines) return null;
+
+    const lineIdx = lineNumber - 1; // Convert to 0-based index
+
+    if (lineIdx < 0 || lineIdx >= lines.length) {
+      return null;
+    }
+
+    // Get context: line before, current line, line after
+    const contextLines = [];
+    const startLine = Math.max(0, lineIdx - 1);
+    const endLine = Math.min(lines.length - 1, lineIdx + 1);
+
+    for (let i = startLine; i <= endLine; i++) {
+      contextLines.push({
+        lineNumber: i + 1,
+        text: lines[i],
+        isCurrent: i === lineIdx
+      });
+    }
+
+    return contextLines;
+  } catch (error) {
+    console.error(`Error reading file ${filePath}:`, error.message);
+    return null;
+  }
+}
+
 // Helper function to check if a step or any of its descendants has an error
 function hasFailedDescendant(step) {
   if (!step) return false;
@@ -246,16 +336,63 @@ function renderSteps(steps, parentId = '', depth = 0) {
       errorMsg = step.errors[0]?.message || '';
     }
 
-    // Format location - handle both string and object formats
+    // Format location - handle both string and object formats, plus inline location in title
     let location = '';
-    if (step.location) {
-      if (typeof step.location === 'string') {
-        location = step.location;
-      } else if (typeof step.location === 'object') {
-        const file = step.location.file || '';
-        const fileName = file.split('/').pop();
-        location = `${fileName}:${step.location.line || ''}`;
+    let displayTitle = step.title;
+    let fullFilePath = '';
+    let lineNumber = 0;
+
+    // Check if location is embedded in title (format: "step title— file.ts:123")
+    const inlineLocMatch = step.title.match(/^(.+)— (.+\.tsx?):(\d+)$/);
+    if (inlineLocMatch) {
+      displayTitle = inlineLocMatch[1].trim();
+      const fileName = inlineLocMatch[2];
+      lineNumber = parseInt(inlineLocMatch[3]);
+      location = `${fileName}:${lineNumber}`;
+
+      // Try to find full path
+      if (fileName.includes('/')) {
+        fullFilePath = fileName;
+      } else {
+        // Search common locations
+        const commonPaths = [
+          `src/framework/core/${fileName}`,
+          `src/framework/pages/${fileName}`,
+          `src/framework/utils/${fileName}`,
+          `tests/functional/${fileName}`
+        ];
+        for (const p of commonPaths) {
+          if (fs.existsSync(path.join(process.cwd(), p))) {
+            fullFilePath = p;
+            break;
+          }
+        }
       }
+    }
+    // Otherwise check for explicit location property
+    else if (step.location) {
+      if (typeof step.location === 'string') {
+        const match = step.location.match(/(.+):(\d+)/);
+        if (match) {
+          fullFilePath = match[1];
+          lineNumber = parseInt(match[2]);
+          const fileName = fullFilePath.split('/').pop();
+          location = `${fileName}:${lineNumber}`;
+        } else {
+          location = step.location;
+        }
+      } else if (typeof step.location === 'object') {
+        fullFilePath = step.location.file || '';
+        lineNumber = step.location.line || 0;
+        const fileName = fullFilePath.split('/').pop();
+        location = `${fileName}:${lineNumber}`;
+      }
+    }
+
+    // Get code snippet if we have location info
+    let codeSnippet = null;
+    if (fullFilePath && lineNumber > 0) {
+      codeSnippet = getCodeSnippet(fullFilePath, lineNumber);
     }
 
     const isExpanded = hasError || hasFailedDescendant(step);
@@ -267,10 +404,21 @@ function renderSteps(steps, parentId = '', depth = 0) {
           <span class="step-icon ${hasError ? 'fail' : 'pass'}">
             ${hasError ? '✕' : '✓'}
           </span>
-          <span class="step-title">${escapeHtml(step.title)}</span>
+          <span class="step-title">${escapeHtml(displayTitle)}</span>
           ${location ? `<span class="step-location">${escapeHtml(location)}</span>` : ''}
           <span class="step-duration">${formatDuration(step.duration || 0)}</span>
         </div>
+
+        ${codeSnippet ? `
+          <div class="code-snippet" onclick="event.stopPropagation();">
+            ${codeSnippet.map(line => `
+              <div class="code-line ${line.isCurrent ? 'current-line' : ''}">
+                <span class="line-number">${line.lineNumber}</span>
+                <span class="line-text">${escapeHtml(line.text)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
 
         ${hasError ? `
           <div class="step-error-detail">
@@ -642,6 +790,55 @@ const html = `<!DOCTYPE html>
       font-size: 11px;
       color: var(--color-text-muted);
       font-family: 'Monaco', 'Menlo', monospace;
+    }
+
+    /* Code Snippet Styles */
+    .code-snippet {
+      margin: 8px 0 8px 40px;
+      background: #f8f9fa;
+      border-left: 3px solid #dee2e6;
+      border-radius: 3px;
+      padding: 8px 0;
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 2px 12px;
+      white-space: pre;
+    }
+
+    .code-line.current-line {
+      background: #fff3cd;
+      border-left: 3px solid #ffc107;
+      margin-left: -3px;
+    }
+
+    .code-line .line-number {
+      color: #6c757d;
+      min-width: 40px;
+      text-align: right;
+      margin-right: 16px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .code-line.current-line .line-number {
+      color: #856404;
+      font-weight: 600;
+    }
+
+    .code-line .line-text {
+      color: #212529;
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .code-line.current-line .line-text {
+      color: #856404;
     }
 
     .step-duration {

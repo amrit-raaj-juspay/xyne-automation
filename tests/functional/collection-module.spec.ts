@@ -400,7 +400,6 @@ orchestrator.createSuite('Collection Module Tests', [
   {
     name: 'click 3-dot menu and select Delete option',
     dependencies: ['select euler-team folder and upload'],
-    runRegardless: true,
     metadata: { priority: 'high', tags: ['@ui', '@menu', '@delete'] },
     testFunction: async ({ sharedPage }) => {
       const collectionPage = new CollectionModulePage(sharedPage.page);

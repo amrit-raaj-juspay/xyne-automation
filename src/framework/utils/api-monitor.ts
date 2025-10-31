@@ -45,24 +45,26 @@ export class APIMonitor {
     this.testName = testName;
     this.apiCalls = {};
     this.isMonitoring = true;
-    
-    // Create marker file to indicate API monitoring is active
+
+    // Create module-specific marker file to indicate API monitoring is active
     const apiCallsDir = path.join(process.cwd(), 'reports', 'api-calls');
-    const markerFile = path.join(apiCallsDir, '.api-monitoring-active');
-    
+    const moduleName = process.env.MODULE_NAME || 'default';
+    const markerFile = path.join(apiCallsDir, `.api-monitoring-active-${moduleName}`);
+
     try {
       // Ensure directory exists
       if (!fs.existsSync(apiCallsDir)) {
         fs.mkdirSync(apiCallsDir, { recursive: true });
       }
-      
-      // Create marker file
+
+      // Create module-specific marker file
       fs.writeFileSync(markerFile, JSON.stringify({
+        moduleName: moduleName,
         testSuite: testName,
         startTime: new Date().toISOString(),
         pid: process.pid
       }), 'utf-8');
-      
+
     } catch (error) {
       console.warn('⚠️ Could not create API monitoring marker file:', error);
     }
