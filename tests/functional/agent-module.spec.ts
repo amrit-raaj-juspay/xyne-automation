@@ -47,7 +47,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'navigate to agent page',
     dependencies: ['user login'],
-    metadata: { priority: 'high', tags: ['@core', '@navigation', '@agent'] },
+    metadata: { priority: 'medium', tags: ['@core', '@navigation', '@agent'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting high priority agent navigation');
 
@@ -162,7 +162,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'upload solar system PDF via clip icon',
     dependencies: ['click agent name in ALL tab and verify details'],
-    metadata: { priority: 'high', tags: ['@core', '@agent', '@upload'] },
+    metadata: { priority: 'medium', tags: ['@core', '@agent', '@upload'] },
     testFunction: async ({ sharedPage }) => {
       await step('Upload solar system PDF', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -174,7 +174,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'verify uploaded file in attachments section',
     dependencies: ['upload solar system PDF via clip icon'],
-    metadata: { priority: 'high', tags: ['@core', '@agent', '@attachment'] },
+    metadata: { priority: 'medium', tags: ['@core', '@agent', '@attachment'] },
     testFunction: async ({ sharedPage }) => {
       await step('Verify uploaded file', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -186,7 +186,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'ask question about solar system planets and send',
     dependencies: ['verify uploaded file in attachments section'],
-    metadata: { priority: 'high', tags: ['@core', '@agent', '@chat'] },
+    metadata: { priority: 'medium', tags: ['@core', '@agent', '@chat'] },
     testFunction: async ({ sharedPage }) => {
       await step('Ask question about solar system', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -198,7 +198,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'verify conversation with AI response about planets',
     dependencies: ['ask question about solar system planets and send'],
-    metadata: { priority: 'high', tags: ['@core', '@agent', '@response'] },
+    metadata: { priority: 'medium', tags: ['@core', '@agent', '@response'] },
     testFunction: async ({ sharedPage }) => {
       await step('Verify AI response about planets', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -240,7 +240,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'edit created agent and verify success',
     dependencies: ['verify conversation with AI response about planets'],
-    metadata: { priority: 'medium', tags: ['@core', '@agent', '@edit'] },
+    metadata: { priority: 'high', tags: ['@core', '@agent', '@edit'] },
     testFunction: async ({ sharedPage }) => {
       await step('Edit created agent', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -252,7 +252,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'verify edited agent details in tabs',
     dependencies: ['edit created agent and verify success'],
-    metadata: { priority: 'medium', tags: ['@core', '@agent', '@verification'] },
+    metadata: { priority: 'high', tags: ['@core', '@agent', '@verification'] },
     testFunction: async ({ sharedPage }) => {
       await step('Verify edited agent details', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);
@@ -264,7 +264,7 @@ orchestrator.createSuite('Agent Module Tests', [
   {
     name: 'delete agent and verify removal',
     dependencies: ['verify edited agent details in tabs'],
-    metadata: { priority: 'medium', tags: ['@core', '@agent', '@delete'] },
+    metadata: { priority: 'high', tags: ['@core', '@agent', '@delete'] },
     testFunction: async ({ sharedPage }) => {
       await step('Delete agent and verify removal', async () => {
         const agentPage = new AgentModulePage(sharedPage.page);

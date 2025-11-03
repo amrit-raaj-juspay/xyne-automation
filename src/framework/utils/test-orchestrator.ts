@@ -164,13 +164,22 @@ export class TestOrchestrator {
             }
 
             // Take screenshot manually BEFORE marking test as failed
-            // Only if page is still open (not closed by timeout)
+            // Handle timeout failures by adding a timeout to screenshot capture
             const screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
             try {
               // Check if page is still open before taking screenshot
               const pageOpen = sharedPage?.page && !sharedPage.page.isClosed();
               if (pageOpen) {
-                await sharedPage.page.screenshot({ path: screenshotPath, fullPage: true });
+                // Add timeout to screenshot capture (5 seconds) to handle unresponsive pages
+                await Promise.race([
+                  sharedPage.page.screenshot({ path: screenshotPath, fullPage: true }),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Screenshot timeout')), 5000))
+                ]).catch((screenshotError) => {
+                  console.warn(`⚠️  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
+                  // Try a simple screenshot without fullPage option
+                  return sharedPage.page.screenshot({ path: screenshotPath, timeout: 3000 });
+                });
+
                 testInfo.attachments.push({
                   name: 'screenshot',
                   path: screenshotPath,
@@ -189,8 +198,9 @@ export class TestOrchestrator {
                   });
                   this.suiteResults.set(testName, result);
                 }
+                console.log(`📸 Screenshot captured: ${screenshotPath}`);
               } else {
-                console.log(`⚠️  Page closed - screenshot not available (likely timeout)`);
+                console.log(`⚠️  Page closed - screenshot not available`);
               }
             } catch (screenshotError) {
               console.error('Failed to capture screenshot:', screenshotError);
@@ -233,32 +243,47 @@ export class TestOrchestrator {
             }
 
             // Take screenshot manually
+            // Handle timeout failures by adding a timeout to screenshot capture
             const screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
             try {
-              await page.screenshot({ path: screenshotPath, fullPage: true });
-              testInfo.attachments.push({
-                name: 'screenshot',
-                path: screenshotPath,
-                contentType: 'image/png'
-              });
+              // Check if page is still open before taking screenshot
+              const pageOpen = page && !page.isClosed();
+              if (pageOpen) {
+                // Add timeout to screenshot capture (5 seconds) to handle unresponsive pages
+                await Promise.race([
+                  page.screenshot({ path: screenshotPath, fullPage: true }),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Screenshot timeout')), 5000))
+                ]).catch((screenshotError) => {
+                  console.warn(`⚠️  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
+                  // Try a simple screenshot without fullPage option
+                  return page.screenshot({ path: screenshotPath, timeout: 3000 });
+                });
 
-              // Update the result with screenshot path and attachments for the reporter
-              const result = this.suiteResults.get(testName);
-              if (result) {
-                result.screenshotPath = screenshotPath;
-                result.attachments = result.attachments || [];
-                result.attachments.push({
+                testInfo.attachments.push({
                   name: 'screenshot',
                   path: screenshotPath,
                   contentType: 'image/png'
                 });
-                this.suiteResults.set(testName, result);
+
+                // Update the result with screenshot path and attachments for the reporter
+                const result = this.suiteResults.get(testName);
+                if (result) {
+                  result.screenshotPath = screenshotPath;
+                  result.attachments = result.attachments || [];
+                  result.attachments.push({
+                    name: 'screenshot',
+                    path: screenshotPath,
+                    contentType: 'image/png'
+                  });
+                  this.suiteResults.set(testName, result);
+                }
+                console.log(`📸 Screenshot captured: ${screenshotPath}`);
+              } else {
+                console.log(`⚠️  Page closed - screenshot not available`);
               }
             } catch (screenshotError) {
               console.error('Failed to capture screenshot:', screenshotError);
             }
-
-            console.log(`📸 Screenshot saved: ${screenshotPath}`);
 
             // DON'T throw or use testInfo.fail() - both will close the browser
             // The custom reporter will fix the status in the HTML report
