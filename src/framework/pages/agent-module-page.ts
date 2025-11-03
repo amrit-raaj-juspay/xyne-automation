@@ -3,7 +3,7 @@
  */
 
 import { Page } from '@playwright/test';
-import { expect } from '@/framework/utils/instrumented-page';
+import { expect  } from '@/framework/utils/instrumented-page';
 
 export class AgentModulePage {
 
@@ -409,8 +409,14 @@ export class AgentModulePage {
     await expect(createdAgentName).toBeVisible({ timeout: 10000 });
     console.log(`Found created agent "${testAgentName}" in ALL tab`);
 
+    // Find the agent row container in ALL tab
+    const agentRowInAllTab = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: testAgentName, exact: true }) })
+      .first();
+
     // Verify the agent description is present
-    const createdAgentDescription = createdAgentName.locator('..').locator('..').locator(`p:has-text("${testAgentDescription}")`);
+    const createdAgentDescription = agentRowInAllTab.locator(`p:has-text("${testAgentDescription}")`);
     await expect(createdAgentDescription).toBeVisible();
     console.log(`Found agent description "${testAgentDescription}" in ALL tab`);
 
@@ -428,16 +434,21 @@ export class AgentModulePage {
     await expect(createdAgentInMadeByMe).toBeVisible({ timeout: 10000 });
     console.log(`Found created agent "${testAgentName}" in MADE-BY-ME tab`);
 
+    // Find the agent row container
+    const agentContainer = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: testAgentName, exact: true }) })
+      .first();
+
     // Verify the agent description is present in MADE-BY-ME tab
-    const createdAgentDescInMadeByMe = createdAgentInMadeByMe.locator('..').locator('..').locator(`p:has-text("${testAgentDescription}")`);
+    const createdAgentDescInMadeByMe = agentContainer.locator(`p:has-text("${testAgentDescription}")`);
     await expect(createdAgentDescInMadeByMe).toBeVisible();
     console.log(`Found agent description "${testAgentDescription}" in MADE-BY-ME tab`);
 
     // Verify action buttons are present for the created agent
-    const agentContainer = createdAgentInMadeByMe.locator('..').locator('..').locator('..');
-    const editButton = agentContainer.locator('button svg[class*="lucide-pen-line"]').locator('..');
-    const deleteButton = agentContainer.locator('button svg[class*="lucide-trash2"]').locator('..');
-    const starButton = agentContainer.locator('button svg[class*="lucide-star"]').locator('..');
+    const editButton = agentContainer.locator('button[title="Edit Agent"]');
+    const deleteButton = agentContainer.locator('button[title="Delete Agent"]');
+    const starButton = agentContainer.locator('button:has(svg.lucide-star)');
 
     await expect(editButton).toBeVisible();
     await expect(deleteButton).toBeVisible();
@@ -485,9 +496,12 @@ export class AgentModulePage {
     const isAgentForStarVisible = await agentForStar.isVisible().catch(() => false);
 
     if (isAgentForStarVisible) {
-      // Find the star button for this agent
-      const agentContainerForStar = agentForStar.locator('..').locator('..').locator('..');
-      const starButtonForFav = agentContainerForStar.locator('button svg[class*="lucide-star"]').locator('..');
+      // Find the agent row container for star functionality
+      const agentContainerForStar = this.page
+        .locator('div.flex.items-center.justify-between.py-4')
+        .filter({ has: this.page.getByRole('heading', { name: testAgentName, exact: true }) })
+        .first();
+      const starButtonForFav = agentContainerForStar.locator('button:has(svg.lucide-star)');
       const isStarVisible = await starButtonForFav.isVisible().catch(() => false);
 
       if (isStarVisible) {
@@ -547,9 +561,12 @@ export class AgentModulePage {
           const isAgentVisibleAfterReload = await agentAfterReload.isVisible().catch(() => false);
 
           if (isAgentVisibleAfterReload) {
-            // Find the star button after reload
-            const agentContainerAfterReload = agentAfterReload.locator('..').locator('..').locator('..');
-            const starButtonAfterReload = agentContainerAfterReload.locator('button svg[class*="lucide-star"]').locator('..');
+            // Find the agent row container after reload
+            const agentContainerAfterReload = this.page
+              .locator('div.flex.items-center.justify-between.py-4')
+              .filter({ has: this.page.getByRole('heading', { name: testAgentName, exact: true }) })
+              .first();
+            const starButtonAfterReload = agentContainerAfterReload.locator('button:has(svg.lucide-star)');
             const starSvgAfterReload = starButtonAfterReload.locator('svg').first();
 
             // Check if favorite state persisted
@@ -1043,41 +1060,20 @@ export class AgentModulePage {
 
     // Find the created agent and click edit button
     const testAgentName = 'Test Automation Agent';
-    const createdAgentInMadeByMe = this.page.getByRole('heading', { name: testAgentName, exact: true }).first();
-    await expect(createdAgentInMadeByMe).toBeVisible({ timeout: 10000 });
 
-    // Click the edit button (pen icon) - simplified approach
-    const agentRow = createdAgentInMadeByMe.locator('..').locator('..'); // Go up to the full row
+    // Find the agent row directly by combining heading text with parent container
+    const agentRow = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: testAgentName, exact: true }) })
+      .first();
 
-    // Try different approaches to find the edit button
-    let editButton = agentRow.locator('button[title="Edit Agent"]').first();
-    let isVisible = await editButton.isVisible().catch(() => false);
+    await expect(agentRow).toBeVisible({ timeout: 10000 });
 
-    if (!isVisible) {
-      // Try by SVG class
-      editButton = agentRow.locator('button:has(svg.lucide-pen-line)').first();
-      isVisible = await editButton.isVisible().catch(() => false);
-    }
-
-    if (!isVisible) {
-      // Try by button classes that contain pen icon
-      editButton = agentRow.locator('button.h-8.w-8:has(svg[class*="pen"])').first();
-      isVisible = await editButton.isVisible().catch(() => false);
-    }
-
-    if (!isVisible) {
-      // Last resort: find any button with pen-line in its content
-      editButton = agentRow.locator('svg.lucide-pen-line').locator('xpath=..').first();
-      isVisible = await editButton.isVisible().catch(() => false);
-    }
-
-    if (isVisible) {
-      await editButton.click();
-      console.log('Clicked edit button');
-    } else {
-      console.log('⚠️ Edit button not found - skipping edit test');
-      return;
-    }
+    // Find and click the edit button
+    const editButton = agentRow.locator('button[title="Edit Agent"]');
+    await expect(editButton).toBeVisible({ timeout: 5000 });
+    await editButton.click();
+    console.log('Clicked edit button');
 
     // Wait for edit form to load
     await this.page.locator('input#agentName').waitFor({ state: 'visible', timeout: 5000 });
@@ -1196,23 +1192,19 @@ export class AgentModulePage {
       // Try to find the original agent name (edit might not have worked)
       const originalAgentName = 'Test Automation Agent';
       updatedAgentName_MadeByMe = this.page.getByRole('heading', { name: originalAgentName, exact: true }).first();
-      isUpdatedVisible = await updatedAgentName_MadeByMe.isVisible().catch(() => false);
-
-      if (isUpdatedVisible) {
-        console.log('⚠️ Found original agent name - edit might not have been successful');
-      }
+      console.log('⚠️ Updated agent name not found - checking for original agent name');
     }
 
-    if (isUpdatedVisible) {
-      const actualName = await updatedAgentName_MadeByMe.textContent();
-      console.log(`Found agent with name: "${actualName}" in MADE-BY-ME tab`);
-    } else {
-      console.log('⚠️ Neither updated nor original agent name found - skipping verification');
-      return;
-    }
+    // This will throw an error if neither updated nor original name is found
+    await expect(updatedAgentName_MadeByMe).toBeVisible({ timeout: 10000 });
+    const foundAgentName = await updatedAgentName_MadeByMe.textContent();
+    console.log(`Found agent with name: "${foundAgentName}" in MADE-BY-ME tab`);
 
     // Try to verify the description (could be updated or original)
-    const agentRow = updatedAgentName_MadeByMe.locator('..').locator('..');
+    const agentRow = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: foundAgentName || '', exact: true }) })
+      .first();
 
     // First try to find updated description
     let updatedAgentDesc_MadeByMe = agentRow.locator(`p:has-text("${updatedAgentDescription}")`);
@@ -1255,23 +1247,19 @@ export class AgentModulePage {
       // Try to find the original agent name
       const originalAgentName = 'Test Automation Agent';
       updatedAgentName_All = this.page.getByRole('heading', { name: originalAgentName, exact: true }).first();
-      isAllVisible = await updatedAgentName_All.isVisible().catch(() => false);
-
-      if (isAllVisible) {
-        console.log('⚠️ Found original agent name in ALL tab - edit might not have been successful');
-      }
-    } else {
-      console.log(`✅ Found updated agent name "${updatedAgentName}" in ALL tab`);
+      console.log('⚠️ Updated agent name not found in ALL tab - checking for original agent name');
     }
 
-    if (!isAllVisible) {
-      console.log('⚠️ Agent not found in ALL tab - skipping ALL tab verification');
-      console.log('Edit agent verification completed with warnings');
-      return;
-    }
+    // This will throw an error if neither updated nor original name is found
+    await expect(updatedAgentName_All).toBeVisible({ timeout: 10000 });
+    const foundAgentNameAll = await updatedAgentName_All.textContent();
+    console.log(`Found agent with name: "${foundAgentNameAll}" in ALL tab`);
 
     // Try to verify the description in ALL tab
-    const agentRowAll = updatedAgentName_All.locator('..').locator('..');
+    const agentRowAll = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: foundAgentNameAll || '', exact: true }) })
+      .first();
 
     // First try to find updated description
     let updatedAgentDesc_All = agentRowAll.locator(`p:has-text("${updatedAgentDescription}")`);
@@ -1314,22 +1302,17 @@ export class AgentModulePage {
 
     // Find the updated agent to delete
     const agentToDelete = this.page.getByRole('heading', { name: updatedAgentName, exact: true }).first();
-    const isAgentVisible = await agentToDelete.isVisible().catch(() => false);
+    await expect(agentToDelete).toBeVisible({ timeout: 10000 });
+    console.log(`Found updated agent "${updatedAgentName}" to delete`);
 
-    if (isAgentVisible) {
-      console.log(`Found updated agent "${updatedAgentName}" to delete`);
-    }
-
-    if (!isAgentVisible) {
-      console.log('⚠️ No agent found to delete - skipping delete test');
-      return;
-    }
-
-    // Find the delete button using the same pattern as the working code
+    // Find the delete button using improved locator
     console.log(`Looking for delete button for agent: ${deletedAgentName}`);
 
-    const agentContainer = agentToDelete.locator('..').locator('..').locator('..');
-    const deleteButton = agentContainer.locator('button svg[class*="lucide-trash2"]').locator('..');
+    const agentContainer = this.page
+      .locator('div.flex.items-center.justify-between.py-4')
+      .filter({ has: this.page.getByRole('heading', { name: updatedAgentName, exact: true }) })
+      .first();
+    const deleteButton = agentContainer.locator('button[title="Delete Agent"]');
 
     console.log('Waiting for delete button to be visible...');
     await expect(deleteButton).toBeVisible({ timeout: 5000 });
