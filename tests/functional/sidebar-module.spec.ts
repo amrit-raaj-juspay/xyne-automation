@@ -56,11 +56,11 @@ orchestrator.createSuite('Sidebar Module Tests', [
   {
     name: 'click history icon and verify history panel opens',
     dependencies: ['user login'],
-    metadata: { priority: 'high', tags: ['@core', '@sidebar', '@modal'] },
+    metadata: { priority: 'high', tags: ['@core', '@sidebar', '@history'] },
     testFunction: async ({ sharedPage }) => {
       const sidebarPage = new SidebarModulePage(sharedPage.page);
 
-      await step('Click history icon', async () => {
+      await step('Click history icon in sidebar', async () => {
         await sidebarPage.clickHistoryIcon();
       });
 
@@ -75,29 +75,46 @@ orchestrator.createSuite('Sidebar Module Tests', [
   },
 
   {
-    name: 'click users icon and verify users panel opens',
+    name: 'click buzz icon and verify buzz panel opens',
     dependencies: ['click history icon and verify history panel opens'],
-    metadata: { priority: 'high', tags: ['@core', '@sidebar', '@modal'] },
+    metadata: { priority: 'high', tags: ['@core', '@sidebar', '@buzz'] },
     testFunction: async ({ sharedPage }) => {
       const sidebarPage = new SidebarModulePage(sharedPage.page);
 
-      await step('Click users icon', async () => {
-        await sidebarPage.clickUsersIcon();
+      await step('Click buzz icon (users icon)', async () => {
+        await sidebarPage.clickBuzzIcon();
       });
 
-      await step('Verify users panel content', async () => {
+      await step('Verify buzz panel has Chats and Call History buttons', async () => {
+        await sidebarPage.verifyBuzzPanelContent();
+      });
+
+      await step('Verify chats panel is already open (default selection)', async () => {
         await sidebarPage.verifyUsersPanelContent();
       });
+    }
+  },
 
-      await step('Close users panel', async () => {
-        await sidebarPage.closeUsersPanel();
+  {
+    name: 'click call history button and verify call history panel opens',
+    dependencies: ['click buzz icon and verify buzz panel opens'],
+    metadata: { priority: 'high', tags: ['@core', '@sidebar', '@buzz', '@call-history'] },
+    testFunction: async ({ sharedPage }) => {
+      const sidebarPage = new SidebarModulePage(sharedPage.page);
+
+      await step('Click Call History button in Buzz panel', async () => {
+        await sidebarPage.clickCallHistoryButtonInBuzzPanel();
+      });
+
+      await step('Verify call history panel content', async () => {
+        await sidebarPage.verifyCallHistoryPanelContent();
       });
     }
   },
 
   {
     name: 'click workflow icon and verify navigation',
-    dependencies: ['click users icon and verify users panel opens'],
+    dependencies: ['click call history button and verify call history panel opens'],
     metadata: { priority: 'high', tags: ['@core', '@sidebar', '@navigation'] },
     testFunction: async ({ sharedPage }) => {
       const sidebarPage = new SidebarModulePage(sharedPage.page);
