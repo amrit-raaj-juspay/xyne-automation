@@ -402,18 +402,9 @@ orchestrator.createSuite('Collection Module Tests', [
     dependencies: ['select euler-team folder and upload'],
     metadata: { priority: 'high', tags: ['@ui', '@folder', '@expand'] },
     testFunction: async ({ sharedPage }) => {
-      const collectionPage = new CollectionModulePage(sharedPage.page);
-
-      await step('Starting chevron arrow click to expand folder', async () => {
-        console.log('Starting chevron arrow click test to expand euler-team folder');
-      });
-
-      await step('Click chevron arrow to expand folder', async () => {
+      await step('Click chevron arrow to expand euler-team folder', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
         await collectionPage.clickChevronToExpandFolder();
-      });
-
-      await step('Log completion', async () => {
-        console.log('Chevron arrow click test completed - folder expanded');
       });
     }
   },
@@ -423,18 +414,9 @@ orchestrator.createSuite('Collection Module Tests', [
     dependencies: ['click chevron arrow to expand euler-team folder'],
     metadata: { priority: 'high', tags: ['@ui', '@folder', '@collapse'] },
     testFunction: async ({ sharedPage }) => {
-      const collectionPage = new CollectionModulePage(sharedPage.page);
-
-      await step('Starting chevron-down arrow click to collapse folder', async () => {
-        console.log('Starting chevron-down arrow click test to collapse euler-team folder');
-      });
-
-      await step('Click chevron-down arrow to collapse folder', async () => {
+      await step('Click chevron-down arrow to collapse euler-team folder', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
         await collectionPage.clickChevronToCollapseFolder();
-      });
-
-      await step('Log completion', async () => {
-        console.log('Chevron-down arrow click test completed - folder collapsed');
       });
     }
   },
@@ -444,18 +426,9 @@ orchestrator.createSuite('Collection Module Tests', [
     dependencies: ['refresh page and verify collection'],
     metadata: { priority: 'high', tags: ['@ui', '@collection', '@collapse'] },
     testFunction: async ({ sharedPage }) => {
-      const collectionPage = new CollectionModulePage(sharedPage.page);
-
-      await step('Starting collection chevron-down arrow click', async () => {
-        console.log('Starting collection chevron-down arrow click test');
-      });
-
-      await step('Click collection chevron-down arrow to collapse', async () => {
+      await step('Click collection chevron-down arrow to collapse collection', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
         await collectionPage.clickCollectionChevronToCollapse();
-      });
-
-      await step('Log completion', async () => {
-        console.log('Collection chevron-down arrow click test completed - collection collapsed');
       });
     }
   },
@@ -465,18 +438,9 @@ orchestrator.createSuite('Collection Module Tests', [
     dependencies: ['click collection chevron-down arrow to collapse collection'],
     metadata: { priority: 'high', tags: ['@ui', '@collection', '@expand'] },
     testFunction: async ({ sharedPage }) => {
-      const collectionPage = new CollectionModulePage(sharedPage.page);
-
-      await step('Starting collection chevron-right arrow click', async () => {
-        console.log('Starting collection chevron-right arrow click test to expand collection again');
-      });
-
-      await step('Click collection chevron-right arrow to expand', async () => {
+      await step('Click collection chevron-right arrow to expand collection again', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
         await collectionPage.clickCollectionChevronToExpand();
-      });
-
-      await step('Log completion', async () => {
-        console.log('Collection chevron-right arrow click test completed - collection expanded again');
       });
     }
   },
