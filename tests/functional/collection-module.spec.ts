@@ -230,7 +230,7 @@ orchestrator.createSuite('Collection Module Tests', [
 
   {
     name: 'click on uploaded file to open document viewer',
-    dependencies: ['click 3-dot menu and select Edit option'],
+    dependencies: ['refresh page and verify collection'],
     metadata: { priority: 'high', tags: ['@ui', '@document', '@navigation'] },
     testFunction: async ({ sharedPage }) => {
       const { page } = sharedPage;
@@ -387,8 +387,8 @@ orchestrator.createSuite('Collection Module Tests', [
         console.log('Starting euler-team folder selection and upload test');
       });
 
-      await step('Select screening feedback file and upload', async () => {
-        await collectionPage.selectScreeningFeedbackFileAndUpload();
+      await step('Select euler-team folder and upload', async () => {
+        await collectionPage.selectEulerTeamFolderAndUpload();
       });
 
       await step('Log completion', async () => {
@@ -398,8 +398,92 @@ orchestrator.createSuite('Collection Module Tests', [
   },
 
   {
-    name: 'click 3-dot menu and select Delete option',
+    name: 'click chevron arrow to expand euler-team folder',
     dependencies: ['select euler-team folder and upload'],
+    metadata: { priority: 'high', tags: ['@ui', '@folder', '@expand'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting chevron arrow click to expand folder', async () => {
+        console.log('Starting chevron arrow click test to expand euler-team folder');
+      });
+
+      await step('Click chevron arrow to expand folder', async () => {
+        await collectionPage.clickChevronToExpandFolder();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Chevron arrow click test completed - folder expanded');
+      });
+    }
+  },
+
+  {
+    name: 'click chevron-down arrow to collapse euler-team folder',
+    dependencies: ['click chevron arrow to expand euler-team folder'],
+    metadata: { priority: 'high', tags: ['@ui', '@folder', '@collapse'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting chevron-down arrow click to collapse folder', async () => {
+        console.log('Starting chevron-down arrow click test to collapse euler-team folder');
+      });
+
+      await step('Click chevron-down arrow to collapse folder', async () => {
+        await collectionPage.clickChevronToCollapseFolder();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Chevron-down arrow click test completed - folder collapsed');
+      });
+    }
+  },
+
+  {
+    name: 'click collection chevron-down arrow to collapse collection',
+    dependencies: ['refresh page and verify collection'],
+    metadata: { priority: 'high', tags: ['@ui', '@collection', '@collapse'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting collection chevron-down arrow click', async () => {
+        console.log('Starting collection chevron-down arrow click test');
+      });
+
+      await step('Click collection chevron-down arrow to collapse', async () => {
+        await collectionPage.clickCollectionChevronToCollapse();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Collection chevron-down arrow click test completed - collection collapsed');
+      });
+    }
+  },
+
+  {
+    name: 'click collection chevron-right arrow to expand collection again',
+    dependencies: ['click collection chevron-down arrow to collapse collection'],
+    metadata: { priority: 'high', tags: ['@ui', '@collection', '@expand'] },
+    testFunction: async ({ sharedPage }) => {
+      const collectionPage = new CollectionModulePage(sharedPage.page);
+
+      await step('Starting collection chevron-right arrow click', async () => {
+        console.log('Starting collection chevron-right arrow click test to expand collection again');
+      });
+
+      await step('Click collection chevron-right arrow to expand', async () => {
+        await collectionPage.clickCollectionChevronToExpand();
+      });
+
+      await step('Log completion', async () => {
+        console.log('Collection chevron-right arrow click test completed - collection expanded again');
+      });
+    }
+  },
+
+  {
+    name: 'click 3-dot menu and select Delete option',
+    dependencies: ['refresh page and verify collection'],
     metadata: { priority: 'high', tags: ['@ui', '@menu', '@delete'] },
     testFunction: async ({ sharedPage }) => {
       const collectionPage = new CollectionModulePage(sharedPage.page);

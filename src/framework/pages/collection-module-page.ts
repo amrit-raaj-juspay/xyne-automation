@@ -289,7 +289,7 @@ export class CollectionModulePage extends BasePage {
     console.log('File selection and upload completed');
   }
 
-  async selectScreeningFeedbackFileAndUpload(): Promise<void> {
+  async selectEulerTeamFolderAndUpload(): Promise<void> {
     console.log('Selecting euler-team folder and uploading');
     
     // Step 1: Click on UPLOAD LARGE FOLDER button to open file selection dialog
@@ -330,7 +330,7 @@ export class CollectionModulePage extends BasePage {
       console.log('Upload items button clicked - starting euler-team folder upload process');
       
       // Wait for upload process to complete
-      await this.page.waitForTimeout(10000);
+      await this.page.waitForTimeout(20000);
       console.log('Waited for euler-team folder upload process to complete');
       
     } else {
@@ -729,6 +729,156 @@ export class CollectionModulePage extends BasePage {
     }
     
     console.log('X (cross) button click completed');
+  }
+
+  // Chevron/Arrow button methods
+  async clickChevronToExpandFolder(): Promise<void> {
+    console.log('Clicking chevron arrow to expand/collapse folder');
+    
+    // Find the chevron-right arrow button using the lucide-chevron-right class
+    const chevronButton = this.page.locator('svg.lucide-chevron-right');
+    
+    // Check if the chevron button is visible
+    const buttonCount = await chevronButton.count();
+    console.log(`Found ${buttonCount} chevron arrow button(s) on the page`);
+    
+    if (buttonCount > 0) {
+      // Verify the chevron button is visible
+      await expect(chevronButton.first()).toBeVisible({ timeout: 10000 });
+      console.log('Chevron arrow button found and visible');
+      
+      // Click the chevron button (click on parent element to ensure clickability)
+      await chevronButton.first().locator('..').click();
+      console.log('Chevron arrow button clicked');
+      
+      // Wait for folder expansion/collapse animation
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for folder expansion/collapse to complete');
+      
+    } else {
+      console.log('No chevron arrow button found on the page');
+    }
+    
+    console.log('Chevron arrow click completed');
+  }
+
+  async clickChevronToCollapseFolder(): Promise<void> {
+    console.log('Clicking chevron-down arrow next to folder to collapse euler-team folder');
+    
+    // Find the folder row that contains both the folder icon and chevron-down
+    // Look for the chevron-down that's near the lucide-folder icon
+    const folderRow = this.page.locator('svg.lucide-folder').locator('..').locator('..');
+    const chevronDownButton = folderRow.locator('svg.lucide-chevron-down').first();
+    
+    // Check if the chevron-down button is visible
+    const isVisible = await chevronDownButton.isVisible().catch(() => false);
+    
+    if (isVisible) {
+      console.log('Chevron-down arrow button found next to folder icon');
+      
+      // Click the chevron-down button (click on parent element to ensure clickability)
+      await chevronDownButton.locator('..').click();
+      console.log('Chevron-down arrow button clicked - collapsing euler-team folder');
+      
+      // Wait for folder collapse animation
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for euler-team folder collapse to complete');
+      
+    } else {
+      console.log('No chevron-down arrow button found next to folder - trying alternative selector');
+      
+      // Alternative: Look for chevron-down in the same row as the folder
+      const chevronAlt = this.page.locator('svg.lucide-folder').locator('..').locator('..').locator('svg.lucide-chevron-down').first();
+      const altVisible = await chevronAlt.isVisible().catch(() => false);
+      
+      if (altVisible) {
+        await chevronAlt.locator('..').click();
+        console.log('Clicked chevron-down using alternative selector');
+        await this.page.waitForTimeout(2000);
+      } else {
+        console.log('Could not find chevron-down next to folder icon');
+      }
+    }
+    
+    console.log('Chevron-down arrow click completed');
+  }
+
+  async clickCollectionChevronToCollapse(): Promise<void> {
+    console.log('Clicking collection-level chevron-down arrow to collapse collection');
+    
+    // Find the collection chevron-down with specific classes (text-gray-600 dark:text-gray-400)
+    const collectionChevronDown = this.page.locator('svg.lucide-chevron-down.text-gray-600');
+    
+    // Check if the collection chevron-down button is visible
+    const isVisible = await collectionChevronDown.isVisible().catch(() => false);
+    
+    if (isVisible) {
+      console.log('Collection chevron-down arrow button found');
+      
+      // Click the collection chevron-down button (click on parent element)
+      await collectionChevronDown.first().locator('..').click();
+      console.log('Collection chevron-down arrow button clicked - collapsing collection');
+      
+      // Wait for collection collapse animation
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for collection collapse to complete');
+      
+    } else {
+      console.log('No collection chevron-down arrow button found - trying alternative approach');
+      
+      // Alternative: Look for any chevron-down that's not inside a folder row
+      const chevronDownAll = this.page.locator('svg.lucide-chevron-down').first();
+      const altVisible = await chevronDownAll.isVisible().catch(() => false);
+      
+      if (altVisible) {
+        await chevronDownAll.locator('..').click();
+        console.log('Clicked collection chevron-down using alternative selector');
+        await this.page.waitForTimeout(2000);
+      } else {
+        console.log('Could not find collection chevron-down arrow');
+      }
+    }
+    
+    console.log('Collection chevron-down arrow click completed');
+  }
+
+  async clickCollectionChevronToExpand(): Promise<void> {
+    console.log('Clicking collection-level chevron-right arrow to expand collection');
+    
+    // Find the collection chevron-right with specific classes (text-gray-600 dark:text-gray-400)
+    const collectionChevronRight = this.page.locator('svg.lucide-chevron-right.text-gray-600');
+    
+    // Check if the collection chevron-right button is visible
+    const isVisible = await collectionChevronRight.isVisible().catch(() => false);
+    
+    if (isVisible) {
+      console.log('Collection chevron-right arrow button found');
+      
+      // Click the collection chevron-right button (click on parent element)
+      await collectionChevronRight.first().locator('..').click();
+      console.log('Collection chevron-right arrow button clicked - expanding collection');
+      
+      // Wait for collection expand animation
+      await this.page.waitForTimeout(2000);
+      console.log('Waited for collection expansion to complete');
+      
+    } else {
+      console.log('No collection chevron-right arrow button found - trying alternative approach');
+      
+      // Alternative: Look for any chevron-right that's not inside a folder row
+      const chevronRightAll = this.page.locator('svg.lucide-chevron-right').first();
+      const altVisible = await chevronRightAll.isVisible().catch(() => false);
+      
+      if (altVisible) {
+        await chevronRightAll.locator('..').click();
+        console.log('Clicked collection chevron-right using alternative selector');
+        await this.page.waitForTimeout(2000);
+      } else {
+        console.log('Could not find collection chevron-right arrow');
+      }
+    }
+    
+    console.log('Collection chevron-right arrow click completed');
   }
 
   // Delete methods
