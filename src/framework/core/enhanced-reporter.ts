@@ -433,18 +433,19 @@ export default class EnhancedReporter implements Reporter {
 
       // Check if orchestrator results exist and use them instead
       // Use module-specific paths if MODULE_NAME is set (for parallel runs)
-      const moduleName = process.env.MODULE_NAME || 'default';
-      const orchestratorResultsPath = path.join('reports', `orchestrator-results-${moduleName}.json`);
+      const envModuleName = process.env.MODULE_NAME || 'default';
+      const orchestratorResultsPath = path.join('reports', `orchestrator-results-${envModuleName}.json`);
       let summary = this.generateSummary();
+      const displayModuleName = this.determineModuleName();
 
       // Prefer detailed step report, then Playwright-style, then basic report
       // Use module-specific names for parallel runs
-      let htmlReportPath = path.join('reports', `detailed-step-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+      let htmlReportPath = path.join('reports', `detailed-step-report${envModuleName !== 'default' ? '-' + envModuleName : ''}.html`);
       if (!fs.existsSync(htmlReportPath)) {
-        htmlReportPath = path.join('reports', `orchestrator-playwright-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+        htmlReportPath = path.join('reports', `orchestrator-playwright-report${envModuleName !== 'default' ? '-' + envModuleName : ''}.html`);
       }
       if (!fs.existsSync(htmlReportPath)) {
-        htmlReportPath = path.join('reports', `orchestrator-custom-report${moduleName !== 'default' ? '-' + moduleName : ''}.html`);
+        htmlReportPath = path.join('reports', `orchestrator-custom-report${envModuleName !== 'default' ? '-' + envModuleName : ''}.html`);
       }
 
       if (fs.existsSync(orchestratorResultsPath)) {
@@ -477,17 +478,17 @@ export default class EnhancedReporter implements Reporter {
 
       // Look for the dynamic HTML report directory created by the script
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      let playwrightHtmlReportPath = path.join('reports', `html-report-${moduleName}-${timestamp}`, 'index.html');
+      let playwrightHtmlReportPath = path.join('reports', `html-report-${envModuleName}-${timestamp}`, 'index.html');
 
       let finalHtmlReportPath: string | undefined;
-      
+
       // First try to find the dynamic HTML report directory
       const reportsDir = 'reports';
       let htmlReportDir: string | undefined;
-      
+
       if (fs.existsSync(reportsDir)) {
-        const reportDirs = fs.readdirSync(reportsDir).filter(dir => 
-          dir.startsWith(`html-report-${moduleName}-`) && 
+        const reportDirs = fs.readdirSync(reportsDir).filter(dir =>
+          dir.startsWith(`html-report-${envModuleName}-`) &&
           fs.statSync(path.join(reportsDir, dir)).isDirectory()
         );
         
@@ -525,7 +526,7 @@ export default class EnhancedReporter implements Reporter {
         executionTime: new Date().toISOString(),
         testEnvUrl: config.baseUrl || 'https://xyne.juspay.net',
         scriptRunBy: process.env.SCRIPT_RUN_BY || process.env.USER || process.env.USERNAME || 'Unknown User',
-        moduleName: moduleName,
+        moduleName: displayModuleName,  // Use the determined module name for display
         htmlReportPath: finalHtmlReportPath,
         priorityStats: {
           highest: this.stats.highest,
@@ -586,13 +587,13 @@ export default class EnhancedReporter implements Reporter {
    * Determine module name from test results or environment
    */
   private determineModuleName(): string {
-    // Check environment variable first
+    // Check environment variable first (highest priority)
     const envModuleName = process.env.MODULE_NAME;
-    if (envModuleName) {
+    if (envModuleName && envModuleName !== 'default') {
       return envModuleName;
     }
 
-    // If we can't extract from file paths, try to get from process.argv
+    // Try to extract from process.argv (Playwright test file argument)
     // Playwright often passes the test file as an argument
     const testFileArg = process.argv.find(arg => arg.includes('.spec.ts') || arg.includes('.test.ts'));
     if (testFileArg) {
@@ -602,11 +603,11 @@ export default class EnhancedReporter implements Reporter {
       }
     }
 
-    // Extract module name from test file paths
+    // Extract module name from test file paths in test results
     // For a file like "tests/functional/agent-module.spec.ts", return "agent-module"
     for (const [testName, testData] of this.testResults) {
       const testCase = testData.testCase;
-      
+
       // Get the test file path from the test case location
       if (testCase.location?.file) {
         const moduleName = this.extractModuleNameFromPath(testCase.location.file);
@@ -614,7 +615,7 @@ export default class EnhancedReporter implements Reporter {
           return moduleName;
         }
       }
-      
+
       // Fallback: try to get file path from test result attachments
       const testResult = testData.result;
       if (testResult.attachments && testResult.attachments.length > 0) {
@@ -629,8 +630,21 @@ export default class EnhancedReporter implements Reporter {
       }
     }
 
-    // Default fallback
-    return 'Xyne';
+    // If MODULE_NAME is 'default', try to get the actual test file name
+    if (envModuleName === 'default') {
+      // Look for any .spec.ts file in process arguments
+      for (const arg of process.argv) {
+        if (arg.includes('.spec.ts') || arg.includes('.test.ts')) {
+          const moduleName = this.extractModuleNameFromPath(arg);
+          if (moduleName) {
+            return moduleName;
+          }
+        }
+      }
+    }
+
+    // Final fallback - return 'default' instead of 'Xyne' for clarity
+    return envModuleName || 'XYNE';
   }
 
   /**

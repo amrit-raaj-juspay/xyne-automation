@@ -49,7 +49,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'navigate to workflow page',
     dependencies: ['user login'],
-    metadata: { priority: 'high', tags: ['@core', '@navigation', '@workflow'] },
+    metadata: { priority: 'medium', tags: ['@core', '@navigation', '@workflow'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting high priority workflow navigation');
 
@@ -63,7 +63,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify workflow template default tabs state',
     dependencies: ['navigate to workflow page'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@template', '@tabs'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@template', '@tabs'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting workflow template default tabs state verification');
 
@@ -77,7 +77,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'click public workflows template tab',
     dependencies: ['verify workflow template default tabs state'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting click public workflows template tab');
 
@@ -91,7 +91,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify public workflows template tab active',
     dependencies: ['click public workflows template tab'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@template', '@tabs', '@verification'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@template', '@tabs', '@verification'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting verify public workflows template tab active');
 
@@ -105,7 +105,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'click all template tab again',
     dependencies: ['verify public workflows template tab active'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@template', '@tabs', '@interaction'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting click all template tab again');
 
@@ -119,7 +119,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify workflow page elements',
     dependencies: ['click all template tab again'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@elements'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@elements'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting workflow page elements verification');
 
@@ -133,7 +133,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify workflows present or empty state',
     dependencies: ['verify workflow page elements'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@state'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@state'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting workflows state verification');
 
@@ -175,7 +175,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify and click add first step',
     dependencies: ['verify workflow creation interface'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@triggers'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@triggers'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting Add first step verification');
 
@@ -189,7 +189,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify form submission trigger configuration',
     dependencies: ['verify and click add first step'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@form-config'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@form-config'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting Form Submission trigger configuration verification');
 
@@ -203,7 +203,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify workflow name change',
     dependencies: ['verify workflow creation interface'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@name-edit'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@name-edit'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting workflow name change verification');
 
@@ -245,7 +245,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify cross icon and sidebar toggle',
     dependencies: ['verify add first node'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@sidebar', '@toggle'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@sidebar', '@toggle'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting cross icon and sidebar toggle verification');
 
@@ -301,7 +301,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'change form data',
     dependencies: ['verify post save state'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@form-edit', '@data-modification'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@form-edit', '@data-modification'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting change form data verification');
 
@@ -343,7 +343,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'click workflow breadcrumb before save',
     dependencies: ['add email node'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@breadcrumb', '@navigation'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@breadcrumb', '@navigation'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting click workflow breadcrumb before save');
 
@@ -357,7 +357,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify unsaved work popup',
     dependencies: ['click workflow breadcrumb before save'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@popup', '@unsaved-work'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@popup', '@unsaved-work'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting verify unsaved work popup');
 
@@ -371,7 +371,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'click cancel in unsaved popup',
     dependencies: ['verify unsaved work popup'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@popup', '@cancel'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@popup', '@cancel'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting click cancel in unsaved popup');
 
@@ -413,7 +413,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'execute TXT file',
     dependencies: ['execute workflow with PDF'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@txt', '@supported'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@txt', '@supported'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting TXT file execution test');
 
@@ -427,7 +427,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'execute DOCX file',
     dependencies: ['execute TXT file'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@docx', '@supported'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@docx', '@supported'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting DOCX file execution test');
 
@@ -441,7 +441,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify CSV unsupported file error',
     dependencies: ['execute DOCX file'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@csv', '@unsupported', '@error'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@csv', '@unsupported', '@error'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting CSV unsupported file error test');
 
@@ -455,7 +455,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify MD unsupported file error',
     dependencies: ['verify CSV unsupported file error'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@md', '@unsupported', '@error'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@md', '@unsupported', '@error'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting MD unsupported file error test');
 
@@ -469,7 +469,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify XLSX unsupported file error',
     dependencies: ['verify MD unsupported file error'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@xlsx', '@unsupported', '@error'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@xlsx', '@unsupported', '@error'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting XLSX unsupported file error test');
 
@@ -483,7 +483,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify PPTX unsupported file error',
     dependencies: ['verify XLSX unsupported file error'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@pptx', '@unsupported', '@error'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@pptx', '@unsupported', '@error'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting PPTX unsupported file error test');
 
@@ -497,7 +497,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'execute DOC file',
     dependencies: ['verify PPTX unsupported file error'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@file-upload', '@doc', '@supported'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@file-upload', '@doc', '@supported'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting DOC file execution test');
 
@@ -539,7 +539,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'verify node execution details',
     dependencies: ['verify workflow execution details screen'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@execute', '@node-details', '@sidebar'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@execute', '@node-details', '@sidebar'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting verify node execution details test');
 
@@ -553,7 +553,7 @@ orchestrator.createSuite('Workflow Module Tests', [
   {
     name: 'navigate back to workflow page via breadcrumb',
     dependencies: ['verify node execution details'],
-    metadata: { priority: 'high', tags: ['@core', '@workflow', '@breadcrumb', '@navigation'] },
+    metadata: { priority: 'medium', tags: ['@core', '@workflow', '@breadcrumb', '@navigation'] },
     testFunction: async ({ sharedPage }) => {
       console.log('🚀 Starting navigate back to workflow page via breadcrumb test');
 
