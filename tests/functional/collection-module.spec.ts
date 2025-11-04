@@ -230,7 +230,7 @@ orchestrator.createSuite('Collection Module Tests', [
 
   {
     name: 'click on uploaded file to open document viewer',
-    dependencies: ['click 3-dot menu and select Edit option'],
+    dependencies: ['refresh page and verify collection'],
     metadata: { priority: 'high', tags: ['@ui', '@document', '@navigation'] },
     testFunction: async ({ sharedPage }) => {
       const { page } = sharedPage;
@@ -387,8 +387,8 @@ orchestrator.createSuite('Collection Module Tests', [
         console.log('Starting euler-team folder selection and upload test');
       });
 
-      await step('Select screening feedback file and upload', async () => {
-        await collectionPage.selectScreeningFeedbackFileAndUpload();
+      await step('Select euler-team folder and upload', async () => {
+        await collectionPage.selectEulerTeamFolderAndUpload();
       });
 
       await step('Log completion', async () => {
@@ -398,8 +398,56 @@ orchestrator.createSuite('Collection Module Tests', [
   },
 
   {
-    name: 'click 3-dot menu and select Delete option',
+    name: 'click chevron arrow to expand euler-team folder',
     dependencies: ['select euler-team folder and upload'],
+    metadata: { priority: 'high', tags: ['@ui', '@folder', '@expand'] },
+    testFunction: async ({ sharedPage }) => {
+      await step('Click chevron arrow to expand euler-team folder', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
+        await collectionPage.clickChevronToExpandFolder();
+      });
+    }
+  },
+
+  {
+    name: 'click chevron-down arrow to collapse euler-team folder',
+    dependencies: ['click chevron arrow to expand euler-team folder'],
+    metadata: { priority: 'high', tags: ['@ui', '@folder', '@collapse'] },
+    testFunction: async ({ sharedPage }) => {
+      await step('Click chevron-down arrow to collapse euler-team folder', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
+        await collectionPage.clickChevronToCollapseFolder();
+      });
+    }
+  },
+
+  {
+    name: 'click collection chevron-down arrow to collapse collection',
+    dependencies: ['refresh page and verify collection'],
+    metadata: { priority: 'high', tags: ['@ui', '@collection', '@collapse'] },
+    testFunction: async ({ sharedPage }) => {
+      await step('Click collection chevron-down arrow to collapse collection', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
+        await collectionPage.clickCollectionChevronToCollapse();
+      });
+    }
+  },
+
+  {
+    name: 'click collection chevron-right arrow to expand collection again',
+    dependencies: ['click collection chevron-down arrow to collapse collection'],
+    metadata: { priority: 'high', tags: ['@ui', '@collection', '@expand'] },
+    testFunction: async ({ sharedPage }) => {
+      await step('Click collection chevron-right arrow to expand collection again', async () => {
+        const collectionPage = new CollectionModulePage(sharedPage.page);
+        await collectionPage.clickCollectionChevronToExpand();
+      });
+    }
+  },
+
+  {
+    name: 'click 3-dot menu and select Delete option',
+    dependencies: ['refresh page and verify collection'],
     metadata: { priority: 'high', tags: ['@ui', '@menu', '@delete'] },
     testFunction: async ({ sharedPage }) => {
       const collectionPage = new CollectionModulePage(sharedPage.page);
