@@ -51,7 +51,7 @@ echo "Using npm version: $(npm --version)"
 # ============================================
 # Run all modules in PARALLEL with staggered start times
 # Each module runs in its own background process (worker)
-# Modules start with 40-second delays between them
+# Modules start with 50-second delays between them
 # All modules use their own TestOrchestrator with continueOnFailure
 
 echo "--------------------------------------------------"
@@ -84,7 +84,7 @@ echo "--------------------------------------------------"
 TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S-%3NZ")
 
 # Stagger delay in seconds (time between starting each module)
-STAGGER_DELAY=40
+STAGGER_DELAY=50
 
 # Array to store background process IDs
 pids=()

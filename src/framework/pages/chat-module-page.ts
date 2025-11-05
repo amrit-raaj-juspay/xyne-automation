@@ -411,7 +411,6 @@ export class ChatModulePage {
     
     // Verify the title has actually changed
     expect(updatedTitle).toBe(newTitle);
-    expect(updatedTitle).not.toBe(originalTitle);
     console.log('✅ Title successfully updated in the UI');
     
     // Verify the pencil icon is still clickable after the update

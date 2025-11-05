@@ -277,6 +277,20 @@ export class ApiValidationService {
     const missingKeys: string[] = [];
     const responseData = response.data;
 
+    // Check if responseData is an object (not null, not an array, not a primitive)
+    if (!responseData || typeof responseData !== 'object' || Array.isArray(responseData)) {
+      return {
+        success: false,
+        message: `Cannot validate required keys: response data is not an object (got ${typeof responseData})`,
+        details: { 
+          missingKeys: requiredKeys, 
+          requiredKeys,
+          actualDataType: typeof responseData,
+          actualData: responseData
+        }
+      };
+    }
+
     for (const key of requiredKeys) {
       if (!(key in responseData)) {
         missingKeys.push(key);
@@ -299,6 +313,20 @@ export class ApiValidationService {
   private validateForbiddenKeys(response: ApiResponse, forbiddenKeys: string[]): ApiValidationResult {
     const foundForbiddenKeys: string[] = [];
     const responseData = response.data;
+
+    // Check if responseData is an object (not null, not an array, not a primitive)
+    if (!responseData || typeof responseData !== 'object' || Array.isArray(responseData)) {
+      return {
+        success: true, // If it's not an object, there can't be any forbidden keys
+        message: `Cannot check forbidden keys: response data is not an object (got ${typeof responseData})`,
+        details: { 
+          foundForbiddenKeys: [], 
+          forbiddenKeys,
+          actualDataType: typeof responseData,
+          actualData: responseData
+        }
+      };
+    }
 
     for (const key of forbiddenKeys) {
       if (key in responseData) {
