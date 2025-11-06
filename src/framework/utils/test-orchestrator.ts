@@ -180,22 +180,11 @@ export class TestOrchestrator {
                   return sharedPage.page.screenshot({ path: screenshotPath, timeout: 3000 });
                 });
 
-                testInfo.attachments.push({
-                  name: 'screenshot',
-                  path: screenshotPath,
-                  contentType: 'image/png'
-                });
-
-                // Update the result with screenshot path and attachments for the reporter
+                // Update the result with screenshot path for the reporter
+                // Don't add to testInfo.attachments here - let the reporter handle it
                 const result = this.suiteResults.get(testName);
                 if (result) {
                   result.screenshotPath = screenshotPath;
-                  result.attachments = result.attachments || [];
-                  result.attachments.push({
-                    name: 'screenshot',
-                    path: screenshotPath,
-                    contentType: 'image/png'
-                  });
                   this.suiteResults.set(testName, result);
                 }
                 console.log(`📸 Screenshot captured: ${screenshotPath}`);
@@ -259,22 +248,11 @@ export class TestOrchestrator {
                   return page.screenshot({ path: screenshotPath, timeout: 3000 });
                 });
 
-                testInfo.attachments.push({
-                  name: 'screenshot',
-                  path: screenshotPath,
-                  contentType: 'image/png'
-                });
-
-                // Update the result with screenshot path and attachments for the reporter
+                // Update the result with screenshot path for the reporter
+                // Don't add to testInfo.attachments here - let the reporter handle it
                 const result = this.suiteResults.get(testName);
                 if (result) {
                   result.screenshotPath = screenshotPath;
-                  result.attachments = result.attachments || [];
-                  result.attachments.push({
-                    name: 'screenshot',
-                    path: screenshotPath,
-                    contentType: 'image/png'
-                  });
                   this.suiteResults.set(testName, result);
                 }
                 console.log(`📸 Screenshot captured: ${screenshotPath}`);
