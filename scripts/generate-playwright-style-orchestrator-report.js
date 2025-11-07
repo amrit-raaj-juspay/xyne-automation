@@ -131,7 +131,9 @@ function mergeTestData(playwrightTests, orchestratorMap) {
         priority: orchData.priority,
         tags: orchData.tags,
         description: orchData.description,
-        screenshotPath: orchData.screenshotPath,
+        screenshotPath: orchData.screenshotPath ||
+          (pwTest.errors?.[0]?.value?.screenshotPath) || // Extract from error value
+          (pwTest.attachments?.find(a => a.name === 'screenshot')?.path), // Or from attachments
       });
     } else {
       // Test not in orchestrator (shouldn't happen, but handle it)
@@ -150,6 +152,8 @@ function mergeTestData(playwrightTests, orchestratorMap) {
         line: pwTest.line,
         annotations: pwTest.annotations,
         dependencies: [],
+        screenshotPath: (pwTest.errors?.[0]?.value?.screenshotPath) ||
+          (pwTest.attachments?.find(a => a.name === 'screenshot')?.path),
       });
     }
   }

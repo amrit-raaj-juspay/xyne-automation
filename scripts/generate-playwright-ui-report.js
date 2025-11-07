@@ -149,11 +149,17 @@ const mergedTests = playwrightTests.map(pwTest => {
       dependencies: orchData.dependencies || [],
       reason: orchData.reason,
       priority: orchData.priority,
-      screenshotPath: orchData.screenshotPath,
+      screenshotPath: orchData.screenshotPath ||
+        (pwTest.error?.value?.screenshotPath) || // Extract from error value
+        (pwTest.attachments?.find(a => a.name === 'screenshot')?.path), // Or from attachments
       attachments: orchData.attachments || pwTest.attachments,
     };
   }
-  return pwTest;
+  return {
+    ...pwTest,
+    screenshotPath: (pwTest.error?.value?.screenshotPath) ||
+      (pwTest.attachments?.find(a => a.name === 'screenshot')?.path),
+  };
 });
 
 // Embed screenshots
