@@ -551,7 +551,33 @@ export class ApiValidationService {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.page!.off('response', responseHandler);
-        reject(new Error(`Timeout waiting for API response: ${apiEndpoint}`));
+
+        // Capture screenshot on timeout (async but ensure it completes before rejection)
+        const captureScreenshotAndReject = async () => {
+          let screenshotPath: string | undefined;
+          try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            screenshotPath = `reports/screenshots/api-timeout-${apiEndpoint.replace(/\//g, '-')}-${timestamp}.png`;
+            await this.page!.screenshot({
+              path: screenshotPath,
+              fullPage: true
+            });
+            this.logger.info(`📸 Screenshot captured on timeout at: ${screenshotPath}`);
+          } catch (screenshotError) {
+            this.logger.error(`Failed to capture screenshot on timeout: ${screenshotError}`);
+            screenshotPath = undefined;
+          } finally {
+            // Always reject after screenshot attempt (success or failure)
+            const error: any = new Error(`Timeout waiting for API response: ${apiEndpoint}`);
+            if (screenshotPath) {
+              error.screenshotPath = screenshotPath;
+            }
+            reject(error);
+          }
+        };
+
+        // Execute screenshot capture and rejection
+        captureScreenshotAndReject();
       }, timeout);
 
       const responseHandler = async (response: any) => {
@@ -599,7 +625,33 @@ export class ApiValidationService {
         } catch (error) {
           clearTimeout(timeoutId);
           this.page!.off('response', responseHandler);
-          reject(error);
+
+          // Capture screenshot on error (async but ensure it completes before rejection)
+          const captureScreenshotAndReject = async () => {
+            let screenshotPath: string | undefined;
+            try {
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+              screenshotPath = `reports/screenshots/api-error-${apiEndpoint.replace(/\//g, '-')}-${timestamp}.png`;
+              await this.page!.screenshot({
+                path: screenshotPath,
+                fullPage: true
+              });
+              this.logger.info(`📸 Screenshot captured on error at: ${screenshotPath}`);
+            } catch (screenshotError) {
+              this.logger.error(`Failed to capture screenshot on error: ${screenshotError}`);
+              screenshotPath = undefined;
+            } finally {
+              // Always reject after screenshot attempt (success or failure)
+              // Attach screenshot path to error if available
+              if (screenshotPath && error instanceof Error) {
+                (error as any).screenshotPath = screenshotPath;
+              }
+              reject(error);
+            }
+          };
+
+          // Execute screenshot capture and rejection
+          captureScreenshotAndReject();
         }
       };
 
