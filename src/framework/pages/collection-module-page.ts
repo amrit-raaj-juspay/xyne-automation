@@ -956,52 +956,39 @@ export class CollectionModulePage extends BasePage {
     await this.page.waitForTimeout(3000);
     console.log('Waited for toast notification to appear');
     
-    // Wait for toast notification and check its content
-    const toastNotification = this.page.locator('li[role="status"]');
-    
     try {
+      // Look for the toast notification using the correct selector
+      const toastNotification = this.page.locator('li[data-state="open"]').filter({ hasText: 'Collection Deleted' }).or(
+        this.page.locator('li[data-state="open"]').filter({ hasText: 'Delete Failed' })
+      );
+      
       // Wait for toast to appear
-      await expect(toastNotification).toBeVisible({ timeout: 10000 });
+      await toastNotification.waitFor({ state: 'visible', timeout: 10000 });
       console.log('📋 Toast notification appeared');
       
-      // Check specifically for "Delete Failed" title
-      const deleteFailedTitle = toastNotification.locator('div.text-sm.font-semibold:has-text("Delete Failed")');
-      const isDeleteFailed = await deleteFailedTitle.count() > 0;
+      // Get the toast content
+      const toastContent = await toastNotification.textContent();
+      console.log(`📋 Toast content: "${toastContent}"`);
       
-      if (isDeleteFailed) {
+      // Check if it's a failure
+      if (toastContent?.includes('Delete Failed')) {
         console.log('❌ DELETE FAILED: Toast shows "Delete Failed"');
-        
-        // Get the specific error message
-        const errorMessage = toastNotification.locator('div.text-sm.opacity-90:has-text("Failed to delete collection. Please try again.")');
-        const errorText = await errorMessage.textContent();
-        
-        console.log(`❌ Error details: "${errorText}"`);
-        throw new Error(`DELETE OPERATION FAILED: ${errorText || 'Failed to delete collection. Please try again.'}`);
+        throw new Error(`DELETE OPERATION FAILED: ${toastContent}`);
       }
       
-      // Check for success - "Collection Deleted" title
-      const collectionDeletedTitle = toastNotification.locator('div.text-sm.font-semibold:has-text("Collection Deleted")');
-      const isDeleteSuccess = await collectionDeletedTitle.count() > 0;
-      
-      if (isDeleteSuccess) {
+      // Check if it's a success
+      if (toastContent?.includes('Collection Deleted')) {
         console.log('✅ DELETE SUCCESS: Toast shows "Collection Deleted"');
-        
-        // Get the success message
-        const successMessage = toastNotification.locator('div.text-sm.opacity-90:has-text("Successfully deleted collection and all associated files.")');
-        const successText = await successMessage.textContent();
-        
-        console.log(`✅ Success details: "${successText}"`);
+        console.log('✅ Success details: Successfully deleted collection and all associated files');
       } else {
-        // Get the actual toast content to see what it says
-        const toastContent = await toastNotification.textContent();
-        console.log(`📋 Toast content: "${toastContent}"`);
-        console.log('⚠️ Could not determine if delete was successful or failed from toast content');
+        console.log('⚠️ Could not determine delete status from toast');
+        throw new Error('DELETE OPERATION FAILED: Could not verify delete operation');
       }
       
     } catch (error) {
-      console.log('⚠️ No toast notification appeared within timeout');
+      console.log('⚠️ Error during toast verification:', error);
       console.log('❌ FAILING DELETE TEST - Could not verify delete operation result');
-      throw new Error('DELETE OPERATION FAILED: Could not verify delete operation - no toast notification appeared');
+      throw error;
     }
     
     // Wait additional time for any UI updates
