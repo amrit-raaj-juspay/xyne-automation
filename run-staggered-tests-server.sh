@@ -4,14 +4,53 @@
 # It is designed for any environment, including headless Linux servers.
 # It staggers the start of each test and runs them as background processes.
 
+# Function to fetch repo version from API endpoint
+fetch_repo_version() {
+  # TODO: Add endpoint URL once ready
+  # REPO_VERSION_ENDPOINT="https://your-api-endpoint.com/version"
+
+  # For now, keep the endpoint empty and just return git commit hash
+  # When endpoint is ready, uncomment the following:
+  # if [ -n "$REPO_VERSION_ENDPOINT" ]; then
+  #   REPO_VERSION=$(curl -s "$REPO_VERSION_ENDPOINT" | jq -r '.version' 2>/dev/null)
+  #   if [ -n "$REPO_VERSION" ]; then
+  #     echo "$REPO_VERSION"
+  #     return 0
+  #   fi
+  # fi
+
+  # Fallback to git commit hash
+  if git rev-parse --git-dir > /dev/null 2>&1; then
+    REPO_VERSION=$(git rev-parse --short HEAD 2>/dev/null)
+    if [ -n "$REPO_VERSION" ]; then
+      echo "$REPO_VERSION"
+      return 0
+    fi
+  fi
+
+  # If both methods fail, return empty string
+  echo ""
+  return 1
+}
+
 # Generate a single Cron Run ID for this entire batch
 CRON_RUN_ID=$(date +"%Y%m%d%H%M%S")
 export CRON_RUN_ID
 export IS_CRON_RUN=true
 
+# Fetch and export repo version
+echo "🔍 Fetching repository version..."
+REPO_VERSION=$(fetch_repo_version)
+if [ -n "$REPO_VERSION" ]; then
+  export REPO_VERSION
+  echo "✅ Repository version: $REPO_VERSION"
+else
+  echo "⚠️  Could not determine repository version (will be stored as NULL in database)"
+  export REPO_VERSION=""
+fi
+
 echo "🚀 Starting test batch with Cron Run ID: $CRON_RUN_ID"
 echo "📋 This ID will be shared across all tests in this batch"
-
 
 # Set up environment for cron compatibility
 # Try to source NVM if available
@@ -45,6 +84,25 @@ fi
 
 echo "Using Node.js version: $(node --version)"
 echo "Using npm version: $(npm --version)"
+
+# ============================================
+# DATABASE INITIALIZATION
+# ============================================
+# Initialize test_runs table entry with version tracking
+echo ""
+echo "📋 Initializing test run in database..."
+
+# Ensure consistent user for database operations
+# Only use value from .env file
+if [ -f .env ]; then
+  SCRIPT_RUN_BY=$(grep "^SCRIPT_RUN_BY=" .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+  export SCRIPT_RUN_BY
+else
+  echo "⚠️  Warning: .env file not found, SCRIPT_RUN_BY not set"
+fi
+
+npx tsx scripts/manage-test-run.ts init
+echo ""
 
 # ============================================
 # ORCHESTRATOR-BASED PARALLEL STAGGERED EXECUTION
@@ -187,6 +245,7 @@ done
 echo ""
 echo "--------------------------------------------------"
 echo "🏁 Batch $CRON_RUN_ID completed"
+echo "📌 Repository Version: ${REPO_VERSION:-'N/A'}"
 echo "📊 Modules completed: $total/$total"
 if [ $exit_code -eq 0 ]; then
   echo "✅ All modules completed successfully."
@@ -196,26 +255,41 @@ fi
 echo "📊 Check individual module reports and database for detailed results"
 echo "--------------------------------------------------"
 
+# ============================================
+# UPDATE TEST RUN STATUS IN DATABASE
+# ============================================
+echo ""
+echo "📋 Updating test run status in database..."
+npx tsx scripts/manage-test-run.ts complete "$exit_code"
+echo ""
+
 # Wait for database writes to complete before generating PDF
 echo "⏳ Waiting for all test data to be written to database..."
-echo "🔄 Allowing 15 seconds for database synchronization..."
-sleep 15
+echo "🔄 Allowing 30 seconds for database synchronization..."
+sleep 30
 
-# Generate PDF report after all tests complete
-echo "📊 Generating PDF summary report..."
-if [ -d "venv-pdf" ] && [ -f "venv-pdf/bin/python" ]; then
-  echo "🐍 Using virtual environment for PDF generation..."
-  venv-pdf/bin/python src/framework/utils/pdf-report-generator.py "$CRON_RUN_ID"
+# Verify data exists before generating PDF
+echo "🔍 Verifying test data in database..."
+npx tsx scripts/manage-test-run.ts verify "$CRON_RUN_ID"
+verify_exit_code=$?
+
+if [ $verify_exit_code -eq 0 ]; then
+  echo "✅ Test data verified in database"
+
+  # Generate PDF report after all tests complete
+  echo "📊 Generating PDF summary report..."
+  python3 src/framework/utils/pdf-report-generator.py "$CRON_RUN_ID"
   pdf_exit_code=$?
-  
+
   if [ $pdf_exit_code -eq 0 ]; then
     echo "✅ PDF report generated successfully"
   else
     echo "⚠️ PDF report generation failed (exit code: $pdf_exit_code)"
   fi
 else
-  echo "⚠️ PDF virtual environment not found. Skipping PDF generation."
-  echo "💡 Run './setup-pdf-dependencies.sh' to set up PDF generation."
+  echo "⚠️ Test data not found in database, skipping PDF generation"
+  echo "💡 This may indicate that database writes are still in progress or failed"
+  pdf_exit_code=1
 fi
 
 echo "--------------------------------------------------"

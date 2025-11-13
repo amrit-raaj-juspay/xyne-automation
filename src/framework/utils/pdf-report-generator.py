@@ -180,28 +180,35 @@ class TestExecutionPdfGenerator:
             raise
     
     def fetch_report_data(self, cron_run_id):
-        """Fetch test execution data from database."""
+        """Fetch test execution data from xyne_test_module table with version info."""
         try:
             if not self.auth_token:
                 self.authenticate_with_juspay()
-            
-            # Prepare SQL query
+
+            # Fetch from xyne_test_module table with run metadata and version info
             query = f"""
-                SELECT 
-                    module_name, test_cases_run, test_cases_passed, test_cases_skipped,
-                    test_cases_failed, highest_priority_failed, high_priority_failed,
-                    medium_priority_failed, low_priority_failed, run_datetime,
-                    slack_report_link, username, runenv, cron_run_id
-                FROM test_run_summary 
-                WHERE cron_run_id = '{cron_run_id}'
-                ORDER BY module_name
+                SELECT
+                    m.module_name,
+                    m.run_data,
+                    m.slack_report_link,
+                    r.run_by as username,
+                    r.run_env as runenv,
+                    r.cron_run_id,
+                    r.created_at as run_datetime,
+                    r.repo_version,
+                    r.previous_version,
+                    r.previous_run_id
+                FROM xyne_test_module m
+                JOIN xyne_test_runs r ON m.cron_run_id = r.cron_run_id
+                WHERE m.cron_run_id = '{cron_run_id}'
+                ORDER BY m.module_name
             """
-            
-            print(f'🔍 Fetching data for CRON_RUN_ID: {cron_run_id}')
-            
+
+            print(f'🔍 Fetching data for CRON_RUN_ID: {cron_run_id} from xyne_test_module')
+
             # Execute query
             db_endpoint = os.getenv('DB_API_ENDPOINT', 'https://sandbox.portal.juspay.in/dashboard-test-automation/dbQuery')
-            
+
             response = requests.get(
                 db_endpoint,
                 headers={
@@ -211,37 +218,72 @@ class TestExecutionPdfGenerator:
                 json={'query': query},
                 timeout=30
             )
-            
+
             print(f'🔍 Database response status: {response.status_code}')
-            print(f'🔍 Database response headers: {dict(response.headers)}')
-            print(f'🔍 Database response text: {response.text}')
-            
+
             if not response.ok:
                 raise Exception(f'Database query failed: {response.status_code} {response.text}')
-            
+
             result = response.json()
-            print(f'🔍 Parsed JSON result: {result}')
-            
-            # Check for data in 'response' field (actual API format)
+
+            # Check for data in 'response' field
             if result.get('response') and len(result['response']) > 0:
-                records = result['response']
-                print(f'📊 Found {len(records)} records')
+                raw_records = result['response']
+                print(f'📊 Found {len(raw_records)} module records')
+
+                # Transform data from JSONB format to legacy format for PDF generation
+                records = []
+                for record in raw_records:
+                    run_data = record.get('run_data', {})
+                    tests = run_data.get('tests', [])
+
+                    # Calculate statistics from test data
+                    total_tests = len(tests)
+                    passed = len([t for t in tests if t.get('status') == 'passed'])
+                    failed = len([t for t in tests if t.get('status') == 'failed'])
+                    skipped = len([t for t in tests if t.get('status') == 'skipped'])
+
+                    # Count priority failures
+                    highest_failed = len([t for t in tests if t.get('status') == 'failed' and t.get('priority') == 'highest'])
+                    high_failed = len([t for t in tests if t.get('status') == 'failed' and t.get('priority') == 'high'])
+                    medium_failed = len([t for t in tests if t.get('status') == 'failed' and t.get('priority') == 'medium'])
+                    low_failed = len([t for t in tests if t.get('status') == 'failed' and t.get('priority') == 'low'])
+
+                    # Create legacy-compatible record
+                    transformed_record = {
+                        'module_name': record.get('module_name'),
+                        'test_cases_run': total_tests,
+                        'test_cases_passed': passed,
+                        'test_cases_failed': failed,
+                        'test_cases_skipped': skipped,
+                        'highest_priority_failed': highest_failed,
+                        'high_priority_failed': high_failed,
+                        'medium_priority_failed': medium_failed,
+                        'low_priority_failed': low_failed,
+                        'slack_report_link': record.get('slack_report_link'),
+                        'username': record.get('username'),
+                        'runenv': record.get('runenv'),
+                        'cron_run_id': record.get('cron_run_id'),
+                        'run_datetime': record.get('run_datetime'),
+                        'repo_version': record.get('repo_version', 'N/A'),
+                        'previous_version': record.get('previous_version'),
+                        'previous_run_id': record.get('previous_run_id')
+                    }
+                    records.append(transformed_record)
+
+                print(f'✅ Transformed {len(records)} records for PDF generation')
                 return records
-            
-            # Fallback: check for data in 'rows' field (alternative format)
-            elif result.get('rows') and len(result['rows']) > 0:
-                records = result['rows']
-                print(f'📊 Found {len(records)} records')
-                return records
-            
+
             # No data found
             else:
                 print('📭 No records found for the specified CRON_RUN_ID')
                 print(f'🔍 Result structure: {result}')
                 return None
-            
+
         except Exception as e:
             print(f'❌ Error fetching report data: {e}')
+            import traceback
+            traceback.print_exc()
             return None
     
     def calculate_summary(self, records):
@@ -276,20 +318,24 @@ class TestExecutionPdfGenerator:
             # Calculate summary
             summary = self.calculate_summary(records)
             
-            # Get environment and date from first record
+            # Get environment, date, and version info from first record
             environment = records[0].get('runenv', 'Unknown')
             report_date = records[0].get('run_datetime', datetime.now().isoformat())
-            
+            repo_version = records[0].get('repo_version', 'N/A')
+            previous_version = records[0].get('previous_version')
+            previous_run_id = records[0].get('previous_run_id')
+
             # Generate output path if not provided
             if not output_path:
                 timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
                 output_path = f'reports/test-execution-report-{cron_run_id}-{timestamp}.pdf'
-            
+
             # Ensure reports directory exists
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            
-            # Create PDF
-            self.create_pdf(output_path, cron_run_id, environment, report_date, records, summary)
+
+            # Create PDF with version info
+            self.create_pdf(output_path, cron_run_id, environment, report_date, records, summary,
+                          repo_version, previous_version, previous_run_id)
             
             print(f'✅ PDF report generated successfully: {output_path}')
             return output_path
@@ -298,8 +344,9 @@ class TestExecutionPdfGenerator:
             print(f'❌ Error generating PDF report: {e}')
             return None
     
-    def create_pdf(self, output_path, cron_run_id, environment, report_date, records, summary):
-        """Create the actual PDF document."""
+    def create_pdf(self, output_path, cron_run_id, environment, report_date, records, summary,
+                   repo_version='N/A', previous_version=None, previous_run_id=None):
+        """Create the actual PDF document with version comparison info."""
         try:
             # Create PDF document
             pdf = SimpleDocTemplate(
@@ -310,9 +357,9 @@ class TestExecutionPdfGenerator:
                 topMargin=30,
                 bottomMargin=20
             )
-            
+
             elements = []
-            
+
             # Header
             main_header = Paragraph("Test Execution Report", ParagraphStyle(
                 name="MainHeader",
@@ -321,19 +368,24 @@ class TestExecutionPdfGenerator:
                 fontName="Helvetica-Bold",
                 textColor=colors.darkblue,
             ))
-            
+
             # Format date
             try:
                 date_obj = datetime.fromisoformat(report_date.replace('Z', '+00:00'))
                 formatted_date = date_obj.strftime('%Y-%m-%d')
             except:
                 formatted_date = datetime.now().strftime('%Y-%m-%d')
-            
+
+            # Build header text with version info
+            header_text = f" Date: {formatted_date} | Environment: {environment} | Run ID: {cron_run_id} | Version: {repo_version}"
+            if previous_version and previous_run_id:
+                header_text += f"<br/>Comparing with: {previous_version} (Run: {previous_run_id})"
+
             secondary_header = Paragraph(
-                f" Date: {formatted_date} | Environment: {environment}",
+                header_text,
                 ParagraphStyle(
                     name="SecondaryHeader",
-                    fontSize=12,
+                    fontSize=11,
                     alignment=TA_CENTER,
                     fontName="Helvetica",
                     textColor=colors.darkblue,
@@ -591,15 +643,46 @@ def main():
                     
                     if slack_success:
                         print('✅ PDF report sent to Slack successfully')
+
+                        # Generate and upload HTML report as thread reply
+                        try:
+                            print('\n📊 Generating HTML report for thread...')
+                            import subprocess
+
+                            # Get the path to the HTML report generator
+                            current_dir = os.path.dirname(os.path.abspath(__file__))
+                            html_generator_path = os.path.join(current_dir, 'html-report-generator.py')
+
+                            # Execute HTML report generator
+                            result = subprocess.run(
+                                ['python3', html_generator_path, cron_run_id],
+                                capture_output=True,
+                                text=True,
+                                timeout=120
+                            )
+
+                            if result.returncode == 0:
+                                print('✅ HTML report generated and uploaded to Slack thread successfully')
+                                # Extract HTML output path from stdout
+                                for line in result.stdout.split('\n'):
+                                    if line.startswith('HTML_OUTPUT_PATH:'):
+                                        html_path = line.split(':', 1)[1]
+                                        print(f'📄 HTML Report: {html_path}')
+                            else:
+                                print(f'⚠️ HTML report generation failed: {result.stderr}')
+
+                        except Exception as html_error:
+                            print(f'⚠️ Error generating HTML report: {html_error}')
+                            print('📄 PDF generation and upload was successful, continuing...')
                     else:
                         print('⚠️ Failed to send PDF report to Slack, but PDF generation was successful')
                 else:
                     print('⚠️ Could not fetch data for Slack notification, but PDF generation was successful')
-                    
+
             except Exception as slack_error:
                 print(f'⚠️ Error sending PDF to Slack: {slack_error}')
                 print('📄 PDF generation was successful, continuing...')
-            
+
             # Output the path for the calling script
             print(f'PDF_OUTPUT_PATH:{output_path}')
             sys.exit(0)

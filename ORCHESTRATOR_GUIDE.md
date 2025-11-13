@@ -1033,7 +1033,7 @@ XYNE - Automation report for agent-module
 
 📅 DATE/TIME: Tuesday, October 22, 2025
 
-SCRIPT RUN BY: abhishek.kumar.004
+SCRIPT RUN BY: your-username
 TEST ENV URL: https://sbx.xyne.juspay.net
 
 Test Cases Run: 16

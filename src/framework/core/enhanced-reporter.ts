@@ -8,7 +8,7 @@ import { dependencyManager } from './dependency-manager';
 import { PriorityExecutionStats, TestPriority, TestMetadata } from '@/types';
 import { slackNotifier, SlackNotificationData, SlackNotificationResult } from '../utils/slack-notifier';
 import { configManager } from './config-manager';
-import { databaseService } from '../utils/database-service';
+import { testRunDbService } from '../utils/test-run-db-service';
 import { pdfReportService } from '../utils/pdf-report-service';
 import fs from 'fs';
 import path from 'path';
@@ -557,29 +557,98 @@ export default class EnhancedReporter implements Reporter {
 
       console.log('💾 Attempting to store test results in database...');
 
-      // Prepare summary data for database service
-      const summary = {
-        totalTests: slackData.totalTests,
-        totalPassed: slackData.totalPassed,
-        totalFailed: slackData.totalFailed,
-        totalSkipped: slackData.totalSkipped
-      };
-
       // Get actual Slack message URL if available, otherwise fallback to generic message
-      const slackReportLink = slackResult.success && slackResult.messageUrl ? 
-        slackResult.messageUrl : 
+      const slackReportLink = slackResult.success && slackResult.messageUrl ?
+        slackResult.messageUrl :
         (slackData.htmlReportPath ? `Slack notification sent for ${slackData.moduleName}` : undefined);
 
-      // Store in database
-      await databaseService.storeTestResults(
-        this.stats,
-        summary,
-        slackReportLink
-      );
+      // Store module-level results in database (xyne_test_module table)
+      await this.storeModuleLevelResults(slackData, slackReportLink);
 
     } catch (error) {
       // Database storage is non-critical, so we log but don't throw
       console.warn('⚠️ Database storage encountered an issue:', error);
+    }
+  }
+
+  /**
+   * Store module-level test results in test_modules table
+   */
+  private async storeModuleLevelResults(slackData: SlackNotificationData, slackReportLink?: string): Promise<void> {
+    try {
+      const cronRunId = process.env.CRON_RUN_ID;
+
+      // Only save to test_modules table if this is a cron run
+      if (!cronRunId) {
+        console.log('ℹ️  Skipping test_modules table (not a cron run)');
+        return;
+      }
+
+      // Check if database operations should be performed
+      const shouldPerform = await testRunDbService.shouldPerformDbOperations();
+      if (!shouldPerform) {
+        return;
+      }
+
+      console.log('💾 Saving module results to test_modules table...');
+
+      // Load orchestrator results to get accurate test status
+      const moduleName = slackData.moduleName || 'unknown-module';
+      const orchestratorResultsPath = path.join('reports', `orchestrator-results-${moduleName}.json`);
+      let orchestratorResultsMap: Map<string, any> = new Map();
+
+      if (fs.existsSync(orchestratorResultsPath)) {
+        try {
+          console.log('📊 Loading orchestrator results for accurate test status...');
+          const orchestratorResults = JSON.parse(fs.readFileSync(orchestratorResultsPath, 'utf-8'));
+
+          // Create map of test name -> orchestrator result
+          for (const [testName, result] of Object.entries(orchestratorResults)) {
+            orchestratorResultsMap.set(testName, result);
+          }
+
+          console.log(`✅ Loaded ${orchestratorResultsMap.size} orchestrator results`);
+        } catch (error) {
+          console.warn('⚠️ Failed to load orchestrator results, falling back to Playwright results:', error);
+        }
+      } else {
+        console.log('⚠️ Orchestrator results not found, using Playwright results');
+      }
+
+      // Build detailed test data array from test results
+      const tests = [];
+      for (const [testName, testData] of this.testResults) {
+        const { result, metadata } = testData;
+
+        // Get orchestrator result if available (contains accurate status after dependency chain enforcement)
+        const orchestratorResult = orchestratorResultsMap.get(testName);
+
+        tests.push({
+          name: testName,
+          status: orchestratorResult?.status || result.status, // Use orchestrator status (accurate) or fallback to Playwright
+          priority: metadata?.priority || 'medium',
+          duration_ms: orchestratorResult?.duration || result.duration,
+          started_at: result.startTime ? new Date(result.startTime).toISOString() : new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+          error_message: orchestratorResult?.error || result.errors?.[0]?.message || undefined,
+          error_stack: result.errors?.[0]?.stack || undefined,
+          skip_reason: orchestratorResult?.reason || (result.status === 'skipped' ? (result.errors?.[0]?.message || 'Skipped') : undefined)
+        });
+      }
+
+      // Save to test_modules table
+      await testRunDbService.saveModuleResults({
+        cronRunId,
+        moduleName: slackData.moduleName || 'unknown-module',
+        runData: { tests },
+        startedAt: new Date().toISOString(), // TODO: Track actual start time
+        completedAt: new Date().toISOString(),
+        slackReportLink: slackReportLink || undefined
+      });
+
+      console.log('✅ Module results saved to test_modules table');
+    } catch (error) {
+      console.warn('⚠️ Failed to save module-level results:', error);
     }
   }
 
