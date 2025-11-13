@@ -205,15 +205,26 @@ export class AgentModulePage {
     await expect(sparklesButton).toBeVisible();
     console.log('Prompt field, label and sparkles button are visible');
 
-    // Verify Visibility section with radio buttons
+    // Verify Visibility section with toggle buttons
     const visibilityLabel = this.page.locator('label:has-text("Visibility")');
-    const privateRadio = this.page.locator('input#private[type="radio"]');
-    const publicRadio = this.page.locator('input#public[type="radio"]');
     await expect(visibilityLabel).toBeVisible();
-    await expect(privateRadio).toBeVisible();
-    await expect(publicRadio).toBeVisible();
-    await expect(privateRadio).toBeChecked(); // Should be checked by default
-    console.log('Visibility section with radio buttons is visible, private is selected by default');
+    console.log('Visibility label is visible');
+
+    // Verify the toggle button container
+    const toggleContainer = this.page.locator('div.inline-flex.rounded-xl.bg-gray-100.dark\\:bg-slate-700.p-1');
+    await expect(toggleContainer).toBeVisible();
+    console.log('Visibility toggle container is visible');
+
+    // Verify Private button (should be active/selected by default)
+    const privateButton = toggleContainer.locator('button:has-text("Private")');
+    await expect(privateButton).toBeVisible();
+    await expect(privateButton).toHaveClass(/bg-white|dark:bg-slate-800/); // Active state has white background
+    console.log('Private toggle button is visible and selected by default');
+
+    // Verify Public button (should be inactive by default)
+    const publicButton = toggleContainer.locator('button:has-text("Public")');
+    await expect(publicButton).toBeVisible();
+    console.log('Public toggle button is visible');
 
     // Verify App Integrations section
     const appIntegrationsLabel = this.page.locator('label:has-text("App Integrations")');
@@ -225,57 +236,40 @@ export class AgentModulePage {
     await expect(appIntegrationsDesc).toBeVisible();
     console.log('App Integrations description is visible');
 
-    // Verify the integration selection area with placeholder
-    const integrationArea = this.page.locator('div.flex.flex-wrap.items-center.gap-2.p-3.border:has(span:has-text("Add integrations.."))');
-    await expect(integrationArea).toBeVisible();
-    console.log('App Integrations selection area is visible');
-
-    // Verify the "Add integrations.." placeholder text
-    const integrationsPlaceholder = this.page.locator('span:has-text("Add integrations..")');
-    await expect(integrationsPlaceholder).toBeVisible();
-    console.log('App Integrations placeholder text is visible');
-
-    // Verify the plus button for adding integrations
-    const addIntegrationsButton = this.page.locator('button:has(svg.lucide-circle-plus)');
-    await expect(addIntegrationsButton).toBeVisible();
-    console.log('Add integrations plus button is visible');
-
-    // Verify the collections note
-    const collectionsNote = this.page.locator('p:has-text("Collections appear in the submenu when selecting integrations.")');
-    await expect(collectionsNote).toBeVisible();
-    console.log('Collections submenu note is visible');
-
-    // Verify Specific Entities section
-    const specificEntitiesLabel = this.page.locator('label:has-text("Specific Entities")');
-    await expect(specificEntitiesLabel).toBeVisible();
-    console.log('Specific Entities label is visible');
-
-    // Verify Specific Entities description
-    const specificEntitiesDesc = this.page.locator('p:has-text("Search for and select specific entities for your agent to use.")');
-    await expect(specificEntitiesDesc).toBeVisible();
-    console.log('Specific Entities description is visible');
-
-    // Verify the selected entities display area
-    const selectedEntitiesArea = this.page.locator('div.flex.flex-wrap.items-center.gap-2.p-3.border:has(span:has-text("Selected entities will be shown here"))');
-    await expect(selectedEntitiesArea).toBeVisible();
-    console.log('Selected entities display area is visible');
-
-    // Verify the "Selected entities will be shown here" placeholder
-    const entitiesPlaceholder = this.page.locator('span:has-text("Selected entities will be shown here")');
-    await expect(entitiesPlaceholder).toBeVisible();
-    console.log('Selected entities placeholder text is visible');
-
-    // Verify the entities search input
-    const entitiesSearchInput = this.page.locator('input[placeholder="Search for specific entities..."]');
-    await expect(entitiesSearchInput).toBeVisible();
-    console.log('Specific Entities search input is visible');
+    // Verify the "Add App" button for adding integrations
+    const addAppButton = this.page.locator('button:has-text("Add App"):has(svg.lucide-plus)');
+    await expect(addAppButton).toBeVisible();
+    console.log('Add App button is visible');
 
     // Verify Agent Users section
     const agentUsersLabel = this.page.locator('label:has-text("Agent Users")');
-    const userSearchInput = this.page.locator('input[placeholder="Search users by name or email..."]');
     await expect(agentUsersLabel).toBeVisible();
+    console.log('Agent Users label is visible');
+
+    // Verify user search input
+    const userSearchInput = this.page.locator('input[placeholder="Search users by name or email..."]');
     await expect(userSearchInput).toBeVisible();
-    console.log('Agent Users section with search input is visible');
+    console.log('Agent Users search input is visible');
+
+    // Verify search icon in user search
+    const userSearchIcon = this.page.locator('svg.lucide-search').last();
+    await expect(userSearchIcon).toBeVisible();
+    console.log('User search icon is visible');
+
+    // Verify "No users added yet" card/message
+    const noUsersCard = this.page.locator('div.rounded-xl.shadow:has(p:has-text("No users added yet"))');
+    await expect(noUsersCard).toBeVisible();
+    console.log('No users added yet card is visible');
+
+    // Verify the user-plus icon
+    const userPlusIcon = this.page.locator('svg.lucide-user-plus');
+    await expect(userPlusIcon).toBeVisible();
+    console.log('User plus icon is visible');
+
+    // Verify the helper text
+    const helperText = this.page.locator('p:has-text("Search and select users to add them to this agent")');
+    await expect(helperText).toBeVisible();
+    console.log('Helper text for adding users is visible');
 
     // Verify Test Agent panel on the right side
     const testAgentTitle = this.page.locator('h2:has-text("TEST AGENT")');
@@ -293,6 +287,11 @@ export class AgentModulePage {
     const testChatInput = this.page.locator('div[contenteditable="true"][data-at-mention="true"]');
     await expect(testChatInput).toBeVisible();
     console.log('Test chat input area is visible');
+
+    // Verify "Create Agent" button at the bottom
+    const createAgentButton = this.page.locator('button:has-text("Create Agent")');
+    await expect(createAgentButton).toBeVisible();
+    console.log('Create Agent button is visible');
 
     console.log('Create agent form elements verification test completed');
   }
@@ -343,8 +342,8 @@ export class AgentModulePage {
     await createAgentButton.click();
     console.log('Create Agent button clicked successfully');
 
-    // Wait for success popup or navigation
-    await this.page.locator('[role="status"][aria-live="off"], .text-sm.font-semibold:has-text("Success")').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    // Wait for success toast notification or navigation
+    await this.page.locator('li[data-state="open"].success, text="Success"').first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
 
     console.log('Create agent with form data test completed');
   }
@@ -355,31 +354,30 @@ export class AgentModulePage {
   async verifySuccessPopupAfterAgentCreation(): Promise<void> {
     console.log('Starting success popup verification test');
 
-    // Wait for the success popup to appear
-    await this.page.locator('[role="status"][aria-live="off"]').waitFor({ state: 'visible', timeout: 5000 });
+    // Wait for the success toast notification to appear
+    const successToast = this.page.locator('li[data-state="open"].success');
+    await successToast.waitFor({ state: 'visible', timeout: 10000 });
+    console.log('Success toast is visible');
 
-    // Verify success popup appears
-    const successPopup = this.page.locator('[role="status"][aria-live="off"]');
-    await expect(successPopup).toBeVisible({ timeout: 10000 });
-    console.log('Success popup is visible');
+    // Verify the check icon is present
+    const checkIcon = successToast.locator('svg.lucide-circle-check');
+    await expect(checkIcon).toBeVisible();
+    console.log('Check icon is visible in toast');
 
-    // Verify success popup title
-    const successTitle = successPopup.locator('div.text-sm.font-semibold:has-text("Success")');
+    // Verify success title
+    const successTitle = successToast.locator('div.text-sm.font-semibold:has-text("Success")');
     await expect(successTitle).toBeVisible();
-    console.log('Success title is visible in popup');
+    console.log('Success title is visible in toast');
 
-    // Verify success popup message
-    const successMessage = successPopup.locator('div.text-sm.opacity-90:has-text("Agent created successfully.")');
+    // Verify success message
+    const successMessage = successToast.locator('div.text-sm.opacity-90:has-text("Agent created successfully.")');
     await expect(successMessage).toBeVisible();
     console.log('Success message "Agent created successfully." is visible');
 
-    // Verify close button is present in popup
-    const closeButton = successPopup.locator('button[toast-close]');
+    // Verify close button is present
+    const closeButton = successToast.locator('button[toast-close]');
     await expect(closeButton).toBeVisible();
-    console.log('Close button is visible in success popup');
-
-    // Ensure popup remains visible
-    await expect(successPopup).toBeVisible({ timeout: 2000 });
+    console.log('Close button is visible in success toast');
 
     console.log('Success popup verification test completed');
   }
@@ -1120,31 +1118,33 @@ export class AgentModulePage {
     await saveButton.click();
     console.log('Clicked Save Changes button');
 
-    // Verify the success popup appears
-    await this.page.locator('[role="status"][aria-live="off"]').waitFor({ state: 'visible', timeout: 5000 });
+    // Verify the success toast notification appears
+    const successToast = this.page.locator('li[data-state="open"].success');
+    await successToast.waitFor({ state: 'visible', timeout: 10000 });
+    console.log('Success toast is visible');
 
-    // Check for success popup with the specific structure from your HTML
-    const successPopup = this.page.locator('[role="status"][aria-live="off"]');
-    await expect(successPopup).toBeVisible({ timeout: 10000 });
-    console.log('Success popup is visible');
+    // Verify the check icon is present
+    const checkIcon = successToast.locator('svg.lucide-circle-check');
+    await expect(checkIcon).toBeVisible();
+    console.log('Check icon is visible in toast');
 
-    // Verify success popup title
-    const successTitle = successPopup.locator('div.text-sm.font-semibold:has-text("Success")');
+    // Verify success title
+    const successTitle = successToast.locator('div.text-sm.font-semibold:has-text("Success")');
     await expect(successTitle).toBeVisible();
-    console.log('Success title is visible in popup');
+    console.log('Success title is visible in toast');
 
-    // Verify success popup message for agent update
-    const successMessage = successPopup.locator('div.text-sm.opacity-90:has-text("Agent updated successfully.")');
+    // Verify success message for agent update
+    const successMessage = successToast.locator('div.text-sm.opacity-90:has-text("Agent updated successfully.")');
     await expect(successMessage).toBeVisible();
     console.log('Success message "Agent updated successfully." is visible');
 
-    // Verify close button is present in popup
-    const closeButton = successPopup.locator('button[toast-close]');
+    // Verify close button is present
+    const closeButton = successToast.locator('button[toast-close]');
     await expect(closeButton).toBeVisible();
-    console.log('Close button is visible in success popup');
+    console.log('Close button is visible in success toast');
 
-    // Ensure popup remains visible
-    await expect(successPopup).toBeVisible({ timeout: 3000 });
+    // Ensure toast remains visible
+    await expect(successToast).toBeVisible({ timeout: 3000 });
 
     console.log('Edit agent and verify success test completed');
   }
