@@ -184,10 +184,20 @@ export class WorkflowModulePage {
     await expect(allTab).toBeVisible();
     console.log('"All" tab is visible and active');
 
-    // Verify "Public workflows" tab (inactive state)
-    const publicWorkflowsTab = filterTabsContainer.locator('button.text-gray-500.dark\\:text-gray-400:has-text("Public workflows")');
-    await expect(publicWorkflowsTab).toBeVisible();
-    console.log('"Public workflows" tab is visible');
+    // Verify "Personal" tab (inactive state)
+    const personalTab = filterTabsContainer.locator('button.text-gray-500.dark\\:text-gray-400:has-text("Personal")');
+    await expect(personalTab).toBeVisible();
+    console.log('"Personal" tab is visible');
+
+    // Verify "Shared" tab (inactive state)
+    const sharedTab = filterTabsContainer.locator('button.text-gray-500.dark\\:text-gray-400:has-text("Shared")');
+    await expect(sharedTab).toBeVisible();
+    console.log('"Shared" tab is visible');
+
+    // Verify "Public" tab (inactive state)
+    const publicTab = filterTabsContainer.locator('button.text-gray-500.dark\\:text-gray-400:has-text("Public")');
+    await expect(publicTab).toBeVisible();
+    console.log('"Public" tab is visible');
 
     // Find the grid container that holds workflow cards (specific targeting to avoid strict mode violation)
     const gridContainer = yourWorkflowsHeading.locator('xpath=../../div[contains(@class, "grid") and contains(@class, "gap-4") and contains(@class, "w-full")]');
@@ -363,7 +373,7 @@ export class WorkflowModulePage {
 
   /**
    * Verify workflow template page default tabs state
-   * By default, "All" tab should be selected (active) and "Public workflows" tab should be inactive
+   * By default, "All" tab should be selected (active) and other tabs (Personal, Shared, Public) should be inactive
    */
   async verifyWorkflowTemplateDefaultTabsState(): Promise<void> {
     console.log('Verifying workflow template default tabs state');
@@ -378,27 +388,37 @@ export class WorkflowModulePage {
     await expect(allTabActive).toBeVisible();
     console.log('✅ "All" tab is visible and active (white background with shadow)');
 
-    // Verify "Public workflows" tab is in inactive state (no background, gray text)
-    const publicWorkflowsTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("Public workflows")');
-    await expect(publicWorkflowsTabInactive).toBeVisible();
-    console.log('✅ "Public workflows" tab is visible and inactive (gray text, no background)');
+    // Verify "Personal" tab is in inactive state (no background, gray text)
+    const personalTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("Personal")');
+    await expect(personalTabInactive).toBeVisible();
+    console.log('✅ "Personal" tab is visible and inactive (gray text, no background)');
+
+    // Verify "Shared" tab is in inactive state (no background, gray text)
+    const sharedTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("Shared")');
+    await expect(sharedTabInactive).toBeVisible();
+    console.log('✅ "Shared" tab is visible and inactive (gray text, no background)');
+
+    // Verify "Public" tab is in inactive state (no background, gray text)
+    const publicTabInactive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.text-gray-500.dark\\:text-gray-400:has-text("Public")');
+    await expect(publicTabInactive).toBeVisible();
+    console.log('✅ "Public" tab is visible and inactive (gray text, no background)');
 
     console.log('✅ Workflow template default tabs state verified successfully');
   }
 
   /**
-   * Click on "Public workflows" tab in workflow template page
+   * Click on "Public" tab in workflow template page
    */
   async clickPublicWorkflowsTemplateTab(): Promise<void> {
-    console.log('Clicking on "Public workflows" tab in workflow template page');
+    console.log('Clicking on "Public" tab in workflow template page');
 
     const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
     await expect(tabsContainer).toBeVisible();
 
-    const publicWorkflowsTab = tabsContainer.locator('button:has-text("Public workflows")');
-    await expect(publicWorkflowsTab).toBeVisible();
-    await publicWorkflowsTab.click();
-    console.log('✅ Clicked "Public workflows" tab');
+    const publicTab = tabsContainer.locator('button:has-text("Public")');
+    await expect(publicTab).toBeVisible();
+    await publicTab.click();
+    console.log('✅ Clicked "Public" tab');
 
     // Validate Get Public Workflow Templates API response
     console.log('Validating Get Public Workflow Templates API response');
@@ -426,11 +446,11 @@ export class WorkflowModulePage {
   }
 
   /**
-   * Verify workflow template tabs state after clicking "Public workflows"
-   * "Public workflows" tab should be active and "All" tab should be inactive
+   * Verify workflow template tabs state after clicking "Public"
+   * "Public" tab should be active and "All" tab should be inactive
    */
   async verifyPublicWorkflowsTemplateTabActive(): Promise<void> {
-    console.log('Verifying "Public workflows" tab is active');
+    console.log('Verifying "Public" tab is active');
 
     const tabsContainer = this.page.locator('div.flex.items-center.gap-1.mb-6.bg-gray-100.dark\\:bg-gray-800.rounded-lg.p-1.w-fit');
     await expect(tabsContainer).toBeVisible();
@@ -440,12 +460,12 @@ export class WorkflowModulePage {
     await expect(allTabInactive).toBeVisible();
     console.log('✅ "All" tab is visible and inactive (gray text, no background)');
 
-    // Verify "Public workflows" tab is now in active state (white background, shadow)
-    const publicWorkflowsTabActive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.bg-white.dark\\:bg-gray-700.text-gray-900.dark\\:text-gray-100.shadow-sm:has-text("Public workflows")');
-    await expect(publicWorkflowsTabActive).toBeVisible();
-    console.log('✅ "Public workflows" tab is visible and active (white background with shadow)');
+    // Verify "Public" tab is now in active state (white background, shadow)
+    const publicTabActive = tabsContainer.locator('button.px-4.py-2.text-sm.font-medium.rounded-md.transition-all.duration-200.bg-white.dark\\:bg-gray-700.text-gray-900.dark\\:text-gray-100.shadow-sm:has-text("Public")');
+    await expect(publicTabActive).toBeVisible();
+    console.log('✅ "Public" tab is visible and active (white background with shadow)');
 
-    console.log('✅ "Public workflows" tab active state verified successfully');
+    console.log('✅ "Public" tab active state verified successfully');
   }
 
   /**
