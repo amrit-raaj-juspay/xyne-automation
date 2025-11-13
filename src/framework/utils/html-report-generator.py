@@ -50,53 +50,86 @@ class SlackNotifier:
             print('⚠️ Slack notifications disabled: SLACK_BOT_TOKEN not found in environment')
 
     def upload_html_to_slack_thread(self, html_path, cron_run_id, thread_ts=None):
-        """Upload HTML report to Slack, optionally as a thread reply."""
+        """Upload HTML report to Slack using files.uploadV2, optionally as a thread reply."""
         if not self.is_enabled:
             print('📱 Slack notification skipped: Not configured')
             return False
 
         try:
-            url = 'https://slack.com/api/files.upload'
+            headers = {'Authorization': f'Bearer {self.bot_token}'}
+            file_size = os.path.getsize(html_path)
+            file_name = os.path.basename(html_path)
 
-            headers = {
-                'Authorization': f'Bearer {self.bot_token}'
+            if thread_ts:
+                print(f'📤 Uploading HTML report to Slack thread: {thread_ts}')
+            else:
+                print(f'📤 Uploading HTML report to Slack channel: {self.channel_id}')
+
+            # Step 1: Get upload URL
+            response = requests.post(
+                'https://slack.com/api/files.getUploadURLExternal',
+                headers=headers,
+                data={'filename': file_name, 'length': file_size},
+                timeout=30
+            )
+
+            if not response.ok or not response.json().get('ok'):
+                error_msg = response.json().get('error', 'Unknown') if response.ok else f'HTTP {response.status_code}'
+                print(f'❌ Failed to get upload URL: {error_msg}')
+                return False
+
+            upload_data = response.json()
+            upload_url = upload_data['upload_url']
+            file_id = upload_data['file_id']
+
+            # Step 2: Upload file to the URL
+            with open(html_path, 'rb') as file:
+                upload_response = requests.post(
+                    upload_url,
+                    files={'file': (file_name, file, 'text/html')},
+                    timeout=60
+                )
+
+                if not upload_response.ok:
+                    print(f'❌ Failed to upload file: HTTP {upload_response.status_code}')
+                    return False
+
+            # Step 3: Complete the upload
+            complete_payload = {
+                'files': [{'id': file_id, 'title': f'Interactive HTML Report - {cron_run_id}'}],
+                'channel_id': self.channel_id,
+                'initial_comment': f'📊 Interactive HTML Test Report for CRON Run ID: {cron_run_id}\n\nClick to view detailed test results with module navigation and version comparison.'
             }
 
-            with open(html_path, 'rb') as file:
-                files = {
-                    'file': (os.path.basename(html_path), file, 'text/html')
-                }
+            # If thread_ts is provided, upload as a thread reply
+            if thread_ts:
+                complete_payload['thread_ts'] = thread_ts
 
-                data = {
-                    'channels': self.channel_id,
-                    'title': f'Interactive HTML Report - {cron_run_id}',
-                    'initial_comment': f'📊 Interactive HTML Test Report for CRON Run ID: {cron_run_id}\n\nClick to view detailed test results with module navigation and version comparison.'
-                }
+            complete_response = requests.post(
+                'https://slack.com/api/files.completeUploadExternal',
+                headers={**headers, 'Content-Type': 'application/json'},
+                json=complete_payload,
+                timeout=30
+            )
 
-                # If thread_ts is provided, upload as a thread reply
-                if thread_ts:
-                    data['thread_ts'] = thread_ts
-                    print(f'📤 Uploading HTML report to Slack thread: {thread_ts}')
+            if complete_response.ok:
+                result = complete_response.json()
+                if result.get('ok'):
+                    print('✅ HTML report uploaded to Slack successfully')
+
+                    # Try to get the file permalink
+                    files = result.get('files', [])
+                    if files and files[0].get('permalink'):
+                        print(f'🔗 Slack file URL: {files[0]["permalink"]}')
+                        return files[0]['permalink']
+
+                    return True
                 else:
-                    print(f'📤 Uploading HTML report to Slack channel: {self.channel_id}')
-
-                response = requests.post(url, headers=headers, files=files, data=data, timeout=30)
-
-                if response.ok:
-                    result = response.json()
-                    if result.get('ok'):
-                        print('✅ HTML report uploaded to Slack successfully')
-
-                        if result.get('file', {}).get('permalink'):
-                            print(f'🔗 Slack file URL: {result["file"]["permalink"]}')
-
-                        return result.get('file', {}).get('permalink')
-                    else:
-                        print(f'❌ Slack API error: {result.get("error", "Unknown error")}')
-                        return False
-                else:
-                    print(f'❌ HTTP error uploading to Slack: {response.status_code} {response.text}')
+                    print(f'❌ Slack API error: {result.get("error", "Unknown")}')
                     return False
+            else:
+                print(f'❌ HTTP error completing upload: {complete_response.status_code}')
+                return False
 
         except Exception as e:
             print(f'❌ Exception uploading to Slack: {e}')
@@ -159,8 +192,9 @@ class InteractiveHtmlReportGenerator:
     def authenticate_with_juspay(self):
         """Get authentication token using Juspay API."""
         try:
+            # Use same login URL as PDF generator for consistency
             login_url = os.environ.get('LOGIN_API_ENDPOINT',
-                                      'https://euler-x.internal.staging.mum.juspay.net/api/ec/v1/admin/login')
+                                      'https://roaming.sandbox.portal.juspay.in/api/ec/v1/admin/login')
 
             username = os.environ.get('JUSPAY_USERNAME')
             password = os.environ.get('JUSPAY_PASSWORD')
@@ -210,7 +244,7 @@ class InteractiveHtmlReportGenerator:
                     'Content-Type': 'application/json'
                 },
                 json={'query': query},
-                timeout=30
+                timeout=60  # Increased timeout to 60 seconds
             )
 
             if not response.ok:

@@ -89,49 +89,111 @@ class SlackNotifier:
             return False
     
     def upload_file_to_slack(self, file_path, message):
-        """Upload file to Slack using files.upload API."""
+        """Upload file to Slack using files.uploadV2 API (3-step workflow) and return the message timestamp."""
         try:
-            # Slack files.upload API endpoint
-            url = 'https://slack.com/api/files.upload'
-            
-            # Prepare headers
-            headers = {
-                'Authorization': f'Bearer {self.bot_token}'
-            }
-            
-            # Prepare file data
+            headers = {'Authorization': f'Bearer {self.bot_token}'}
+            file_size = os.path.getsize(file_path)
+            file_name = os.path.basename(file_path)
+
+            print(f'📤 Uploading PDF report to Slack channel: {self.channel_id}')
+
+            # Step 1: Get upload URL
+            response = requests.post(
+                'https://slack.com/api/files.getUploadURLExternal',
+                headers=headers,
+                data={'filename': file_name, 'length': file_size},
+                timeout=30
+            )
+
+            if not response.ok or not response.json().get('ok'):
+                error_msg = response.json().get('error', 'Unknown') if response.ok else f'HTTP {response.status_code}'
+                print(f'❌ Failed to get upload URL: {error_msg}')
+                return False
+
+            upload_data = response.json()
+            upload_url = upload_data['upload_url']
+            file_id = upload_data['file_id']
+
+            # Step 2: Upload file to the URL
             with open(file_path, 'rb') as file:
-                files = {
-                    'file': (os.path.basename(file_path), file, 'application/pdf')
-                }
-                
-                data = {
-                    'channels': self.channel_id,
-                    'initial_comment': message,
-                    'title': f'Test Execution Report - {os.path.basename(file_path)}'
-                }
-                
-                print(f'📤 Uploading PDF report to Slack channel: {self.channel_id}')
-                
-                response = requests.post(url, headers=headers, files=files, data=data, timeout=30)
-                
-                if response.ok:
-                    result = response.json()
-                    if result.get('ok'):
-                        print('✅ PDF report uploaded to Slack successfully')
-                        
-                        # Try to get the message URL
-                        if result.get('file', {}).get('permalink'):
-                            print(f'🔗 Slack file URL: {result["file"]["permalink"]}')
-                        
-                        return True
-                    else:
-                        print(f'❌ Slack API error: {result.get("error", "Unknown error")}')
-                        return False
-                else:
-                    print(f'❌ HTTP error uploading to Slack: {response.status_code} {response.text}')
+                upload_response = requests.post(
+                    upload_url,
+                    files={'file': (file_name, file, 'application/pdf')},
+                    timeout=35
+                )
+
+                if not upload_response.ok:
+                    print(f'❌ Failed to upload file: HTTP {upload_response.status_code}')
                     return False
-                    
+
+            # Step 3: Complete the upload
+            complete_response = requests.post(
+                'https://slack.com/api/files.completeUploadExternal',
+                headers={**headers, 'Content-Type': 'application/json'},
+                json={
+                    'files': [{'id': file_id, 'title': f'Test Execution Report - {file_name}'}],
+                    'channel_id': self.channel_id,
+                    'initial_comment': message
+                },
+                timeout=30
+            )
+
+            if complete_response.ok:
+                result = complete_response.json()
+                if result.get('ok'):
+                    print('✅ PDF report uploaded to Slack successfully')
+
+                    files = result.get('files', [])
+                    if files and files[0].get('permalink'):
+                        print(f'🔗 Slack file URL: {files[0]["permalink"]}')
+
+                    # Extract message timestamp
+                    file_data = files[0] if files else {}
+                    shares = file_data.get('shares', {})
+
+                    # Try to extract timestamp from shares
+                    if shares and 'public' in shares:
+                        for channel_id, share_data in shares['public'].items():
+                            if isinstance(share_data, list) and len(share_data) > 0:
+                                ts = share_data[0].get('ts')
+                                if ts:
+                                    print(f'📌 Message timestamp: {ts}')
+                                    return ts
+
+                    # Fallback: Try to get from channel history
+                    print('🔍 Timestamp not in response, fetching from channel history...')
+                    try:
+                        import time
+                        time.sleep(1)  # Brief delay to ensure message is in history
+
+                        history_response = requests.get(
+                            'https://slack.com/api/conversations.history',
+                            headers={'Authorization': f'Bearer {self.bot_token}'},
+                            params={'channel': self.channel_id, 'limit': 1},
+                            timeout=10
+                        )
+
+                        if history_response.ok:
+                            history_data = history_response.json()
+                            if history_data.get('ok') and history_data.get('messages'):
+                                latest_message = history_data['messages'][0]
+                                ts = latest_message.get('ts')
+                                if ts:
+                                    print(f'📌 Message timestamp from history: {ts}')
+                                    return ts
+                    except Exception as e:
+                        print(f'⚠️ Could not fetch from history: {e}')
+
+                    # Final fallback
+                    print('⚠️ Could not extract message timestamp')
+                    return True
+                else:
+                    print(f'❌ Slack API error: {result.get("error", "Unknown")}')
+                    return False
+            else:
+                print(f'❌ HTTP error completing upload: {complete_response.status_code}')
+                return False
+
         except Exception as e:
             print(f'❌ Exception uploading to Slack: {e}')
             return False
@@ -305,19 +367,19 @@ class TestExecutionPdfGenerator:
         }
     
     def generate_pdf_report(self, cron_run_id, output_path=None):
-        """Generate PDF report for a specific CRON_RUN_ID."""
+        """Generate PDF report for a specific CRON_RUN_ID. Returns (output_path, records, summary, environment)."""
         try:
             print(f'📊 Generating PDF report for CRON_RUN_ID: {cron_run_id}')
-            
+
             # Fetch data from database
             records = self.fetch_report_data(cron_run_id)
             if not records:
                 print('⚠️ No data found for the specified CRON_RUN_ID')
-                return None
-            
+                return None, None, None, None
+
             # Calculate summary
             summary = self.calculate_summary(records)
-            
+
             # Get environment, date, and version info from first record
             environment = records[0].get('runenv', 'Unknown')
             report_date = records[0].get('run_datetime', datetime.now().isoformat())
@@ -336,13 +398,13 @@ class TestExecutionPdfGenerator:
             # Create PDF with version info
             self.create_pdf(output_path, cron_run_id, environment, report_date, records, summary,
                           repo_version, previous_version, previous_run_id)
-            
+
             print(f'✅ PDF report generated successfully: {output_path}')
-            return output_path
-            
+            return output_path, records, summary, environment
+
         except Exception as e:
             print(f'❌ Error generating PDF report: {e}')
-            return None
+            return None, None, None, None
     
     def create_pdf(self, output_path, cron_run_id, environment, report_date, records, summary,
                    repo_version='N/A', previous_version=None, previous_run_id=None):
@@ -620,27 +682,23 @@ def main():
         
         # Generate PDF report
         generator = TestExecutionPdfGenerator()
-        output_path = generator.generate_pdf_report(cron_run_id)
-        
+        output_path, records, summary, environment = generator.generate_pdf_report(cron_run_id)
+
         if output_path:
             print(f'✅ PDF report generated successfully: {output_path}')
-            
+
             # Send PDF to Slack
             try:
                 print('📤 Sending PDF report to Slack...')
-                
-                # Fetch data again to get summary and environment for Slack notification
-                records = generator.fetch_report_data(cron_run_id)
-                if records:
-                    summary = generator.calculate_summary(records)
-                    environment = records[0].get('runenv', 'Unknown')
-                    
+
+                # Use already-fetched data instead of fetching again
+                if records and summary and environment:
                     # Initialize Slack notifier and send PDF
                     slack_notifier = SlackNotifier()
                     slack_success = slack_notifier.send_pdf_notification(
                         output_path, cron_run_id, summary, environment
                     )
-                    
+
                     if slack_success:
                         print('✅ PDF report sent to Slack successfully')
 
@@ -659,7 +717,7 @@ def main():
                                 capture_output=True,
                                 text=True,
                                 timeout=120
-                            )
+                        )
 
                             if result.returncode == 0:
                                 print('✅ HTML report generated and uploaded to Slack thread successfully')
