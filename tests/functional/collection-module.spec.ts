@@ -410,7 +410,7 @@ orchestrator.createSuite('Collection Module Tests', [
   },
 
   {
-    name: 'click chevron-down arrow to collapse euler-team folder',
+    name: 'click chevron- down arrow to collapse euler-team folder',
     dependencies: ['click chevron arrow to expand euler-team folder'],
     metadata: { priority: 'high', tags: ['@ui', '@folder', '@collapse'] },
     testFunction: async ({ sharedPage }) => {
