@@ -141,6 +141,10 @@ export const test = base.extend<CustomFixtures>({
 
       console.log(`🔗 Using shared page for test: ${testName}`);
 
+      // Initialize API monitor for all tests using shared page
+      apiMonitor = new APIMonitor(page, `${fileId}-${testName}`);
+      await apiMonitor.startMonitoring(`${fileId}-${testName}`);
+
       // Wrap page with instrumentation for detailed step tracking
       const instrumentedPage = wrapPageWithInstrumentation(page);
 
