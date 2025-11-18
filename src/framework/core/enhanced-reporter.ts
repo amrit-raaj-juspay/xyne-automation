@@ -617,6 +617,9 @@ export default class EnhancedReporter implements Reporter {
 
       // Build detailed test data array from test results
       const tests = [];
+      const targetRepo = process.env.TARGET_REPO || 'xyne';
+      const baseURL = process.env[targetRepo === 'xyne-spaces' ? 'XYNE_SPACES_BASE_URL' : 'XYNE_BASE_URL'];
+
       for (const [testName, testData] of this.testResults) {
         const { result, metadata } = testData;
 
@@ -636,14 +639,18 @@ export default class EnhancedReporter implements Reporter {
         });
       }
 
-      // Save to test_modules table
+      // Save to test_modules table with repository information
       await testRunDbService.saveModuleResults({
         cronRunId,
         moduleName: slackData.moduleName || 'unknown-module',
         runData: { tests },
         startedAt: new Date().toISOString(), // TODO: Track actual start time
         completedAt: new Date().toISOString(),
-        slackReportLink: slackReportLink || undefined
+        slackReportLink: slackReportLink || undefined,
+        metadata: {
+          targetRepository: targetRepo,
+          baseURL: baseURL
+        }
       });
 
       console.log('✅ Module results saved to test_modules table');

@@ -86,10 +86,56 @@ echo "Using Node.js version: $(node --version)"
 echo "Using npm version: $(npm --version)"
 
 # ============================================
+# VALIDATE TEST FILES EXIST
+# ============================================
+# Check for test files BEFORE initializing database
+
+# Load environment variables to get TARGET_REPO
+if [ -f .env ]; then
+    set -a
+    source .env
+    set +a
+fi
+
+# Get TARGET_REPO from environment, default to xyne
+TARGET_REPO=${TARGET_REPO:-xyne}
+
+# Set test directory based on TARGET_REPO
+if [ "$TARGET_REPO" = "xyne-spaces" ]; then
+    TEST_DIR="tests/functional/xyne-spaces"
+    REPO_NAME="Xyne Spaces"
+else
+    TEST_DIR="tests/functional/xyne"
+    REPO_NAME="Xyne"
+fi
+
+echo ""
+echo "🎯 Target Repository: $REPO_NAME"
+echo "📁 Test Directory: $TEST_DIR"
+echo ""
+
+# Find all test spec files (excluding meta orchestrator files) and sort them
+TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts" \
+  ! -name "all-modules-orchestrated.spec.ts" \
+  ! -name "all-modules-staggered.spec.ts" \
+  | sort)
+
+# Check if any test files were found
+if [ -z "$TEST_FILES" ]; then
+  echo "❌ ERROR: No test files found in $TEST_DIR"
+  echo "⚠️  Cannot initialize test run - no tests to execute"
+  exit 1
+fi
+
+# Count the number of test files
+TEST_FILE_COUNT=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
+echo "✅ Found $TEST_FILE_COUNT test module(s) in $TEST_DIR"
+echo ""
+
+# ============================================
 # DATABASE INITIALIZATION
 # ============================================
 # Initialize test_runs table entry with version tracking
-echo ""
 echo "📋 Initializing test run in database..."
 
 # Ensure consistent user for database operations
@@ -116,21 +162,6 @@ echo "--------------------------------------------------"
 echo "🎭 Running All Modules in Parallel with Staggered Start"
 echo "Cron Run ID: $CRON_RUN_ID"
 echo "--------------------------------------------------"
-
-# Directory containing the test files
-TEST_DIR="tests/functional"
-
-# Find all test spec files (excluding meta orchestrator files) and sort them
-TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts" \
-  ! -name "all-modules-orchestrated.spec.ts" \
-  ! -name "all-modules-staggered.spec.ts" \
-  | sort)
-
-# Check if any test files were found
-if [ -z "$TEST_FILES" ]; then
-  echo "No test files found in $TEST_DIR"
-  exit 1
-fi
 
 echo "📋 Found test modules:"
 for file in $TEST_FILES; do

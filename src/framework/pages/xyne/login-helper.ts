@@ -6,7 +6,7 @@
  * 
  * Usage:
  * ```typescript
- * import { LoginHelper } from '@/framework/pages/login-helper';
+ * import { LoginHelper } from '../xyne/framework/pages/login-helper';
  * 
  * test('my test', async ({ page }) => {
  *   const loginSuccess = await LoginHelper.performLogin(page);
@@ -18,7 +18,7 @@
 
 import { Page } from '@playwright/test';
 import { GoogleOAuthLoginPage } from './google-oauth-login-page';
-import { configManager } from '../core/config-manager';
+import { configManager } from '../../core/config-manager';
 
 export interface LoginOptions {
   /** Custom email (overrides environment variable) */

@@ -3,8 +3,8 @@
  */
 
 import { Page } from '@playwright/test';
-import { expect } from '@/framework/utils/instrumented-page';
-import { BasePage } from '@/framework/core/base-page';
+import { expect } from '../../utils/instrumented-page';
+import { BasePage } from '../../core/base-page';
 
 export class SidebarModulePage extends BasePage {
 

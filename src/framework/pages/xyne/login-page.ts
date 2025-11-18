@@ -4,8 +4,8 @@
  */
 
 import { Page } from '@playwright/test';
-import { BasePage } from '../core/base-page';
-import { LoginPageElements } from '../../types/index';
+import { BasePage } from '../../core/base-page';
+import { LoginPageElements } from '../../../types/index';
 
 export class LoginPage extends BasePage {
   private selectors = {
