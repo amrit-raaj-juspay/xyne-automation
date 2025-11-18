@@ -4,8 +4,8 @@
 
 import { TestOrchestrator } from '@/framework/utils/test-orchestrator';
 import { step } from '@/framework/utils/step-tracker';
-import { LoginHelper } from '@/framework/pages/login-helper';
-import { CollectionModulePage } from '@/framework/pages/collection-module-page';
+import { LoginHelper } from '@/framework/pages/xyne/login-helper';
+import { CollectionModulePage } from '@/framework/pages/xyne/collection-module-page';
 
 const orchestrator = new TestOrchestrator({
   useSharedPage: true,

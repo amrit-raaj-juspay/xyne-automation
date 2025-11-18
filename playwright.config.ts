@@ -4,8 +4,21 @@ import * as dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Determine target repository from environment variable
+const targetRepo = process.env.TARGET_REPO || 'xyne';
+const isXyneSpaces = targetRepo === 'xyne-spaces';
+
+// Set baseURL based on target repository
+const getBaseURL = () => {
+  if (isXyneSpaces) {
+    return process.env.XYNE_SPACES_BASE_URL || 'https://spaces.xyne.juspay.net';
+  }
+  return process.env.XYNE_BASE_URL || 'https://xyne.juspay.net';
+};
+
 /**
  * Playwright configuration for Xyne automation framework
+ * Supports both Xyne and Xyne Spaces repositories
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
@@ -30,7 +43,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.XYNE_BASE_URL || 'https://xyne.juspay.net',
+    baseURL: getBaseURL(),
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

@@ -147,17 +147,20 @@ export class TestRunDbService {
 
   /**
    * Fetch the last run of the current active version
+   * Also filters by repo_name in metadata to ensure same repository comparison
    */
-  async getPreviousRunInfo(runEnv: string): Promise<PreviousRunInfo | null> {
+  async getPreviousRunInfo(runEnv: string, targetRepo?: string): Promise<PreviousRunInfo | null> {
     try {
-      console.log(`🔍 Fetching previous run info for environment: ${runEnv}`);
+      const repoName = targetRepo || process.env.TARGET_REPO || 'xyne';
+      console.log(`🔍 Fetching previous run info for environment: ${runEnv}, repo: ${repoName}`);
 
       const query = `
-        SELECT cron_run_id, repo_version
+        SELECT cron_run_id, repo_version, metadata
         FROM xyne_test_runs
         WHERE run_env = ${this.escapeString(runEnv)}
           AND is_version_active = TRUE
           AND status = 'completed'
+          AND metadata->>'targetRepo' = ${this.escapeString(repoName)}
         ORDER BY run_date_time DESC
         LIMIT 1
       `;
@@ -169,14 +172,14 @@ export class TestRunDbService {
       // Handle response format: result.response can be an array or a string message
       if (result && result.response && Array.isArray(result.response) && result.response.length > 0) {
         const row = result.response[0];
-        console.log(`✅ Found previous active run: ${row.cron_run_id} (version: ${row.repo_version})`);
+        console.log(`✅ Found previous active run: ${row.cron_run_id} (version: ${row.repo_version}, repo: ${repoName})`);
         return {
           cronRunId: row.cron_run_id,
           repoVersion: row.repo_version
         };
       }
 
-      console.log('ℹ️  No previous active completed run found (query returned no rows)');
+      console.log(`ℹ️  No previous active completed run found for repo: ${repoName} (query returned no rows)`);
       return null;
     } catch (error) {
       console.warn('⚠️  Failed to fetch previous run info:', error);
@@ -186,20 +189,23 @@ export class TestRunDbService {
 
   /**
    * Mark all runs of a version as inactive
+   * Also filters by repo_name in metadata to ensure same repository
    */
-  async markVersionInactive(repoVersion: string, runEnv: string): Promise<void> {
+  async markVersionInactive(repoVersion: string, runEnv: string, targetRepo?: string): Promise<void> {
     try {
-      console.log(`🔄 Marking all runs of version ${repoVersion} as inactive...`);
+      const repoName = targetRepo || process.env.TARGET_REPO || 'xyne';
+      console.log(`🔄 Marking all runs of version ${repoVersion} as inactive for repo: ${repoName}...`);
 
       const query = `
         UPDATE xyne_test_runs
         SET is_version_active = FALSE
         WHERE repo_version = ${this.escapeString(repoVersion)}
           AND run_env = ${this.escapeString(runEnv)}
+          AND metadata->>'targetRepo' = ${this.escapeString(repoName)}
       `;
 
       await this.executeQuery(query);
-      console.log('✅ Version marked as inactive');
+      console.log(`✅ Version marked as inactive for repo: ${repoName}`);
     } catch (error) {
       console.error('❌ Failed to mark version inactive:', error);
       throw error;
@@ -208,12 +214,15 @@ export class TestRunDbService {
 
   /**
    * Get the last completed run of a specific version
+   * Also filters by repo_name in metadata to ensure same repository
    */
-  async getLastRunOfVersion(version: string | null, runEnv: string, excludeRunId: string | null): Promise<{ cronRunId: string } | null> {
+  async getLastRunOfVersion(version: string | null, runEnv: string, excludeRunId: string | null, targetRepo?: string): Promise<{ cronRunId: string } | null> {
     try {
       if (!version) {
         return null;
       }
+
+      const repoName = targetRepo || process.env.TARGET_REPO || 'xyne';
 
       let query = `
         SELECT cron_run_id
@@ -221,6 +230,7 @@ export class TestRunDbService {
         WHERE repo_version = ${this.escapeString(version)}
           AND run_env = ${this.escapeString(runEnv)}
           AND status = 'completed'
+          AND metadata->>'targetRepo' = ${this.escapeString(repoName)}
       `;
 
       if (excludeRunId) {
@@ -468,12 +478,14 @@ export class TestRunDbService {
         throw new Error('CRON_RUN_ID environment variable not set');
       }
 
+      const targetRepo = process.env.TARGET_REPO || 'xyne';
+
       console.log('🚀 Starting test run initialization with version tracking...');
-      console.log(`📌 Step 1: Current repo version: ${repoVersion}`);
+      console.log(`📌 Step 1: Current repo version: ${repoVersion}, Target repo: ${targetRepo}`);
 
       // Step 2: Get last active completed run
-      console.log(`📌 Step 2: Fetching last active completed run...`);
-      const lastActiveRun = await this.getPreviousRunInfo(runEnv);
+      console.log(`📌 Step 2: Fetching last active completed run for repo: ${targetRepo}...`);
+      const lastActiveRun = await this.getPreviousRunInfo(runEnv, targetRepo);
 
       let isVersionActive = true;
       let previousVersion: string | null = null;
@@ -506,10 +518,10 @@ export class TestRunDbService {
         } else {
           // Step 3b: Version DIFFERENT
           console.log(`📌 Step 3b: Version DIFFERENT (${lastActiveVersion} → ${repoVersion})`);
-          console.log(`   → Marking all runs of version ${lastActiveVersion} as inactive...`);
+          console.log(`   → Marking all runs of version ${lastActiveVersion} as inactive for repo: ${targetRepo}...`);
 
-          // Mark all runs of the old version as inactive
-          await this.markVersionInactive(lastActiveVersion, runEnv);
+          // Mark all runs of the old version as inactive for this specific repo
+          await this.markVersionInactive(lastActiveVersion, runEnv, targetRepo);
 
           // Use the last active run for comparison
           previousVersion = lastActiveVersion;
@@ -519,15 +531,16 @@ export class TestRunDbService {
           isVersionActive = true;
         }
       } else {
-        console.log('📌 Step 2-3: First run detected (no previous run found)');
+        console.log(`📌 Step 2-3: First run detected for repo: ${targetRepo} (no previous run found)`);
       }
+      const baseURL = process.env[targetRepo === 'xyne-spaces' ? 'XYNE_SPACES_BASE_URL' : 'XYNE_BASE_URL'];
 
       // Collect metadata
       const metadata = {
+        targetRepo:targetRepo,
         stagger_delay_seconds: 50,
-        parallel_workers: 5,
         browser: 'chromium',
-        base_url: process.env.XYNE_BASE_URL || 'unknown',
+        base_url: baseURL,
         node_version: process.version,
         triggered_by: process.env.IS_CRON_RUN === 'true' ? 'cron' : 'manual'
       };

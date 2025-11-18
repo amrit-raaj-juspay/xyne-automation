@@ -6,7 +6,7 @@
 
 import { Page } from '@playwright/test';
 import { LoginPage } from './login-page';
-import { TOTPGenerator } from '../utils/totp-generator';
+import { TOTPGenerator } from '../../utils/totp-generator';
 
 export class GoogleOAuthLoginPage extends LoginPage {
   private totpGenerator: TOTPGenerator | null = null;
