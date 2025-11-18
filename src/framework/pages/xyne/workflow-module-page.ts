@@ -4,7 +4,7 @@
 
 import { Page } from '@playwright/test';
 import { expect } from '@/framework/utils/instrumented-page';
-import { ApiValidationService } from '../utils/api-validation-service';
+import { ApiValidationService } from '../../utils/api-validation-service';
 
 export class WorkflowModulePage {
   private apiValidator: ApiValidationService;

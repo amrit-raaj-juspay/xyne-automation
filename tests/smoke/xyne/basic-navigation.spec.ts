@@ -1,4 +1,4 @@
-import { test, expect } from '../../src/framework/core/test-fixtures';
+import { test, expect } from '../../../src/framework/core/test-fixtures';
 
 test.describe('Xyne Basic Navigation Tests', () => {
   test('should open browser and navigate to Xyne homepage', async ({ page }) => {

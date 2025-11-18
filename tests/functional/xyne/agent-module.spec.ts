@@ -3,8 +3,8 @@
  */
 
 import { TestOrchestrator } from '@/framework/utils/test-orchestrator';
-import { LoginHelper } from '@/framework/pages/login-helper';
-import { AgentModulePage } from '@/framework/pages/agent-module-page';
+import { LoginHelper } from '@/framework/pages/xyne/login-helper';
+import { AgentModulePage } from '@/framework/pages/xyne/agent-module-page';
 import { step } from '@/framework/utils/step-tracker';
 
 // Create orchestrator instance
