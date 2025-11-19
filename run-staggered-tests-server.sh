@@ -117,8 +117,8 @@ echo "🎭 Running All Modules in Parallel with Staggered Start"
 echo "Cron Run ID: $CRON_RUN_ID"
 echo "--------------------------------------------------"
 
-# Directory containing the test files
-TEST_DIR="tests/functional"
+# Directory containing the test files (only Xyne tests, excluding Spaces)
+TEST_DIR="tests/functional/xyne"
 
 # Find all test spec files (excluding meta orchestrator files) and sort them
 TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts" \

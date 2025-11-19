@@ -18,7 +18,7 @@
 
 import { Page } from '@playwright/test';
 import { GoogleOAuthLoginPage } from './google-oauth-login-page';
-import { configManager } from '../core/config-manager';
+import { configManager } from '../../core/config-manager';
 
 export interface LoginOptions {
   /** Custom email (overrides environment variable) */

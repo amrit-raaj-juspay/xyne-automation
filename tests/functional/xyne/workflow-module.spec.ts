@@ -3,8 +3,8 @@
  */
 
 import { TestOrchestrator } from '@/framework/utils/test-orchestrator';
-import { LoginHelper } from '@/framework/pages/login-helper';
-import { WorkflowModulePage } from '@/framework/pages/workflow-module-page';
+import { LoginHelper } from '@/framework/pages/xyne/login-helper';
+import { WorkflowModulePage } from '@/framework/pages/xyne/workflow-module-page';
 import { step } from '@/framework/utils/step-tracker';
 
 const orchestrator = new TestOrchestrator({

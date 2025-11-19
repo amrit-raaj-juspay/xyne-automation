@@ -4,8 +4,8 @@
 
 import { Page } from '@playwright/test';
 import { expect } from '@/framework/utils/instrumented-page';
-import { ApiValidationService } from '../utils/api-validation-service';
-import { APIMonitor } from '../utils/api-monitor';
+import { ApiValidationService } from '../../utils/api-validation-service';
+import { APIMonitor } from '../../utils/api-monitor';
 
 export class ChatModulePage {
   private apiValidator: ApiValidationService;
