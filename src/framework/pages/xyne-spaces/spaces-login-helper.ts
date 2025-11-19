@@ -5,7 +5,7 @@
  */
 
 import { Page } from '@playwright/test';
-import { GoogleOAuthLoginPage } from '@/framework/pages/xyne/google-oauth-login-page';
+import { GoogleOAuthLoginPage } from '@/framework/pages/xyne-spaces/google-oauth-login-page';
 import { TOTPGenerator } from '@/framework/utils/totp-generator';
 
 export class SpacesLoginHelper {
