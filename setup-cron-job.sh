@@ -43,7 +43,7 @@ echo ""
 (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab -
 
 if [ $? -eq 0 ]; then
-    echo "✅ Cron job successfully added!"
+    echo " Cron job successfully added!"
     echo ""
     echo "Schedule: 4 times daily at 00:00, 06:00, 12:00, and 18:00"
     echo "Script: $SCRIPT_PATH"
@@ -53,7 +53,7 @@ if [ $? -eq 0 ]; then
     echo "To remove this cron job: crontab -e (then delete the line)"
     echo "To view logs: tail -f $LOG_PATH"
 else
-    echo "❌ Failed to add cron job!"
+    echo " Failed to add cron job!"
     exit 1
 fi
 

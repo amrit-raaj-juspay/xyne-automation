@@ -26,7 +26,7 @@ def load_env_file():
     project_root = os.path.dirname(src_dir)  # project root directory
     env_path = os.path.join(project_root, '.env')
     
-    print(f"🔍 Looking for .env file at: {env_path}")
+    print(f" Looking for .env file at: {env_path}")
     
     if os.path.exists(env_path):
         with open(env_path, 'r') as f:
@@ -37,9 +37,9 @@ def load_env_file():
                     # Remove quotes if present
                     value = value.strip('\'"')
                     os.environ[key] = value
-        print(f"✅ Loaded environment variables from {env_path}")
+        print(f" Loaded environment variables from {env_path}")
     else:
-        print(f"⚠️ .env file not found at {env_path}")
+        print(f" .env file not found at {env_path}")
 
 # Load environment variables at module level
 load_env_file()
@@ -54,12 +54,12 @@ class SlackNotifier:
         self.is_enabled = bool(self.bot_token)
         
         if not self.is_enabled:
-            print('⚠️ Slack notifications disabled: SLACK_BOT_TOKEN not found in environment')
+            print(' Slack notifications disabled: SLACK_BOT_TOKEN not found in environment')
     
     def send_pdf_notification(self, pdf_path, cron_run_id, summary, environment):
         """Send PDF report to Slack."""
         if not self.is_enabled:
-            print('📱 Slack notification skipped: Not configured')
+            print(' Slack notification skipped: Not configured')
             return False
         
         try:
@@ -67,10 +67,10 @@ class SlackNotifier:
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             # Determine status emoji based on results
-            status_emoji = '🔴' if summary['total_failed'] > 0 else ('🟡' if summary['total_skipped'] > 0 else '🟢')
+            status_emoji = '' if summary['total_failed'] > 0 else ('' if summary['total_skipped'] > 0 else '🟢')
             
             message_text = f"{status_emoji} *PDF Test Execution Report Generated*\n\n"
-            message_text += f"📊 **Summary for CRON Run ID: {cron_run_id}**\n"
+            message_text += f" **Summary for CRON Run ID: {cron_run_id}**\n"
             message_text += f"• Environment: {environment}\n"
             message_text += f"• Total Modules: {summary['total_modules']}\n"
             message_text += f"• Total Tests: {summary['total_tests']}\n"
@@ -79,13 +79,13 @@ class SlackNotifier:
             message_text += f"• Skipped: {summary['total_skipped']}\n"
             message_text += f"• Pass Rate: {summary['pass_rate']}%\n"
             message_text += f"• Generated: {current_time}\n\n"
-            message_text += f"📄 PDF report attached below."
+            message_text += f" PDF report attached below."
             
             # Upload file to Slack
             return self.upload_file_to_slack(pdf_path, message_text)
             
         except Exception as e:
-            print(f'❌ Error sending Slack notification: {e}')
+            print(f' Error sending Slack notification: {e}')
             return False
     
     def upload_file_to_slack(self, file_path, message):
@@ -95,7 +95,7 @@ class SlackNotifier:
             file_size = os.path.getsize(file_path)
             file_name = os.path.basename(file_path)
 
-            print(f'📤 Uploading PDF report to Slack channel: {self.channel_id}')
+            print(f' Uploading PDF report to Slack channel: {self.channel_id}')
 
             # Step 1: Get upload URL
             response = requests.post(
@@ -107,7 +107,7 @@ class SlackNotifier:
 
             if not response.ok or not response.json().get('ok'):
                 error_msg = response.json().get('error', 'Unknown') if response.ok else f'HTTP {response.status_code}'
-                print(f'❌ Failed to get upload URL: {error_msg}')
+                print(f' Failed to get upload URL: {error_msg}')
                 return False
 
             upload_data = response.json()
@@ -123,7 +123,7 @@ class SlackNotifier:
                 )
 
                 if not upload_response.ok:
-                    print(f'❌ Failed to upload file: HTTP {upload_response.status_code}')
+                    print(f' Failed to upload file: HTTP {upload_response.status_code}')
                     return False
 
             # Step 3: Complete the upload
@@ -141,11 +141,11 @@ class SlackNotifier:
             if complete_response.ok:
                 result = complete_response.json()
                 if result.get('ok'):
-                    print('✅ PDF report uploaded to Slack successfully')
+                    print(' PDF report uploaded to Slack successfully')
 
                     files = result.get('files', [])
                     if files and files[0].get('permalink'):
-                        print(f'🔗 Slack file URL: {files[0]["permalink"]}')
+                        print(f' Slack file URL: {files[0]["permalink"]}')
 
                     # Extract message timestamp
                     file_data = files[0] if files else {}
@@ -157,11 +157,11 @@ class SlackNotifier:
                             if isinstance(share_data, list) and len(share_data) > 0:
                                 ts = share_data[0].get('ts')
                                 if ts:
-                                    print(f'📌 Message timestamp: {ts}')
+                                    print(f' Message timestamp: {ts}')
                                     return ts
 
                     # Fallback: Try to get from channel history
-                    print('🔍 Timestamp not in response, fetching from channel history...')
+                    print(' Timestamp not in response, fetching from channel history...')
                     try:
                         import time
                         time.sleep(1)  # Brief delay to ensure message is in history
@@ -179,23 +179,23 @@ class SlackNotifier:
                                 latest_message = history_data['messages'][0]
                                 ts = latest_message.get('ts')
                                 if ts:
-                                    print(f'📌 Message timestamp from history: {ts}')
+                                    print(f' Message timestamp from history: {ts}')
                                     return ts
                     except Exception as e:
-                        print(f'⚠️ Could not fetch from history: {e}')
+                        print(f' Could not fetch from history: {e}')
 
                     # Final fallback
-                    print('⚠️ Could not extract message timestamp')
+                    print(' Could not extract message timestamp')
                     return True
                 else:
-                    print(f'❌ Slack API error: {result.get("error", "Unknown")}')
+                    print(f' Slack API error: {result.get("error", "Unknown")}')
                     return False
             else:
-                print(f'❌ HTTP error completing upload: {complete_response.status_code}')
+                print(f' HTTP error completing upload: {complete_response.status_code}')
                 return False
 
         except Exception as e:
-            print(f'❌ Exception uploading to Slack: {e}')
+            print(f' Exception uploading to Slack: {e}')
             return False
 
 class TestExecutionPdfGenerator:
@@ -220,7 +220,7 @@ class TestExecutionPdfGenerator:
                 'password': password
             }
             
-            print(f"🔐 Authenticating with Juspay API...")
+            print(f" Authenticating with Juspay API...")
             
             response = requests.post(login_url, json=login_payload, timeout=30)
             
@@ -233,12 +233,12 @@ class TestExecutionPdfGenerator:
             if not token:
                 raise Exception('Token not found in login response')
             
-            print('✅ Successfully obtained authentication token')
+            print(' Successfully obtained authentication token')
             self.auth_token = token
             return token
             
         except Exception as e:
-            print(f'❌ Authentication error: {e}')
+            print(f' Authentication error: {e}')
             raise
     
     def fetch_report_data(self, cron_run_id):
@@ -266,7 +266,7 @@ class TestExecutionPdfGenerator:
                 ORDER BY m.module_name
             """
 
-            print(f'🔍 Fetching data for CRON_RUN_ID: {cron_run_id} from xyne_test_module')
+            print(f' Fetching data for CRON_RUN_ID: {cron_run_id} from xyne_test_module')
 
             # Execute query
             db_endpoint = os.getenv('DB_API_ENDPOINT', 'https://sandbox.portal.juspay.in/dashboard-test-automation/dbQuery')
@@ -281,7 +281,7 @@ class TestExecutionPdfGenerator:
                 timeout=30
             )
 
-            print(f'🔍 Database response status: {response.status_code}')
+            print(f' Database response status: {response.status_code}')
 
             if not response.ok:
                 raise Exception(f'Database query failed: {response.status_code} {response.text}')
@@ -291,7 +291,7 @@ class TestExecutionPdfGenerator:
             # Check for data in 'response' field
             if result.get('response') and len(result['response']) > 0:
                 raw_records = result['response']
-                print(f'📊 Found {len(raw_records)} module records')
+                print(f' Found {len(raw_records)} module records')
 
                 # Transform data from JSONB format to legacy format for PDF generation
                 records = []
@@ -333,17 +333,17 @@ class TestExecutionPdfGenerator:
                     }
                     records.append(transformed_record)
 
-                print(f'✅ Transformed {len(records)} records for PDF generation')
+                print(f' Transformed {len(records)} records for PDF generation')
                 return records
 
             # No data found
             else:
                 print('📭 No records found for the specified CRON_RUN_ID')
-                print(f'🔍 Result structure: {result}')
+                print(f' Result structure: {result}')
                 return None
 
         except Exception as e:
-            print(f'❌ Error fetching report data: {e}')
+            print(f' Error fetching report data: {e}')
             import traceback
             traceback.print_exc()
             return None
@@ -369,12 +369,12 @@ class TestExecutionPdfGenerator:
     def generate_pdf_report(self, cron_run_id, output_path=None):
         """Generate PDF report for a specific CRON_RUN_ID. Returns (output_path, records, summary, environment)."""
         try:
-            print(f'📊 Generating PDF report for CRON_RUN_ID: {cron_run_id}')
+            print(f' Generating PDF report for CRON_RUN_ID: {cron_run_id}')
 
             # Fetch data from database
             records = self.fetch_report_data(cron_run_id)
             if not records:
-                print('⚠️ No data found for the specified CRON_RUN_ID')
+                print(' No data found for the specified CRON_RUN_ID')
                 return None, None, None, None
 
             # Calculate summary
@@ -399,11 +399,11 @@ class TestExecutionPdfGenerator:
             self.create_pdf(output_path, cron_run_id, environment, report_date, records, summary,
                           repo_version, previous_version, previous_run_id)
 
-            print(f'✅ PDF report generated successfully: {output_path}')
+            print(f' PDF report generated successfully: {output_path}')
             return output_path, records, summary, environment
 
         except Exception as e:
-            print(f'❌ Error generating PDF report: {e}')
+            print(f' Error generating PDF report: {e}')
             return None, None, None, None
     
     def create_pdf(self, output_path, cron_run_id, environment, report_date, records, summary,
@@ -458,7 +458,7 @@ class TestExecutionPdfGenerator:
             elements.extend([main_header, Spacer(1, 20), secondary_header, Spacer(1, 5)])
             
             # Summary section
-            summary_header = Paragraph("📊 Execution Summary", ParagraphStyle(
+            summary_header = Paragraph(" Execution Summary", ParagraphStyle(
                 name="SummaryHeader",
                 fontSize=16,
                 alignment=TA_LEFT,
@@ -498,7 +498,7 @@ class TestExecutionPdfGenerator:
             elements.append(Spacer(1, 20))
             
             # Main data table
-            table_header = Paragraph("📋 Module Details", ParagraphStyle(
+            table_header = Paragraph(" Module Details", ParagraphStyle(
                 name="TableHeader",
                 fontSize=16,
                 alignment=TA_LEFT,
@@ -662,7 +662,7 @@ class TestExecutionPdfGenerator:
             pdf.build(elements)
             
         except Exception as e:
-            print(f'❌ Error creating PDF: {e}')
+            print(f' Error creating PDF: {e}')
             raise
 
 def main():
@@ -677,7 +677,7 @@ def main():
             cron_run_id = os.getenv('CRON_RUN_ID')
         
         if not cron_run_id:
-            print('❌ Error: CRON_RUN_ID not provided. Use as argument or environment variable.')
+            print(' Error: CRON_RUN_ID not provided. Use as argument or environment variable.')
             sys.exit(1)
         
         # Generate PDF report
@@ -685,11 +685,11 @@ def main():
         output_path, records, summary, environment = generator.generate_pdf_report(cron_run_id)
 
         if output_path:
-            print(f'✅ PDF report generated successfully: {output_path}')
+            print(f' PDF report generated successfully: {output_path}')
 
             # Send PDF to Slack
             try:
-                print('📤 Sending PDF report to Slack...')
+                print(' Sending PDF report to Slack...')
 
                 # Use already-fetched data instead of fetching again
                 if records and summary and environment:
@@ -700,11 +700,11 @@ def main():
                     )
 
                     if slack_success:
-                        print('✅ PDF report sent to Slack successfully')
+                        print(' PDF report sent to Slack successfully')
 
                         # Generate and upload HTML report as thread reply
                         try:
-                            print('\n📊 Generating HTML report for thread...')
+                            print('\n Generating HTML report for thread...')
                             import subprocess
 
                             # Get the path to the HTML report generator
@@ -720,26 +720,26 @@ def main():
                         )
 
                             if result.returncode == 0:
-                                print('✅ HTML report generated and uploaded to Slack thread successfully')
+                                print(' HTML report generated and uploaded to Slack thread successfully')
                                 # Extract HTML output path from stdout
                                 for line in result.stdout.split('\n'):
                                     if line.startswith('HTML_OUTPUT_PATH:'):
                                         html_path = line.split(':', 1)[1]
-                                        print(f'📄 HTML Report: {html_path}')
+                                        print(f' HTML Report: {html_path}')
                             else:
-                                print(f'⚠️ HTML report generation failed: {result.stderr}')
+                                print(f' HTML report generation failed: {result.stderr}')
 
                         except Exception as html_error:
-                            print(f'⚠️ Error generating HTML report: {html_error}')
-                            print('📄 PDF generation and upload was successful, continuing...')
+                            print(f' Error generating HTML report: {html_error}')
+                            print(' PDF generation and upload was successful, continuing...')
                     else:
-                        print('⚠️ Failed to send PDF report to Slack, but PDF generation was successful')
+                        print(' Failed to send PDF report to Slack, but PDF generation was successful')
                 else:
-                    print('⚠️ Could not fetch data for Slack notification, but PDF generation was successful')
+                    print(' Could not fetch data for Slack notification, but PDF generation was successful')
 
             except Exception as slack_error:
-                print(f'⚠️ Error sending PDF to Slack: {slack_error}')
-                print('📄 PDF generation was successful, continuing...')
+                print(f' Error sending PDF to Slack: {slack_error}')
+                print(' PDF generation was successful, continuing...')
 
             # Output the path for the calling script
             print(f'PDF_OUTPUT_PATH:{output_path}')
@@ -748,7 +748,7 @@ def main():
             sys.exit(1)
             
     except Exception as e:
-        print(f'❌ Error in main: {e}')
+        print(f' Error in main: {e}')
         sys.exit(1)
 
 if __name__ == '__main__':

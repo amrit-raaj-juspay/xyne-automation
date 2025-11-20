@@ -70,24 +70,24 @@ async function startServer() {
   try {
     // Start the Express server
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Test Automation Server is running on http://localhost:${PORT}`);
+      console.log(` Test Automation Server is running on http://localhost:${PORT}`);
     });
 
     // Start ngrok tunnel
-    console.log('🔗 Starting ngrok tunnel...');
+    console.log(' Starting ngrok tunnel...');
     const url = await ngrok.connect(PORT);
     
     console.log('\n' + '='.repeat(60));
-    console.log('🌐 PUBLIC URL (accessible from anywhere):');
+    console.log(' PUBLIC URL (accessible from anywhere):');
     console.log(`   ${url}`);
     console.log('='.repeat(60));
-    console.log('\n📋 Available endpoints:');
+    console.log('\n Available endpoints:');
     console.log(`   GET  ${url}         - Health check`);
     console.log(`   GET  ${url}/status  - Server status`);
     console.log(`   POST ${url}/run-tests - Trigger staggered tests`);
-    console.log('\n💡 To trigger tests from anywhere, send a POST request to:');
+    console.log('\n To trigger tests from anywhere, send a POST request to:');
     console.log(`   ${url}/run-tests`);
-    console.log('\n🔧 Example using curl:');
+    console.log('\n Example using curl:');
     console.log(`   curl -X POST ${url}/run-tests`);
     console.log('\n' + '='.repeat(60));
 
@@ -97,7 +97,7 @@ async function startServer() {
       await ngrok.disconnect();
       await ngrok.kill();
       server.close(() => {
-        console.log('✅ Server and ngrok tunnel closed');
+        console.log(' Server and ngrok tunnel closed');
         process.exit(0);
       });
     };
@@ -106,7 +106,7 @@ async function startServer() {
     process.on('SIGINT', shutdown);
 
   } catch (error) {
-    console.error('❌ Failed to start server or ngrok:', error);
+    console.error(' Failed to start server or ngrok:', error);
     process.exit(1);
   }
 }

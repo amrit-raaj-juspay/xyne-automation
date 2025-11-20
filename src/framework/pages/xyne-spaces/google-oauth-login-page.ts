@@ -48,9 +48,9 @@ export class GoogleOAuthLoginPage extends LoginPage {
   private initializeTOTPGenerator(): void {
     try {
       this.totpGenerator = TOTPGenerator.fromEnvironment('TOTP_SECRET_KEY');
-      console.log('✅ TOTP generator initialized successfully');
+      console.log('TOTP generator initialized successfully');
     } catch (error) {
-      console.warn('⚠️ TOTP generator not initialized:', error);
+      console.warn('WARNING: TOTP generator not initialized:', error);
     }
   }
 
@@ -73,7 +73,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Main method that orchestrates the entire login process
    */
   async performCompleteLogin(): Promise<boolean> {
-    console.log('🚀 Starting complete Google OAuth + TOTP login flow');
+    console.log('Starting complete Google OAuth + TOTP login flow');
     
     try {
       // Step 1: Navigate to login page and click Google login
@@ -98,15 +98,15 @@ export class GoogleOAuthLoginPage extends LoginPage {
       const loginSuccess = await this.verifyLoginSuccess();
       
       if (loginSuccess) {
-        console.log('✅ Complete login flow successful');
+        console.log('Complete login flow successful');
         return true;
       } else {
-        console.error('❌ Login verification failed');
+        console.error('ERROR: Login verification failed');
         return false;
       }
       
     } catch (error) {
-      console.error('❌ Login flow failed:', error);
+      console.error('ERROR: Login flow failed:', error);
       await this.takeScreenshot('login_error.png');
       return false;
     }
@@ -116,7 +116,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Step 1: Navigate to login page and initiate Google OAuth
    */
   private async initiateGoogleLogin(): Promise<void> {
-    console.log('📍 Step 1: Initiating Google login');
+    console.log('Step 1: Initiating Google login');
     
     // Navigate to login page
     const loginUrl = this.getLoginUrls().login;
@@ -128,14 +128,14 @@ export class GoogleOAuthLoginPage extends LoginPage {
     await this.waitForElement(googleLoginButton, 10000);
     await this.clickElement(googleLoginButton);
     
-    console.log('✅ Google login initiated');
+    console.log('Google login initiated');
   }
 
   /**
    * Step 2: Handle Google email input
    */
   private async handleGoogleEmailStep(): Promise<void> {
-    console.log('📧 Step 2: Handling Google email input');
+    console.log('Step 2: Handling Google email input');
     
     const { email } = this.getCredentials();
     
@@ -150,14 +150,14 @@ export class GoogleOAuthLoginPage extends LoginPage {
     // Wait for navigation to password step
     await this.page.waitForTimeout(3000);
     
-    console.log('✅ Email step completed');
+    console.log('Email step completed');
   }
 
   /**
    * Step 3: Handle Google password input
    */
   private async handleGooglePasswordStep(): Promise<void> {
-    console.log('🔐 Step 3: Handling Google password input');
+    console.log('Step 3: Handling Google password input');
     
     const { password } = this.getCredentials();
     
@@ -172,14 +172,14 @@ export class GoogleOAuthLoginPage extends LoginPage {
     // Wait for 2FA or next step
     await this.page.waitForTimeout(5000);
     
-    console.log('✅ Password step completed');
+    console.log('Password step completed');
   }
 
   /**
    * Step 4: Handle 2FA selection (Try another way -> Google Authenticator OR direct selection)
    */
   private async handle2FASelection(): Promise<void> {
-    console.log('🔐 Step 4: Handling 2FA selection');
+    console.log('Step 4: Handling 2FA selection');
     
     try {
       // Wait a moment for the 2FA page to load
@@ -198,19 +198,19 @@ export class GoogleOAuthLoginPage extends LoginPage {
       ];
       
       // First, try to find and click Google Authenticator option directly
-      console.log('🔍 Looking for Google Authenticator option...');
+      console.log('Looking for Google Authenticator option...');
       let authenticatorFound = false;
       
       for (const selector of authenticatorSelectors) {
         try {
           const isVisible = await this.isElementVisible(selector);
-          console.log(`   Checking selector "${selector}": ${isVisible ? '✅ Found' : '❌ Not found'}`);
+          console.log(`   Checking selector "${selector}": ${isVisible ? 'Found' : 'Not found'}`);
           
           if (isVisible) {
-            console.log(`🔑 Found Google Authenticator option with selector: ${selector}`);
+            console.log(`Found Google Authenticator option with selector: ${selector}`);
             await this.clickElement(selector);
             await this.page.waitForTimeout(3000);
-            console.log('✅ Google Authenticator selected directly');
+            console.log('Google Authenticator selected directly');
             authenticatorFound = true;
             break;
           }
@@ -222,11 +222,11 @@ export class GoogleOAuthLoginPage extends LoginPage {
       
       // If not found directly, try "Try another way" approach
       if (!authenticatorFound) {
-        console.log('🔄 Google Authenticator not found directly, trying "Try another way"...');
+        console.log('Google Authenticator not found directly, trying "Try another way"...');
         const tryAnotherWayVisible = await this.isElementVisible(this.googleSelectors.tryAnotherWayButton);
         
         if (tryAnotherWayVisible) {
-          console.log('🔄 "Try another way" option found, clicking...');
+          console.log('"Try another way" option found, clicking...');
           await this.clickElement(this.googleSelectors.tryAnotherWayButton);
           await this.page.waitForTimeout(3000);
           
@@ -235,10 +235,10 @@ export class GoogleOAuthLoginPage extends LoginPage {
             try {
               const isVisible = await this.isElementVisible(selector);
               if (isVisible) {
-                console.log(`🔑 Found Google Authenticator after "Try another way" with selector: ${selector}`);
+                console.log(`Found Google Authenticator after "Try another way" with selector: ${selector}`);
                 await this.clickElement(selector);
                 await this.page.waitForTimeout(3000);
-                console.log('✅ Google Authenticator selected after "Try another way"');
+                console.log('Google Authenticator selected after "Try another way"');
                 authenticatorFound = true;
                 break;
               }
@@ -250,13 +250,13 @@ export class GoogleOAuthLoginPage extends LoginPage {
       }
       
       if (!authenticatorFound) {
-        console.log('⚠️ Google Authenticator option not found, but proceeding to TOTP step');
+        console.log('WARNING: Google Authenticator option not found, but proceeding to TOTP step');
         // Take a screenshot for debugging
         await this.takeLoginScreenshot('2fa_selection_failed');
       }
       
     } catch (error) {
-      console.log('ℹ️ 2FA selection step encountered error:', error);
+      console.log('️ 2FA selection step encountered error:', error);
       await this.takeLoginScreenshot('2fa_selection_error');
     }
   }
@@ -265,7 +265,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Step 5: Handle TOTP code input
    */
   private async handleTOTPStep(): Promise<void> {
-    console.log('🔢 Step 5: Handling TOTP code input');
+    console.log('Step 5: Handling TOTP code input');
     
     if (!this.totpGenerator) {
       throw new Error('TOTP generator not initialized. Please check TOTP_SECRET_KEY environment variable.');
@@ -288,15 +288,14 @@ export class GoogleOAuthLoginPage extends LoginPage {
     // Wait for next step
     await this.page.waitForTimeout(5000);
     
-    console.log('✅ TOTP step completed');
+    console.log('TOTP step completed');
   }
 
   /**
    * Step 6: Handle final consent/continue buttons
    */
   private async handleFinalConsent(): Promise<void> {
-    console.log('✅ Step 6: Handling final consent');
-    console.log(`📍 Current URL: ${this.page.url()}`);
+    console.log('Step 6: Handling final consent');
     
     try {
       // Wait a moment for the page to load
@@ -519,7 +518,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Step 7: Verify successful login
    */
   private async verifyLoginSuccess(): Promise<boolean> {
-    console.log('🔍 Step 7: Verifying login success');
+    console.log('Step 7: Verifying login success');
     
     try {
       // Wait for redirect away from auth pages
@@ -534,7 +533,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
                             currentUrl.includes('/auth');
       
       if (!isOnGoogleAuth) {
-        console.log('✅ Successfully redirected away from auth pages');
+        console.log('Successfully redirected away from auth pages');
         return true;
       }
       
@@ -549,14 +548,14 @@ export class GoogleOAuthLoginPage extends LoginPage {
       for (const indicator of successIndicators) {
         const indicatorVisible = await this.isElementVisible(indicator);
         if (indicatorVisible) {
-          console.log(`✅ Login success indicator found: ${indicator}`);
+          console.log(`Login success indicator found: ${indicator}`);
           return true;
         }
       }
       
       // Check if we're on a protected page (not login/auth)
       if (!currentUrl.includes('/auth') && !currentUrl.includes('login')) {
-        console.log('✅ On protected page, login likely successful');
+        console.log('On protected page, login likely successful');
         return true;
       }
       
@@ -597,7 +596,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Quick login method for simple test cases
    */
   async quickLogin(): Promise<boolean> {
-    console.log('🚀 Performing quick Google OAuth + TOTP login');
+    console.log('Performing quick Google OAuth + TOTP login');
     return await this.performCompleteLogin();
   }
 
@@ -605,7 +604,7 @@ export class GoogleOAuthLoginPage extends LoginPage {
    * Login with custom credentials (override environment variables)
    */
   async loginWithCredentials(email: string, password: string, totpSecret?: string): Promise<boolean> {
-    console.log('🚀 Performing login with custom credentials');
+    console.log('Performing login with custom credentials');
     
     // Temporarily override environment variables
     const originalEmail = process.env.GOOGLE_EMAIL;

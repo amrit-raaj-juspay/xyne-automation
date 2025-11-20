@@ -30,10 +30,10 @@ export class DependencyManager {
       ...metadata
     });
     
-    console.log(`📝 Registered test: "${testName}" with priority: ${metadata.priority || 'medium'}`);
+    console.log(` Registered test: "${testName}" with priority: ${metadata.priority || 'medium'}`);
     
     if (metadata.dependsOn && metadata.dependsOn.length > 0) {
-      console.log(`🔗 Dependencies: ${metadata.dependsOn.join(', ')}`);
+      console.log(` Dependencies: ${metadata.dependsOn.join(', ')}`);
     }
   }
 
@@ -63,7 +63,7 @@ export class DependencyManager {
         if (depNode) {
           depNode.dependents.push(testName);
         } else {
-          console.warn(`⚠️  Warning: Test "${testName}" depends on "${dependency}" which is not registered`);
+          console.warn(`️  Warning: Test "${testName}" depends on "${dependency}" which is not registered`);
         }
       }
     }
@@ -86,8 +86,8 @@ export class DependencyManager {
       cycles
     };
 
-    console.log(`📊 Dependency graph built with ${nodes.size} tests`);
-    console.log(`🔄 Execution order: ${executionOrder.join(' -> ')}`);
+    console.log(` Dependency graph built with ${nodes.size} tests`);
+    console.log(` Execution order: ${executionOrder.join(' -> ')}`);
 
     return this.dependencyGraph;
   }
@@ -242,7 +242,7 @@ export class DependencyManager {
       }
     }
 
-    console.log(`📊 Test result recorded: "${result.testName}" - ${result.status}`);
+    console.log(` Test result recorded: "${result.testName}" - ${result.status}`);
 
     // If test failed, mark all dependents for skipping
     if (result.status === 'failed') {
@@ -295,7 +295,7 @@ export class DependencyManager {
     }
 
     if (toSkip.size > 0) {
-      console.log(`⏭️  Marked ${toSkip.size} dependent tests for skipping: ${Array.from(toSkip).join(', ')}`);
+      console.log(`⏭  Marked ${toSkip.size} dependent tests for skipping: ${Array.from(toSkip).join(', ')}`);
     }
   }
 
@@ -364,7 +364,7 @@ export class DependencyManager {
     this.testRegistry.clear();
     this.executionResults.clear();
     this.dependencyGraph = null;
-    console.log('🧹 Dependency manager cleared');
+    console.log(' Dependency manager cleared');
   }
 
   /**
