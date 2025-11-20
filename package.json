@@ -39,6 +39,7 @@
     "test:shared-page:headless": "playwright test tests/functional/example-shared-page.spec.ts --workers=1 --project=chromium",
     "test:spaces": "playwright test tests/functional/xyne-spaces/spaces-multi-user-chat.spec.ts --workers=1 --project=chromium --headed",
     "test:spaces:smoke": "playwright test tests/functional/xyne-spaces/spaces-multi-user-chat.spec.ts --grep 'Smoke Test' --workers=1 --project=chromium --headed",
+    "test:spaces:sidebar": "playwright test tests/functional/xyne-spaces/sidebar-navigation.spec.ts --workers=1 --project=chromium --headed",
     "test:spaces:headless": "playwright test tests/functional/xyne-spaces/spaces-multi-user-chat.spec.ts --workers=1 --project=chromium",
     "report": "playwright show-report",
     "report:alt": "playwright show-report reports/html-report --port=9324",
