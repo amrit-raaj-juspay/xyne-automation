@@ -14,11 +14,11 @@ export class SpacesLoginHelper {
    * Uses default credentials from .env (GOOGLE_EMAIL, GOOGLE_PASSWORD, TOTP_SECRET_KEY)
    */
   static async performLogin(page: Page): Promise<boolean> {
-    console.log('🔐 Logging in to Xyne Spaces with default credentials');
+    console.log(' Logging in to Xyne Spaces with default credentials');
     
     // Navigate to Spaces URL first (use dedicated Spaces URL env var)
     const spacesUrl = process.env.XYNE_SPACES_URL || 'https://spaces.xyne.juspay.net';
-    console.log(`🌐 Navigating to Spaces: ${spacesUrl}`);
+    console.log(` Navigating to Spaces: ${spacesUrl}`);
     await page.goto(spacesUrl);
     await page.waitForLoadState('networkidle');
     
@@ -28,7 +28,7 @@ export class SpacesLoginHelper {
     const totpSecret = process.env.TOTP_SECRET_KEY || process.env.USER1_TOTP_SECRET_KEY;
     
     if (!email || !password) {
-      console.error('❌ Missing credentials');
+      console.error(' Missing credentials');
       return false;
     }
     
@@ -36,13 +36,13 @@ export class SpacesLoginHelper {
     const loginSuccess = await this.performSpacesLoginFlow(page, email, password, totpSecret);
     
     if (loginSuccess) {
-      console.log('✅ Successfully logged in to Xyne Spaces');
+      console.log(' Successfully logged in to Xyne Spaces');
       // Verify we're on Spaces
       await page.waitForURL(/spaces\.xyne\.juspay\.net/, { timeout: 10000 }).catch(() => {
-        console.warn('⚠️ Not on Spaces URL but login succeeded');
+        console.warn(' Not on Spaces URL but login succeeded');
       });
     } else {
-      console.error('❌ Failed to login to Xyne Spaces');
+      console.error(' Failed to login to Xyne Spaces');
     }
     
     return loginSuccess;
@@ -58,11 +58,11 @@ export class SpacesLoginHelper {
     password: string,
     totpSecret?: string
   ): Promise<boolean> {
-    console.log(`🔐 Logging in to Xyne Spaces with custom credentials: ${email}`);
+    console.log(` Logging in to Xyne Spaces with custom credentials: ${email}`);
     
     // Navigate to Spaces URL first (use dedicated Spaces URL env var)
     const spacesUrl = process.env.XYNE_SPACES_URL || 'https://spaces.xyne.juspay.net';
-    console.log(`🌐 Navigating to Spaces: ${spacesUrl}`);
+    console.log(` Navigating to Spaces: ${spacesUrl}`);
     await page.goto(spacesUrl);
     await page.waitForLoadState('networkidle');
     
@@ -70,13 +70,13 @@ export class SpacesLoginHelper {
     const loginSuccess = await this.performSpacesLoginFlow(page, email, password, totpSecret);
     
     if (loginSuccess) {
-      console.log(`✅ Successfully logged in to Xyne Spaces as ${email}`);
+      console.log(` Successfully logged in to Xyne Spaces as ${email}`);
       // Verify we're on Spaces
       await page.waitForURL(/spaces\.xyne\.juspay\.net/, { timeout: 10000 }).catch(() => {
-        console.warn('⚠️ Not on Spaces URL but login succeeded');
+        console.warn(' Not on Spaces URL but login succeeded');
       });
     } else {
-      console.error(`❌ Failed to login to Xyne Spaces as ${email}`);
+      console.error(` Failed to login to Xyne Spaces as ${email}`);
     }
     
     return loginSuccess;
@@ -93,14 +93,14 @@ export class SpacesLoginHelper {
     totpSecret?: string
   ): Promise<boolean> {
     try {
-      console.log('🔑 Starting Google OAuth flow on current page (Spaces)');
+      console.log(' Starting Google OAuth flow on current page (Spaces)');
       
       // Step 1: Click "Sign in with Google" button (Spaces specific)
-      console.log('🔍 Looking for "Sign in with Google" button...');
+      console.log(' Looking for "Sign in with Google" button...');
       const googleLoginButton = page.getByRole('button', { name: /sign in with google/i });
       await googleLoginButton.waitFor({ state: 'visible', timeout: 10000 });
       await googleLoginButton.click();
-      console.log('✅ Clicked "Sign in with Google" button');
+      console.log(' Clicked "Sign in with Google" button');
       
       // Wait for Google OAuth page to load
       await page.waitForTimeout(3000);
@@ -132,10 +132,10 @@ export class SpacesLoginHelper {
         const loginSuccess = await (oauthPage as any).verifyLoginSuccess();
         
         if (loginSuccess) {
-          console.log('✅ Google OAuth login flow completed successfully');
+          console.log(' Google OAuth login flow completed successfully');
           return true;
         } else {
-          console.error('❌ Login verification failed');
+          console.error(' Login verification failed');
           return false;
         }
         
@@ -147,14 +147,14 @@ export class SpacesLoginHelper {
       }
       
     } catch (error) {
-      console.error(`❌ Spaces login flow failed: ${error}`);
+      console.error(` Spaces login flow failed: ${error}`);
       // Take screenshot for debugging
       try {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         await page.screenshot({ path: `reports/spaces-login-error-${timestamp}.png`, fullPage: true });
-        console.log(`📸 Screenshot saved: reports/spaces-login-error-${timestamp}.png`);
+        console.log(` Screenshot saved: reports/spaces-login-error-${timestamp}.png`);
       } catch (screenshotError) {
-        console.error(`⚠️ Failed to take screenshot: ${screenshotError}`);
+        console.error(` Failed to take screenshot: ${screenshotError}`);
       }
       return false;
     }
@@ -165,13 +165,13 @@ export class SpacesLoginHelper {
    * Checks URL and presence of user avatar
    */
   static async verifyLoggedIn(page: Page): Promise<boolean> {
-    console.log('🔍 Verifying user is logged in to Xyne Spaces');
+    console.log(' Verifying user is logged in to Xyne Spaces');
     
     try {
       // Check URL
       const url = page.url();
       if (!url.includes('spaces.xyne.juspay.net')) {
-        console.error('❌ Not on Spaces URL');
+        console.error(' Not on Spaces URL');
         return false;
       }
       
@@ -180,14 +180,14 @@ export class SpacesLoginHelper {
       const avatarVisible = await userAvatar.isVisible({ timeout: 5000 }).catch(() => false);
       
       if (avatarVisible) {
-        console.log('✅ User is logged in to Xyne Spaces');
+        console.log(' User is logged in to Xyne Spaces');
         return true;
       } else {
-        console.error('❌ User avatar not found - may not be logged in');
+        console.error(' User avatar not found - may not be logged in');
         return false;
       }
     } catch (error) {
-      console.error(`❌ Error verifying login: ${error}`);
+      console.error(` Error verifying login: ${error}`);
       return false;
     }
   }
@@ -196,7 +196,7 @@ export class SpacesLoginHelper {
    * Logout from Xyne Spaces
    */
   static async logout(page: Page): Promise<void> {
-    console.log('🚪 Logging out from Xyne Spaces');
+    console.log(' Logging out from Xyne Spaces');
     
     try {
       // Click user avatar/menu
@@ -209,9 +209,9 @@ export class SpacesLoginHelper {
       await logoutButton.click();
       await page.waitForTimeout(2000);
       
-      console.log('✅ Logged out from Xyne Spaces');
+      console.log(' Logged out from Xyne Spaces');
     } catch (error) {
-      console.error(`⚠️ Logout failed: ${error}`);
+      console.error(` Logout failed: ${error}`);
     }
   }
 
@@ -219,7 +219,7 @@ export class SpacesLoginHelper {
    * Get current logged-in user's name from Spaces
    */
   static async getCurrentUserName(page: Page): Promise<string | null> {
-    console.log('👤 Getting current user name from Xyne Spaces');
+    console.log(' Getting current user name from Xyne Spaces');
     
     try {
       // Try to find user name in various places
@@ -233,15 +233,15 @@ export class SpacesLoginHelper {
       for (const selector of userNameSelectors) {
         const userName = await page.locator(selector).first().textContent().catch(() => null);
         if (userName && userName.trim().length > 0) {
-          console.log(`✅ Current user: ${userName}`);
+          console.log(` Current user: ${userName}`);
           return userName.trim();
         }
       }
       
-      console.warn('⚠️ Could not find user name');
+      console.warn(' Could not find user name');
       return null;
     } catch (error) {
-      console.error(`❌ Error getting user name: ${error}`);
+      console.error(` Error getting user name: ${error}`);
       return null;
     }
   }
@@ -250,7 +250,7 @@ export class SpacesLoginHelper {
    * Wait for Spaces page to be fully loaded after login
    */
   static async waitForSpacesReady(page: Page, timeout: number = 30000): Promise<void> {
-    console.log('⏳ Waiting for Xyne Spaces to be ready...');
+    console.log(' Waiting for Xyne Spaces to be ready...');
     
     try {
       await page.waitForURL(/spaces\.xyne\.juspay\.net/, { timeout });
@@ -259,12 +259,12 @@ export class SpacesLoginHelper {
       // Wait for main content to be visible
       const mainContent = page.locator('main, [role="main"], .main-content').first();
       await mainContent.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
-        console.warn('⚠️ Main content not found, but continuing...');
+        console.warn(' Main content not found, but continuing...');
       });
       
-      console.log('✅ Xyne Spaces is ready');
+      console.log(' Xyne Spaces is ready');
     } catch (error) {
-      console.error(`⚠️ Timeout waiting for Spaces to be ready: ${error}`);
+      console.error(` Timeout waiting for Spaces to be ready: ${error}`);
     }
   }
 
@@ -276,25 +276,25 @@ export class SpacesLoginHelper {
     page: Page,
     maxRetries: number = 3
   ): Promise<boolean> {
-    console.log(`🔄 Attempting login to Xyne Spaces with retry (max ${maxRetries} attempts)`);
+    console.log(` Attempting login to Xyne Spaces with retry (max ${maxRetries} attempts)`);
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      console.log(`📍 Login attempt ${attempt} of ${maxRetries}`);
+      console.log(` Login attempt ${attempt} of ${maxRetries}`);
       
       const success = await this.performLogin(page);
       
       if (success) {
-        console.log(`✅ Login successful on attempt ${attempt}`);
+        console.log(` Login successful on attempt ${attempt}`);
         return true;
       }
       
       if (attempt < maxRetries) {
-        console.warn(`⚠️ Login attempt ${attempt} failed, retrying...`);
+        console.warn(` Login attempt ${attempt} failed, retrying...`);
         await page.waitForTimeout(5000); // Wait 5 seconds before retry
       }
     }
     
-    console.error(`❌ All ${maxRetries} login attempts to Xyne Spaces failed`);
+    console.error(` All ${maxRetries} login attempts to Xyne Spaces failed`);
     return false;
   }
 
@@ -302,21 +302,21 @@ export class SpacesLoginHelper {
    * Quick health check - verify Spaces is accessible
    */
   static async isSpacesAccessible(page: Page): Promise<boolean> {
-    console.log('🏥 Checking if Xyne Spaces is accessible');
+    console.log(' Checking if Xyne Spaces is accessible');
     
     try {
       const spacesUrl = process.env.XYNE_SPACES_URL || 'https://spaces.xyne.juspay.net';
       const response = await page.goto(spacesUrl);
       
       if (response && response.ok()) {
-        console.log('✅ Xyne Spaces is accessible');
+        console.log(' Xyne Spaces is accessible');
         return true;
       } else {
-        console.error(`❌ Xyne Spaces returned status: ${response?.status()}`);
+        console.error(` Xyne Spaces returned status: ${response?.status()}`);
         return false;
       }
     } catch (error) {
-      console.error(`❌ Xyne Spaces is not accessible: ${error}`);
+      console.error(` Xyne Spaces is not accessible: ${error}`);
       return false;
     }
   }

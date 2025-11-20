@@ -39,18 +39,18 @@ export CRON_RUN_ID
 export IS_CRON_RUN=true
 
 # Fetch and export repo version
-echo "🔍 Fetching repository version..."
+echo " Fetching repository version..."
 REPO_VERSION=$(fetch_repo_version)
 if [ -n "$REPO_VERSION" ]; then
   export REPO_VERSION
-  echo "✅ Repository version: $REPO_VERSION"
+  echo " Repository version: $REPO_VERSION"
 else
-  echo "⚠️  Could not determine repository version (will be stored as NULL in database)"
+  echo "WARNING:  Could not determine repository version (will be stored as NULL in database)"
   export REPO_VERSION=""
 fi
 
-echo "🚀 Starting test batch with Cron Run ID: $CRON_RUN_ID"
-echo "📋 This ID will be shared across all tests in this batch"
+echo " Starting test batch with Cron Run ID: $CRON_RUN_ID"
+echo " This ID will be shared across all tests in this batch"
 
 # Set up environment for cron compatibility
 # Try to source NVM if available
@@ -90,7 +90,7 @@ echo "Using npm version: $(npm --version)"
 # ============================================
 # Initialize test_runs table entry with version tracking
 echo ""
-echo "📋 Initializing test run in database..."
+echo " Initializing test run in database..."
 
 # Ensure consistent user for database operations
 # Only use value from .env file
@@ -98,7 +98,7 @@ if [ -f .env ]; then
   SCRIPT_RUN_BY=$(grep "^SCRIPT_RUN_BY=" .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
   export SCRIPT_RUN_BY
 else
-  echo "⚠️  Warning: .env file not found, SCRIPT_RUN_BY not set"
+  echo "WARNING:  Warning: .env file not found, SCRIPT_RUN_BY not set"
 fi
 
 npx tsx scripts/manage-test-run.ts init
@@ -113,7 +113,7 @@ echo ""
 # All modules use their own TestOrchestrator with continueOnFailure
 
 echo "--------------------------------------------------"
-echo "🎭 Running All Modules in Parallel with Staggered Start"
+echo " Running All Modules in Parallel with Staggered Start"
 echo "Cron Run ID: $CRON_RUN_ID"
 echo "--------------------------------------------------"
 
@@ -132,7 +132,7 @@ if [ -z "$TEST_FILES" ]; then
   exit 1
 fi
 
-echo "📋 Found test modules:"
+echo " Found test modules:"
 for file in $TEST_FILES; do
   echo "   - $file"
 done
@@ -150,7 +150,7 @@ pids=()
 # Counter for delay
 delay_count=0
 
-echo "🔄 Starting modules in parallel with ${STAGGER_DELAY}s stagger delay"
+echo " Starting modules in parallel with ${STAGGER_DELAY}s stagger delay"
 echo "--------------------------------------------------"
 
 # Loop through each module and start with staggered delay
@@ -158,7 +158,7 @@ for file in $TEST_FILES; do
   MODULE=$(basename "$file" .spec.ts)
   export MODULE_NAME=$MODULE
 
-  echo "▶️  Scheduling module: $MODULE (starts in $((delay_count * STAGGER_DELAY))s)"
+  echo "  Scheduling module: $MODULE (starts in $((delay_count * STAGGER_DELAY))s)"
 
   # Create module-specific config
   TEMP_CONFIG="playwright.config.${MODULE}.${TIMESTAMP}.js"
@@ -190,7 +190,7 @@ EOF
 
     echo ""
     echo "--------------------------------------------------"
-    echo "🚀 Starting module: $MODULE (Worker $((delay_count + 1)))"
+    echo " Starting module: $MODULE (Worker $((delay_count + 1)))"
     echo "--------------------------------------------------"
 
     # Run the module test
@@ -200,9 +200,9 @@ EOF
     echo ""
     echo "--------------------------------------------------"
     if [ $module_exit -eq 0 ]; then
-      echo "✅ Module $MODULE completed successfully"
+      echo " Module $MODULE completed successfully"
     else
-      echo "⚠️  Module $MODULE had failures (orchestrator continued on failure)"
+      echo "WARNING:  Module $MODULE had failures (orchestrator continued on failure)"
     fi
     echo "--------------------------------------------------"
 
@@ -220,10 +220,10 @@ done
 
 echo ""
 echo "--------------------------------------------------"
-echo "📊 All $delay_count modules scheduled with staggered starts"
-echo "⏱️  Total stagger time: $((delay_count * STAGGER_DELAY)) seconds"
-echo "🔧 Worker PIDs: ${pids[*]}"
-echo "⏳ Waiting for all modules to complete..."
+echo " All $delay_count modules scheduled with staggered starts"
+echo "  Total stagger time: $((delay_count * STAGGER_DELAY)) seconds"
+echo " Worker PIDs: ${pids[*]}"
+echo " Waiting for all modules to complete..."
 echo "--------------------------------------------------"
 
 # Wait for all background processes and collect exit codes
@@ -234,66 +234,66 @@ total=${#pids[@]}
 for pid in "${pids[@]}"; do
   if wait "$pid"; then
     completed=$((completed + 1))
-    echo "✅ Worker $pid completed successfully ($completed/$total)"
+    echo " Worker $pid completed successfully ($completed/$total)"
   else
     completed=$((completed + 1))
-    echo "⚠️  Worker $pid had failures ($completed/$total)"
+    echo "WARNING:  Worker $pid had failures ($completed/$total)"
     exit_code=1
   fi
 done
 
 echo ""
 echo "--------------------------------------------------"
-echo "🏁 Batch $CRON_RUN_ID completed"
-echo "📌 Repository Version: ${REPO_VERSION:-'N/A'}"
-echo "📊 Modules completed: $total/$total"
+echo " Batch $CRON_RUN_ID completed"
+echo " Repository Version: ${REPO_VERSION:-'N/A'}"
+echo " Modules completed: $total/$total"
 if [ $exit_code -eq 0 ]; then
-  echo "✅ All modules completed successfully."
+  echo " All modules completed successfully."
 else
-  echo "⚠️  Some modules had failures (but all ran with orchestrator continueOnFailure)."
+  echo "WARNING:  Some modules had failures (but all ran with orchestrator continueOnFailure)."
 fi
-echo "📊 Check individual module reports and database for detailed results"
+echo " Check individual module reports and database for detailed results"
 echo "--------------------------------------------------"
 
 # ============================================
 # UPDATE TEST RUN STATUS IN DATABASE
 # ============================================
 echo ""
-echo "📋 Updating test run status in database..."
+echo " Updating test run status in database..."
 npx tsx scripts/manage-test-run.ts complete "$exit_code"
 echo ""
 
 # Wait for database writes to complete before generating PDF
-echo "⏳ Waiting for all test data to be written to database..."
-echo "🔄 Allowing 30 seconds for database synchronization..."
+echo " Waiting for all test data to be written to database..."
+echo " Allowing 30 seconds for database synchronization..."
 sleep 30
 
 # Verify data exists before generating PDF
-echo "🔍 Verifying test data in database..."
+echo " Verifying test data in database..."
 npx tsx scripts/manage-test-run.ts verify "$CRON_RUN_ID"
 verify_exit_code=$?
 
 if [ $verify_exit_code -eq 0 ]; then
-  echo "✅ Test data verified in database"
+  echo " Test data verified in database"
 
   # Generate PDF report after all tests complete
-  echo "📊 Generating PDF summary report..."
+  echo " Generating PDF summary report..."
   python3 src/framework/utils/pdf-report-generator.py "$CRON_RUN_ID"
   pdf_exit_code=$?
 
   if [ $pdf_exit_code -eq 0 ]; then
-    echo "✅ PDF report generated successfully"
+    echo " PDF report generated successfully"
   else
-    echo "⚠️ PDF report generation failed (exit code: $pdf_exit_code)"
+    echo "WARNING: PDF report generation failed (exit code: $pdf_exit_code)"
   fi
 else
-  echo "⚠️ Test data not found in database, skipping PDF generation"
-  echo "💡 This may indicate that database writes are still in progress or failed"
+  echo "WARNING: Test data not found in database, skipping PDF generation"
+  echo " This may indicate that database writes are still in progress or failed"
   pdf_exit_code=1
 fi
 
 echo "--------------------------------------------------"
-echo "🎯 Test execution and reporting completed for batch: $CRON_RUN_ID"
+echo " Test execution and reporting completed for batch: $CRON_RUN_ID"
 echo "--------------------------------------------------"
 
 exit $exit_code

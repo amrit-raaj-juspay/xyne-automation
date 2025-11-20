@@ -20,7 +20,7 @@ def load_env_file():
     project_root = os.path.dirname(src_dir)
     env_path = os.path.join(project_root, '.env')
 
-    print(f"🔍 Looking for .env file at: {env_path}")
+    print(f" Looking for .env file at: {env_path}")
 
     if os.path.exists(env_path):
         with open(env_path, 'r') as f:
@@ -30,9 +30,9 @@ def load_env_file():
                     key, value = line.split('=', 1)
                     value = value.strip('\'"')
                     os.environ[key] = value
-        print(f"✅ Loaded environment variables from {env_path}")
+        print(f" Loaded environment variables from {env_path}")
     else:
-        print(f"⚠️ .env file not found at {env_path}")
+        print(f"️ .env file not found at {env_path}")
 
 # Load environment variables at module level
 load_env_file()
@@ -47,12 +47,12 @@ class SlackNotifier:
         self.is_enabled = bool(self.bot_token)
 
         if not self.is_enabled:
-            print('⚠️ Slack notifications disabled: SLACK_BOT_TOKEN not found in environment')
+            print('️ Slack notifications disabled: SLACK_BOT_TOKEN not found in environment')
 
     def upload_html_to_slack_thread(self, html_path, cron_run_id, thread_ts=None):
         """Upload HTML report to Slack using files.uploadV2, optionally as a thread reply."""
         if not self.is_enabled:
-            print('📱 Slack notification skipped: Not configured')
+            print(' Slack notification skipped: Not configured')
             return False
 
         try:
@@ -61,9 +61,9 @@ class SlackNotifier:
             file_name = os.path.basename(html_path)
 
             if thread_ts:
-                print(f'📤 Uploading HTML report to Slack thread: {thread_ts}')
+                print(f' Uploading HTML report to Slack thread: {thread_ts}')
             else:
-                print(f'📤 Uploading HTML report to Slack channel: {self.channel_id}')
+                print(f' Uploading HTML report to Slack channel: {self.channel_id}')
 
             # Step 1: Get upload URL
             response = requests.post(
@@ -75,7 +75,7 @@ class SlackNotifier:
 
             if not response.ok or not response.json().get('ok'):
                 error_msg = response.json().get('error', 'Unknown') if response.ok else f'HTTP {response.status_code}'
-                print(f'❌ Failed to get upload URL: {error_msg}')
+                print(f' Failed to get upload URL: {error_msg}')
                 return False
 
             upload_data = response.json()
@@ -91,14 +91,14 @@ class SlackNotifier:
                 )
 
                 if not upload_response.ok:
-                    print(f'❌ Failed to upload file: HTTP {upload_response.status_code}')
+                    print(f' Failed to upload file: HTTP {upload_response.status_code}')
                     return False
 
             # Step 3: Complete the upload
             complete_payload = {
                 'files': [{'id': file_id, 'title': f'Interactive HTML Report - {cron_run_id}'}],
                 'channel_id': self.channel_id,
-                'initial_comment': f'📊 Interactive HTML Test Report for CRON Run ID: {cron_run_id}\n\nClick to view detailed test results with module navigation and version comparison.'
+                'initial_comment': f' Interactive HTML Test Report for CRON Run ID: {cron_run_id}\n\nClick to view detailed test results with module navigation and version comparison.'
             }
 
             # If thread_ts is provided, upload as a thread reply
@@ -115,24 +115,24 @@ class SlackNotifier:
             if complete_response.ok:
                 result = complete_response.json()
                 if result.get('ok'):
-                    print('✅ HTML report uploaded to Slack successfully')
+                    print(' HTML report uploaded to Slack successfully')
 
                     # Try to get the file permalink
                     files = result.get('files', [])
                     if files and files[0].get('permalink'):
-                        print(f'🔗 Slack file URL: {files[0]["permalink"]}')
+                        print(f' Slack file URL: {files[0]["permalink"]}')
                         return files[0]['permalink']
 
                     return True
                 else:
-                    print(f'❌ Slack API error: {result.get("error", "Unknown")}')
+                    print(f' Slack API error: {result.get("error", "Unknown")}')
                     return False
             else:
-                print(f'❌ HTTP error completing upload: {complete_response.status_code}')
+                print(f' HTTP error completing upload: {complete_response.status_code}')
                 return False
 
         except Exception as e:
-            print(f'❌ Exception uploading to Slack: {e}')
+            print(f' Exception uploading to Slack: {e}')
             return False
 
     def find_pdf_message_ts(self, cron_run_id):
@@ -154,7 +154,7 @@ class SlackNotifier:
                 'limit': 20  # Look at last 20 messages
             }
 
-            print(f'🔍 Searching for PDF message with CRON_RUN_ID: {cron_run_id}')
+            print(f' Searching for PDF message with CRON_RUN_ID: {cron_run_id}')
 
             response = requests.get(url, headers=headers, params=params, timeout=30)
 
@@ -168,20 +168,20 @@ class SlackNotifier:
                         text = msg.get('text', '')
                         if cron_run_id in text and 'PDF' in text:
                             ts = msg.get('ts')
-                            print(f'✅ Found PDF message at timestamp: {ts}')
+                            print(f' Found PDF message at timestamp: {ts}')
                             return ts
 
-                    print('⚠️ PDF message not found in recent messages')
+                    print('️ PDF message not found in recent messages')
                     return None
                 else:
-                    print(f'❌ Slack API error: {result.get("error", "Unknown error")}')
+                    print(f' Slack API error: {result.get("error", "Unknown error")}')
                     return None
             else:
-                print(f'❌ HTTP error: {response.status_code} {response.text}')
+                print(f' HTTP error: {response.status_code} {response.text}')
                 return None
 
         except Exception as e:
-            print(f'❌ Exception finding PDF message: {e}')
+            print(f' Exception finding PDF message: {e}')
             return None
 
 class InteractiveHtmlReportGenerator:
@@ -207,7 +207,7 @@ class InteractiveHtmlReportGenerator:
                 'password': password
             }
 
-            print(f"🔐 Authenticating with Juspay API...")
+            print(f" Authenticating with Juspay API...")
 
             response = requests.post(login_url, json=login_payload, timeout=30)
 
@@ -220,12 +220,12 @@ class InteractiveHtmlReportGenerator:
             if not token:
                 raise Exception('Token not found in login response')
 
-            print('✅ Successfully obtained authentication token')
+            print(' Successfully obtained authentication token')
             self.auth_token = token
             return token
 
         except Exception as e:
-            print(f'❌ Authentication error: {e}')
+            print(f' Authentication error: {e}')
             raise
 
     def execute_query(self, query: str) -> Dict[str, Any]:
@@ -254,13 +254,13 @@ class InteractiveHtmlReportGenerator:
             return result
 
         except Exception as e:
-            print(f'❌ Error executing query: {e}')
+            print(f' Error executing query: {e}')
             raise
 
     def fetch_current_run_data(self, cron_run_id: str) -> List[Dict[str, Any]]:
         """Fetch current test run data from xyne_test_module table with detailed test info."""
         try:
-            print(f'🔍 Fetching current run data for CRON_RUN_ID: {cron_run_id}')
+            print(f' Fetching current run data for CRON_RUN_ID: {cron_run_id}')
 
             # Query xyne_test_module for detailed test data from JSONB with run metadata
             query = f"""
@@ -283,7 +283,7 @@ class InteractiveHtmlReportGenerator:
             if result.get('response') and len(result['response']) > 0:
                 response_data = result['response']
                 if isinstance(response_data, list) and len(response_data) > 0:
-                    print(f'📊 Found {len(response_data)} modules with detailed test data')
+                    print(f' Found {len(response_data)} modules with detailed test data')
                     # Parse the JSONB run_data field
                     parsed_modules = []
                     for module in response_data:
@@ -331,7 +331,7 @@ class InteractiveHtmlReportGenerator:
             return []
 
         except Exception as e:
-            print(f'❌ Error fetching current run data: {e}')
+            print(f' Error fetching current run data: {e}')
             import traceback
             traceback.print_exc()
             return []
@@ -339,7 +339,7 @@ class InteractiveHtmlReportGenerator:
     def fetch_previous_run_data(self, current_run_id: str) -> Optional[List[Dict[str, Any]]]:
         """Fetch previous test run data for comparison based on version tracking."""
         try:
-            print(f'🔍 Fetching previous run data for comparison...')
+            print(f' Fetching previous run data for comparison...')
 
             # Get the current run's previous_run_id (which is set during initialization)
             query = f"""
@@ -360,12 +360,12 @@ class InteractiveHtmlReportGenerator:
                         current_version = first_item.get('repo_version')
 
                         if not prev_run_id:
-                            print('ℹ️  No previous run to compare (this might be the first run)')
+                            print('️  No previous run to compare (this might be the first run)')
                             return None
 
-                        print(f'📊 Current version: {current_version}')
-                        print(f'📊 Previous version: {prev_version}')
-                        print(f'📊 Comparing with previous run ID: {prev_run_id}')
+                        print(f' Current version: {current_version}')
+                        print(f' Previous version: {prev_version}')
+                        print(f' Comparing with previous run ID: {prev_run_id}')
 
                         # Fetch previous run data with detailed tests
                         prev_query = f"""
@@ -412,14 +412,14 @@ class InteractiveHtmlReportGenerator:
                                     }
                                     parsed_prev_modules.append(parsed_prev_module)
 
-                                print(f'✅ Found {len(parsed_prev_modules)} modules in previous run')
+                                print(f' Found {len(parsed_prev_modules)} modules in previous run')
                                 return parsed_prev_modules
 
-            print('ℹ️  No previous run found')
+            print('️  No previous run found')
             return None
 
         except Exception as e:
-            print(f'⚠️  Error fetching previous run data: {e}')
+            print(f'️  Error fetching previous run data: {e}')
             import traceback
             traceback.print_exc()
             return None
@@ -427,12 +427,12 @@ class InteractiveHtmlReportGenerator:
     def generate_html_report(self, cron_run_id: str, output_path: str = None) -> Optional[str]:
         """Generate interactive HTML report."""
         try:
-            print(f'📊 Generating interactive HTML report for CRON_RUN_ID: {cron_run_id}')
+            print(f' Generating interactive HTML report for CRON_RUN_ID: {cron_run_id}')
 
             # Fetch current run data
             current_data = self.fetch_current_run_data(cron_run_id)
             if not current_data:
-                print('⚠️ No data found for current run')
+                print('️ No data found for current run')
                 return None
 
             # Fetch version info for the current run
@@ -477,11 +477,11 @@ class InteractiveHtmlReportGenerator:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
 
-            print(f'✅ HTML report generated successfully: {output_path}')
+            print(f' HTML report generated successfully: {output_path}')
             return output_path
 
         except Exception as e:
-            print(f'❌ Error generating HTML report: {e}')
+            print(f' Error generating HTML report: {e}')
             import traceback
             traceback.print_exc()
             return None
@@ -1042,7 +1042,7 @@ class InteractiveHtmlReportGenerator:
         </div>
 
         <div class="modules">
-            <h2>📦 Test Modules</h2>
+            <h2> Test Modules</h2>
 '''
 
         # Add module cards
@@ -1079,7 +1079,7 @@ class InteractiveHtmlReportGenerator:
 
                 comparison_html = f'''
                 <div class="comparison">
-                    <div class="comparison-title">📊 Comparison with Previous Run</div>
+                    <div class="comparison-title"> Comparison with Previous Run</div>
                     <div class="comparison-stats">
                         <div class="comparison-item">
                             <span>Passed:</span>
@@ -1132,7 +1132,7 @@ class InteractiveHtmlReportGenerator:
                         <h3 style="margin-bottom: 15px; color: #495057;">Test Cases</h3>
                         {self.generate_test_list_html(module, prev_module)}
                     </div>
-                    {f'<a href="{slack_link}" target="_blank" class="slack-link">📱 View in Slack</a>' if slack_link else ''}
+                    {f'<a href="{slack_link}" target="_blank" class="slack-link"> View in Slack</a>' if slack_link else ''}
                 </div>
             </div>
             '''
@@ -1182,14 +1182,14 @@ def main():
             cron_run_id = os.getenv('CRON_RUN_ID')
 
         if not cron_run_id:
-            print('❌ Error: CRON_RUN_ID not provided. Use as argument or environment variable.')
+            print(' Error: CRON_RUN_ID not provided. Use as argument or environment variable.')
             sys.exit(1)
 
         generator = InteractiveHtmlReportGenerator()
         output_path = generator.generate_html_report(cron_run_id)
 
         if output_path:
-            print(f'✅ HTML report generated successfully: {output_path}')
+            print(f' HTML report generated successfully: {output_path}')
 
             # Upload to Slack
             try:
@@ -1206,13 +1206,13 @@ def main():
                 )
 
                 if slack_url:
-                    print('✅ HTML report uploaded to Slack successfully')
+                    print(' HTML report uploaded to Slack successfully')
                 else:
-                    print('⚠️ Failed to upload HTML report to Slack, but generation was successful')
+                    print('️ Failed to upload HTML report to Slack, but generation was successful')
 
             except Exception as slack_error:
-                print(f'⚠️ Error uploading HTML to Slack: {slack_error}')
-                print('📄 HTML generation was successful, continuing...')
+                print(f'️ Error uploading HTML to Slack: {slack_error}')
+                print(' HTML generation was successful, continuing...')
 
             print(f'HTML_OUTPUT_PATH:{output_path}')
             sys.exit(0)
@@ -1220,7 +1220,7 @@ def main():
             sys.exit(1)
 
     except Exception as e:
-        print(f'❌ Error in main: {e}')
+        print(f' Error in main: {e}')
         import traceback
         traceback.print_exc()
         sys.exit(1)

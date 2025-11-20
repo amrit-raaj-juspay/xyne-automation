@@ -562,7 +562,7 @@ export class ApiValidationService {
               path: screenshotPath,
               fullPage: true
             });
-            this.logger.info(`📸 Screenshot captured on timeout at: ${screenshotPath}`);
+            this.logger.info(` Screenshot captured on timeout at: ${screenshotPath}`);
           } catch (screenshotError) {
             this.logger.error(`Failed to capture screenshot on timeout: ${screenshotError}`);
             screenshotPath = undefined;
@@ -636,7 +636,7 @@ export class ApiValidationService {
                 path: screenshotPath,
                 fullPage: true
               });
-              this.logger.info(`📸 Screenshot captured on error at: ${screenshotPath}`);
+              this.logger.info(` Screenshot captured on error at: ${screenshotPath}`);
             } catch (screenshotError) {
               this.logger.error(`Failed to capture screenshot on error: ${screenshotError}`);
               screenshotPath = undefined;

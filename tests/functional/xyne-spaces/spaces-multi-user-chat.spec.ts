@@ -37,18 +37,18 @@ orchestrator.createSuite('Spaces - Multi-User Chat Tests', [
         }
         browser = existingBrowser;
         context1 = sharedPage.page.context(); // Reuse orchestrator's context for User 1
-        console.log('✅ Using orchestrator browser and context for User 1');
+        console.log(' Using orchestrator browser and context for User 1');
       });
 
       await step('Create 1 additional context for User 2', async () => {
         context2 = await browser.newContext();
-        console.log('✅ Created 1 new context for User 2');
-        console.log('✅ Total: 2 browser windows from 1 browser');
+        console.log(' Created 1 new context for User 2');
+        console.log(' Total: 2 browser windows from 1 browser');
       });
 
       await step('Initialize SpacesMultiUserChatPage', async () => {
         spacesMultiUserChat = new SpacesMultiUserChatPage();
-        console.log('✅ SpacesMultiUserChatPage initialized');
+        console.log(' SpacesMultiUserChatPage initialized');
       });
 
       await step('Initialize both users', async () => {
@@ -58,7 +58,7 @@ orchestrator.createSuite('Spaces - Multi-User Chat Tests', [
           'Mahek Agarwal',  // User 1
           'Dashboard QA'    // User 2
         );
-        console.log('✅ Both users initialized');
+        console.log(' Both users initialized');
       });
     }
   },
@@ -70,7 +70,7 @@ orchestrator.createSuite('Spaces - Multi-User Chat Tests', [
     testFunction: async () => {
       await step('Login both users with different credentials', async () => {
         await spacesMultiUserChat.loginBothUsersSequentially(5000, true);
-        console.log('✅ Both users logged in successfully to Spaces');
+        console.log(' Both users logged in successfully to Spaces');
       });
     }
   }

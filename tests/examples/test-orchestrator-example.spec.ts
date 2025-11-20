@@ -23,13 +23,13 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
     name: 'setup test environment',
     metadata: { priority: 'highest', tags: ['@setup'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🔧 Setting up test environment');
+      console.log(' Setting up test environment');
       const { page } = sharedPage;
       
       // Navigate to the application
       await page.goto('https://example.com');
       await expect(page.locator('body')).toBeVisible();
-      console.log('✅ Test environment ready');
+      console.log(' Test environment ready');
     }
   },
   
@@ -38,7 +38,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
     dependencies: ['setup test environment'], // Only runs if setup passes
     metadata: { priority: 'high', tags: ['@auth', '@critical'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🔐 Performing user login');
+      console.log(' Performing user login');
       const { page } = sharedPage;
       
       // Simulate login process
@@ -49,7 +49,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
       
       // Verify login success
       await expect(page.locator('.welcome-message')).toBeVisible({ timeout: 5000 });
-      console.log('✅ User login successful');
+      console.log(' User login successful');
     }
   },
   
@@ -58,7 +58,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
     dependencies: ['user login'], // Only runs if login passes
     metadata: { priority: 'high', tags: ['@products'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🛍️ Browsing products');
+      console.log('️ Browsing products');
       const { page } = sharedPage;
       
       // Navigate to products page
@@ -68,7 +68,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
       // Verify products are loaded
       const productCount = await page.locator('.product-item').count();
       expect(productCount).toBeGreaterThan(0);
-      console.log(`✅ Found ${productCount} products`);
+      console.log(` Found ${productCount} products`);
     }
   },
   
@@ -87,7 +87,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
       // Verify cart count updated
       const cartCount = await page.locator('.cart-count').textContent();
       expect(parseInt(cartCount || '0')).toBeGreaterThan(0);
-      console.log('✅ Item added to cart successfully');
+      console.log(' Item added to cart successfully');
     }
   },
   
@@ -111,7 +111,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
       
       // Verify checkout form is ready
       await expect(page.locator('#payment-section')).toBeVisible();
-      console.log('✅ Checkout process initiated');
+      console.log(' Checkout process initiated');
     }
   },
   
@@ -120,7 +120,7 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
     runRegardless: true, // Always runs, regardless of previous test results
     metadata: { priority: 'low', tags: ['@cleanup'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🧹 Performing cleanup and logout');
+      console.log(' Performing cleanup and logout');
       const { page } = sharedPage;
       
       try {
@@ -137,9 +137,9 @@ basicOrchestrator.createSuite('E-commerce User Journey', [
           await page.click('#logout-button');
         }
         
-        console.log('✅ Cleanup completed successfully');
+        console.log(' Cleanup completed successfully');
       } catch (error) {
-        console.log('⚠️ Cleanup completed with warnings:', error);
+        console.log('️ Cleanup completed with warnings:', error);
       }
     }
   }
@@ -157,12 +157,12 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
     name: 'feature A test',
     metadata: { priority: 'high', tags: ['@feature-a'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🚀 Testing Feature A');
+      console.log(' Testing Feature A');
       const { page } = sharedPage;
       
       await page.goto('https://example.com/feature-a');
       await expect(page.locator('#feature-a-content')).toBeVisible();
-      console.log('✅ Feature A test passed');
+      console.log(' Feature A test passed');
     }
   },
   
@@ -170,7 +170,7 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
     name: 'feature B test',
     metadata: { priority: 'high', tags: ['@feature-b'] },
     testFunction: async ({ sharedPage }) => {
-      console.log('🚀 Testing Feature B');
+      console.log(' Testing Feature B');
       const { page } = sharedPage;
       
       await page.goto('https://example.com/feature-b');
@@ -188,7 +188,7 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
       // This will be skipped because Feature B failed
       const { page } = sharedPage;
       await page.goto('https://example.com/integration');
-      console.log('✅ Integration test passed');
+      console.log(' Integration test passed');
     }
   },
   
@@ -199,12 +199,12 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
       { testName: 'feature B test', required: false } // Optional dependency
     ],
     testFunction: async ({ sharedPage }) => {
-      console.log('🚀 Testing Feature C (depends on A, B optional)');
+      console.log(' Testing Feature C (depends on A, B optional)');
       // This will run because Feature A passed (B is optional)
       const { page } = sharedPage;
       await page.goto('https://example.com/feature-c');
       await expect(page.locator('#feature-c-content')).toBeVisible();
-      console.log('✅ Feature C test passed');
+      console.log(' Feature C test passed');
     }
   },
   
@@ -226,7 +226,7 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
       
       await page.goto('https://example.com/conditional-feature');
       await expect(page.locator('#conditional-content')).toBeVisible();
-      console.log('✅ Conditional feature test passed');
+      console.log(' Conditional feature test passed');
     }
   },
   
@@ -241,7 +241,7 @@ advancedOrchestrator.createSuite('Advanced Feature Testing', [
         localStorage.clear();
         sessionStorage.clear();
       });
-      console.log('✅ Final cleanup completed');
+      console.log(' Final cleanup completed');
     }
   }
 ]);
@@ -262,7 +262,7 @@ runIfAllPass(
     const cartItems = await page.locator('.cart-item').count();
     expect(cartItems).toBeGreaterThan(0);
     
-    console.log('✅ Comprehensive user flow completed');
+    console.log(' Comprehensive user flow completed');
   },
   {
     useSharedPage: true,
@@ -282,9 +282,9 @@ runRegardless(
     
     try {
       await expect(page.locator('#health-status')).toContainText('OK');
-      console.log('✅ System health check passed');
+      console.log(' System health check passed');
     } catch (error) {
-      console.log('⚠️ System health check failed:', error);
+      console.log('️ System health check failed:', error);
       // Don't throw - this is just a health check
     }
   },
@@ -309,7 +309,7 @@ createOrchestratedTest(
     await page.fill('#cvv', '123');
     
     await expect(page.locator('#payment-form')).toBeVisible();
-    console.log('✅ Payment processing test completed');
+    console.log(' Payment processing test completed');
   },
   {
     useSharedPage: true,
@@ -332,7 +332,7 @@ errorHandlingOrchestrator.createSuite('Error Handling Demo', [
   {
     name: 'stable test',
     testFunction: async ({ sharedPage }) => {
-      console.log('✅ This test always passes');
+      console.log(' This test always passes');
       const { page } = sharedPage;
       await page.goto('https://example.com');
     }
@@ -342,7 +342,7 @@ errorHandlingOrchestrator.createSuite('Error Handling Demo', [
     name: 'failing test',
     dependencies: ['stable test'],
     testFunction: async ({ sharedPage }) => {
-      console.log('❌ This test will fail');
+      console.log(' This test will fail');
       throw new Error('Intentional failure for demonstration');
     }
   },
@@ -351,7 +351,7 @@ errorHandlingOrchestrator.createSuite('Error Handling Demo', [
     name: 'dependent on failing test',
     dependencies: ['failing test'],
     testFunction: async ({ sharedPage }) => {
-      console.log('⏭️ This will be skipped due to failed dependency');
+      console.log('⏭ This will be skipped due to failed dependency');
       // This won't run because 'failing test' failed
     }
   },
@@ -360,7 +360,7 @@ errorHandlingOrchestrator.createSuite('Error Handling Demo', [
     name: 'independent test',
     dependencies: ['stable test'], // Only depends on stable test
     testFunction: async ({ sharedPage }) => {
-      console.log('✅ This runs because it only depends on stable test');
+      console.log(' This runs because it only depends on stable test');
       const { page } = sharedPage;
       await expect(page.locator('body')).toBeVisible();
     }
