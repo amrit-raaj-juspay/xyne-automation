@@ -18,14 +18,14 @@ export default class EnhancedReporter implements Reporter {
   private testResults = new Map<string, { result: TestResult; metadata?: TestMetadata; testCase: TestCase }>();
 
   onBegin() {
-    console.log('📊 Enhanced Reporter: Starting test execution with priority and dependency tracking');
+    console.log(' Enhanced Reporter: Starting test execution with priority and dependency tracking');
   }
 
   onTestEnd(test: TestCase, result: TestResult) {
     const testName = test.title;
 
     // Exclude the orchestrator summary test from reports
-    if (testName === '📊 Test Suite Summary') {
+    if (testName === ' Test Suite Summary') {
       return;
     }
 
@@ -91,7 +91,7 @@ export default class EnhancedReporter implements Reporter {
     
     this.generateEnhancedReport();
 
-    console.log('\n📊 Enhanced Reporter: Test execution completed');
+    console.log('\n Enhanced Reporter: Test execution completed');
     console.log('📈 Priority and Dependency Statistics:');
     console.log(`   Highest Priority: ${this.stats.highest.total} tests (${this.stats.highest.passed} passed, ${this.stats.highest.failed} failed, ${this.stats.highest.skipped} skipped)`);
     console.log(`   High Priority: ${this.stats.high.total} tests (${this.stats.high.passed} passed, ${this.stats.high.failed} failed, ${this.stats.high.skipped} skipped)`);
@@ -116,7 +116,7 @@ export default class EnhancedReporter implements Reporter {
   private printCustomReportInfo(): void {
     console.log('\n');
     console.log('╔═══════════════════════════════════════════════════════════════════════════╗');
-    console.log('║                  📊 CUSTOM ORCHESTRATOR REPORT GENERATED                  ║');
+    console.log('║                   CUSTOM ORCHESTRATOR REPORT GENERATED                  ║');
     console.log('╚═══════════════════════════════════════════════════════════════════════════╝');
 
     // Use module-specific paths if MODULE_NAME is set (for parallel runs)
@@ -155,14 +155,14 @@ export default class EnhancedReporter implements Reporter {
 
     if (reports.length > 0) {
       console.log('\n');
-      console.log('📊 To open the CUSTOM ORCHESTRATOR REPORT with detailed steps, run:');
+      console.log(' To open the CUSTOM ORCHESTRATOR REPORT with detailed steps, run:');
       console.log('');
       console.log(`   ${reports[0].command}`);
       console.log('');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     } else {
-      console.log('\n⚠️  No custom orchestrator reports found in reports/ directory\n');
+      console.log('\n️  No custom orchestrator reports found in reports/ directory\n');
     }
   }
 
@@ -309,8 +309,8 @@ export default class EnhancedReporter implements Reporter {
     // Generate HTML summary with module-specific name
     this.generateHtmlSummary(reportData, moduleName, timestamp);
 
-    console.log(`📄 Enhanced report saved: ${reportPath}`);
-    console.log(`📄 HTML summary saved: ${path.join(reportsDir, `priority-dependency-summary-${moduleName}-${timestamp}.html`)}`);
+    console.log(` Enhanced report saved: ${reportPath}`);
+    console.log(` HTML summary saved: ${path.join(reportsDir, `priority-dependency-summary-${moduleName}-${timestamp}.html`)}`);
   }
 
   private serializeDependencyGraph() {
@@ -378,12 +378,12 @@ export default class EnhancedReporter implements Reporter {
 
     // Only generate if orchestrator results exist
     if (!fs.existsSync(orchestratorResultsPath)) {
-      console.log('⚠️  Orchestrator results not found, skipping custom report generation');
+      console.log('️  Orchestrator results not found, skipping custom report generation');
       return;
     }
 
     try {
-      console.log('📊 Generating detailed step report...');
+      console.log(' Generating detailed step report...');
       const { execSync } = require('child_process');
 
       // Check if blob report exists (contains detailed steps)
@@ -397,7 +397,7 @@ export default class EnhancedReporter implements Reporter {
           cwd: process.cwd(),
           env: { ...process.env, MODULE_NAME: moduleName }
         });
-        console.log('✅ Playwright-style UI report generated');
+        console.log(' Playwright-style UI report generated');
       } else if (fs.existsSync(playwrightResultsPath)) {
         // Fallback to enhanced Playwright-style report
         execSync('node scripts/generate-playwright-style-orchestrator-report.js --no-open', {
@@ -405,20 +405,20 @@ export default class EnhancedReporter implements Reporter {
           cwd: process.cwd(),
           env: { ...process.env, MODULE_NAME: moduleName }
         });
-        console.log('✅ Enhanced Playwright-style orchestrator report generated');
+        console.log(' Enhanced Playwright-style orchestrator report generated');
       } else {
-        console.log('⚠️  No detailed test data found, falling back to basic report');
+        console.log('️  No detailed test data found, falling back to basic report');
         // Fallback to basic orchestrator report
         execSync('node scripts/generate-orchestrator-report.js --no-open', {
           stdio: 'inherit',
           cwd: process.cwd(),
           env: { ...process.env, MODULE_NAME: moduleName }
         });
-        console.log('✅ Basic orchestrator report generated');
+        console.log(' Basic orchestrator report generated');
       }
     } catch (error) {
-      console.error('❌ Error generating orchestrator report:', error);
-      console.log('⚠️  Continuing with Slack notification using available data');
+      console.error(' Error generating orchestrator report:', error);
+      console.log('️  Continuing with Slack notification using available data');
     }
   }
 
@@ -449,7 +449,7 @@ export default class EnhancedReporter implements Reporter {
       }
 
       if (fs.existsSync(orchestratorResultsPath)) {
-        console.log('📊 Using orchestrator results for Slack notification (accurate test status)');
+        console.log(' Using orchestrator results for Slack notification (accurate test status)');
         const orchestratorResults = JSON.parse(fs.readFileSync(orchestratorResultsPath, 'utf-8'));
         const tests = Object.values(orchestratorResults) as any[];
 
@@ -468,10 +468,10 @@ export default class EnhancedReporter implements Reporter {
         // Calculate priority stats from orchestrator results (accurate status)
         this.stats = this.buildStatsFromOrchestratorResults(tests);
 
-        console.log('✅ Orchestrator summary:', summary);
-        console.log('✅ Orchestrator priority stats:', this.stats);
+        console.log(' Orchestrator summary:', summary);
+        console.log(' Orchestrator priority stats:', this.stats);
       } else {
-        console.log('⚠️  Orchestrator results not found, using Playwright results');
+        console.log('️  Orchestrator results not found, using Playwright results');
         // Fall back to Playwright's default HTML report if orchestrator report doesn't exist
         htmlReportPath = path.join('reports', 'html-report', 'index.html');
       }
@@ -501,19 +501,19 @@ export default class EnhancedReporter implements Reporter {
       
       // Priority 1: Try custom orchestrator report if it exists
       if (fs.existsSync(htmlReportPath)) {
-        console.log('📄 Using custom orchestrator HTML report (no zipping)');
+        console.log(' Using custom orchestrator HTML report (no zipping)');
         finalHtmlReportPath = htmlReportPath;
       }
       // Priority 2: Try dynamic HTML report directory with module-specific naming
       else if (htmlReportDir && fs.existsSync(playwrightHtmlReportPath)) {
-        console.log('📄 Using module-specific HTML report (no zipping)');
+        console.log(' Using module-specific HTML report (no zipping)');
         finalHtmlReportPath = playwrightHtmlReportPath;
       }
       // Priority 3: Fallback to default Playwright HTML report
       else {
         const fallbackPlaywrightPath = path.join('reports', 'html-report', 'index.html');
         if (fs.existsSync(fallbackPlaywrightPath)) {
-          console.log('📄 Using default Playwright HTML report (no zipping)');
+          console.log(' Using default Playwright HTML report (no zipping)');
           finalHtmlReportPath = fallbackPlaywrightPath;
         }
       }
@@ -541,7 +541,7 @@ export default class EnhancedReporter implements Reporter {
       // Store test results in database after Slack notification
       await this.storeTestResultsInDatabase(slackData, slackResult);
     } catch (error) {
-      console.error('❌ Error sending Slack notification:', error);
+      console.error(' Error sending Slack notification:', error);
     }
   }
 
@@ -551,7 +551,7 @@ export default class EnhancedReporter implements Reporter {
   private async storeTestResultsInDatabase(slackData: SlackNotificationData, slackResult: SlackNotificationResult): Promise<void> {
     try {
       if (!this.stats) {
-        console.log('📊 No stats available for database storage');
+        console.log(' No stats available for database storage');
         return;
       }
 
@@ -567,7 +567,7 @@ export default class EnhancedReporter implements Reporter {
 
     } catch (error) {
       // Database storage is non-critical, so we log but don't throw
-      console.warn('⚠️ Database storage encountered an issue:', error);
+      console.warn('️ Database storage encountered an issue:', error);
     }
   }
 
@@ -580,7 +580,7 @@ export default class EnhancedReporter implements Reporter {
 
       // Only save to test_modules table if this is a cron run
       if (!cronRunId) {
-        console.log('ℹ️  Skipping test_modules table (not a cron run)');
+        console.log('️  Skipping test_modules table (not a cron run)');
         return;
       }
 
@@ -599,7 +599,7 @@ export default class EnhancedReporter implements Reporter {
 
       if (fs.existsSync(orchestratorResultsPath)) {
         try {
-          console.log('📊 Loading orchestrator results for accurate test status...');
+          console.log(' Loading orchestrator results for accurate test status...');
           const orchestratorResults = JSON.parse(fs.readFileSync(orchestratorResultsPath, 'utf-8'));
 
           // Create map of test name -> orchestrator result
@@ -607,12 +607,12 @@ export default class EnhancedReporter implements Reporter {
             orchestratorResultsMap.set(testName, result);
           }
 
-          console.log(`✅ Loaded ${orchestratorResultsMap.size} orchestrator results`);
+          console.log(` Loaded ${orchestratorResultsMap.size} orchestrator results`);
         } catch (error) {
-          console.warn('⚠️ Failed to load orchestrator results, falling back to Playwright results:', error);
+          console.warn('️ Failed to load orchestrator results, falling back to Playwright results:', error);
         }
       } else {
-        console.log('⚠️ Orchestrator results not found, using Playwright results');
+        console.log('️ Orchestrator results not found, using Playwright results');
       }
 
       // Build detailed test data array from test results
@@ -646,9 +646,9 @@ export default class EnhancedReporter implements Reporter {
         slackReportLink: slackReportLink || undefined
       });
 
-      console.log('✅ Module results saved to test_modules table');
+      console.log(' Module results saved to test_modules table');
     } catch (error) {
-      console.warn('⚠️ Failed to save module-level results:', error);
+      console.warn('️ Failed to save module-level results:', error);
     }
   }
 
@@ -775,18 +775,18 @@ export default class EnhancedReporter implements Reporter {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎯 Priority & Dependency Test Report</h1>
+            <h1> Priority & Dependency Test Report</h1>
             <p>Generated on ${new Date(reportData.timestamp).toLocaleString()}</p>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card highest">
-                <div class="stat-title">🔴 Highest Priority</div>
+                <div class="stat-title"> Highest Priority</div>
                 <div class="stat-value">${reportData.priorityStats.highest.total}</div>
                 <div class="stat-details">
-                    ✅ ${reportData.priorityStats.highest.passed} passed<br>
-                    ❌ ${reportData.priorityStats.highest.failed} failed<br>
-                    ⏭️ ${reportData.priorityStats.highest.skipped} skipped
+                     ${reportData.priorityStats.highest.passed} passed<br>
+                     ${reportData.priorityStats.highest.failed} failed<br>
+                    ⏭ ${reportData.priorityStats.highest.skipped} skipped
                 </div>
             </div>
             
@@ -794,36 +794,36 @@ export default class EnhancedReporter implements Reporter {
                 <div class="stat-title">🟠 High Priority</div>
                 <div class="stat-value">${reportData.priorityStats.high.total}</div>
                 <div class="stat-details">
-                    ✅ ${reportData.priorityStats.high.passed} passed<br>
-                    ❌ ${reportData.priorityStats.high.failed} failed<br>
-                    ⏭️ ${reportData.priorityStats.high.skipped} skipped
+                     ${reportData.priorityStats.high.passed} passed<br>
+                     ${reportData.priorityStats.high.failed} failed<br>
+                    ⏭ ${reportData.priorityStats.high.skipped} skipped
                 </div>
             </div>
             
             <div class="stat-card medium">
-                <div class="stat-title">🟡 Medium Priority</div>
+                <div class="stat-title"> Medium Priority</div>
                 <div class="stat-value">${reportData.priorityStats.medium.total}</div>
                 <div class="stat-details">
-                    ✅ ${reportData.priorityStats.medium.passed} passed<br>
-                    ❌ ${reportData.priorityStats.medium.failed} failed<br>
-                    ⏭️ ${reportData.priorityStats.medium.skipped} skipped
+                     ${reportData.priorityStats.medium.passed} passed<br>
+                     ${reportData.priorityStats.medium.failed} failed<br>
+                    ⏭ ${reportData.priorityStats.medium.skipped} skipped
                 </div>
             </div>
             
             <div class="stat-card low">
-                <div class="stat-title">🟢 Low Priority</div>
+                <div class="stat-title"> Low Priority</div>
                 <div class="stat-value">${reportData.priorityStats.low.total}</div>
                 <div class="stat-details">
-                    ✅ ${reportData.priorityStats.low.passed} passed<br>
-                    ❌ ${reportData.priorityStats.low.failed} failed<br>
-                    ⏭️ ${reportData.priorityStats.low.skipped} skipped
+                     ${reportData.priorityStats.low.passed} passed<br>
+                     ${reportData.priorityStats.low.failed} failed<br>
+                    ⏭ ${reportData.priorityStats.low.skipped} skipped
                 </div>
             </div>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">📊 Overall Summary</div>
+                <div class="stat-title"> Overall Summary</div>
                 <div class="stat-value">${reportData.summary.passRate}%</div>
                 <div class="stat-details">
                     Pass rate<br>
@@ -832,7 +832,7 @@ export default class EnhancedReporter implements Reporter {
             </div>
             
             <div class="stat-card">
-                <div class="stat-title">🔗 Dependencies</div>
+                <div class="stat-title"> Dependencies</div>
                 <div class="stat-value">${reportData.priorityStats.dependencyChains}</div>
                 <div class="stat-details">
                     Tests with dependencies<br>
@@ -843,7 +843,7 @@ export default class EnhancedReporter implements Reporter {
 
         ${reportData.dependencyGraph ? `
         <div class="dependency-graph">
-            <h2>🔄 Execution Order</h2>
+            <h2> Execution Order</h2>
             <div class="execution-order">
                 <strong>Tests executed in this order:</strong><br>
                 ${reportData.dependencyGraph.executionOrder.join(' → ')}
@@ -852,7 +852,7 @@ export default class EnhancedReporter implements Reporter {
         ` : ''}
 
         <div class="test-list">
-            <h2>📋 Test Results</h2>
+            <h2> Test Results</h2>
             ${reportData.executionResults.map((test: any) => `
                 <div class="test-item ${test.status}">
                     <div class="test-name">${test.testName}</div>

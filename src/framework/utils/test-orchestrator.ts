@@ -73,8 +73,8 @@ export class TestOrchestrator {
     }
 
     test.describe(suiteName, () => {
-      this.log(`🎭 Starting orchestrated test suite: "${suiteName}"`, 'detailed');
-      this.log(`📋 Suite contains ${tests.length} tests with conditional execution`, 'detailed');
+      this.log(` Starting orchestrated test suite: "${suiteName}"`, 'detailed');
+      this.log(` Suite contains ${tests.length} tests with conditional execution`, 'detailed');
 
       // Pre-register all tests in suiteResults so they appear in reports even if not executed
       // This is critical for accurate reporting when tests don't run due to worker termination (timeouts in serial mode)
@@ -100,13 +100,13 @@ export class TestOrchestrator {
       });
 
       // Add a final test to log the summary
-      test('📊 Test Suite Summary', async () => {
+      test(' Test Suite Summary', async () => {
         const summary = this.getSummary();
-        this.log(`\n📊 Test Execution Summary:`, 'minimal');
+        this.log(`\n Test Execution Summary:`, 'minimal');
         this.log(`   Total: ${summary.total}`, 'minimal');
-        this.log(`   ✅ Passed: ${summary.passed}`, 'minimal');
-        this.log(`   ❌ Failed: ${summary.failed}`, 'minimal');
-        this.log(`   ⏭️ Skipped: ${summary.skipped}`, 'minimal');
+        this.log(`    Passed: ${summary.passed}`, 'minimal');
+        this.log(`    Failed: ${summary.failed}`, 'minimal');
+        this.log(`   ⏭ Skipped: ${summary.skipped}`, 'minimal');
         this.log(`   📈 Pass Rate: ${summary.passRate.toFixed(1)}%`, 'minimal');
 
         // Save orchestrator results to JSON file for the custom reporter
@@ -168,7 +168,7 @@ export class TestOrchestrator {
             let screenshotPath: string | undefined;
             if (error && typeof error === 'object' && 'screenshotPath' in error) {
               screenshotPath = (error as any).screenshotPath;
-              console.log(`📸 Using screenshot from API validation: ${screenshotPath}`);
+              console.log(` Using screenshot from API validation: ${screenshotPath}`);
             } else {
               // Handle timeout failures by adding a timeout to screenshot capture
               screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
@@ -181,13 +181,13 @@ export class TestOrchestrator {
                     sharedPage.page.screenshot({ path: screenshotPath, fullPage: true }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Screenshot timeout')), 5000))
                   ]).catch((screenshotError) => {
-                    console.warn(`⚠️  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
+                    console.warn(`  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
                     // Try a simple screenshot without fullPage option
                     return sharedPage.page.screenshot({ path: screenshotPath, timeout: 3000 });
                   });
-                  console.log(`📸 Screenshot captured: ${screenshotPath}`);
+                  console.log(` Screenshot captured: ${screenshotPath}`);
                 } else {
-                  console.log(`⚠️  Page closed - screenshot not available`);
+                  console.log(`  Page closed - screenshot not available`);
                   screenshotPath = undefined;
                 }
               } catch (screenshotError) {
@@ -246,7 +246,7 @@ export class TestOrchestrator {
             let screenshotPath: string | undefined;
             if (error && typeof error === 'object' && 'screenshotPath' in error) {
               screenshotPath = (error as any).screenshotPath;
-              console.log(`📸 Using screenshot from API validation: ${screenshotPath}`);
+              console.log(` Using screenshot from API validation: ${screenshotPath}`);
             } else {
               // Handle timeout failures by adding a timeout to screenshot capture
               screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
@@ -259,13 +259,13 @@ export class TestOrchestrator {
                     page.screenshot({ path: screenshotPath, fullPage: true }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Screenshot timeout')), 5000))
                   ]).catch((screenshotError) => {
-                    console.warn(`⚠️  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
+                    console.warn(`  Screenshot capture failed (page may be unresponsive): ${screenshotError.message}`);
                     // Try a simple screenshot without fullPage option
                     return page.screenshot({ path: screenshotPath, timeout: 3000 });
                   });
-                  console.log(`📸 Screenshot captured: ${screenshotPath}`);
+                  console.log(` Screenshot captured: ${screenshotPath}`);
                 } else {
-                  console.log(`⚠️  Page closed - screenshot not available`);
+                  console.log(`  Page closed - screenshot not available`);
                   screenshotPath = undefined;
                 }
               } catch (screenshotError) {
@@ -315,7 +315,7 @@ export class TestOrchestrator {
       const shouldRun = this.shouldRunTest(testConfig);
 
       if (!shouldRun.run) {
-        this.log(`⏭️  Skipping test "${testName}": ${shouldRun.reason}`, 'minimal');
+        this.log(`⏭  Skipping test "${testName}": ${shouldRun.reason}`, 'minimal');
 
         testResult = {
           testName,
@@ -339,7 +339,7 @@ export class TestOrchestrator {
         return;
       }
 
-      this.log(`🚀 Executing orchestrated test: "${testName}"`, 'detailed');
+      this.log(` Executing orchestrated test: "${testName}"`, 'detailed');
       this.logDependencies(testConfig, 'verbose');
 
       // Reset step tracker for this test
@@ -369,7 +369,7 @@ export class TestOrchestrator {
         ...testInfoData
       };
 
-      this.log(`✅ Test "${testName}" passed (${duration}ms)`, 'minimal');
+      this.log(` Test "${testName}" passed (${duration}ms)`, 'minimal');
 
     } catch (error) {
       // Re-throw skip errors immediately - they're not failures
@@ -422,7 +422,7 @@ export class TestOrchestrator {
         }
       };
 
-      this.log(`❌ Test "${testName}" failed (${duration}ms): ${errorMessage}`, 'minimal');
+      this.log(` Test "${testName}" failed (${duration}ms): ${errorMessage}`, 'minimal');
 
       // Store result before potentially re-throwing
       this.suiteResults.set(testName, testResult);
@@ -433,7 +433,7 @@ export class TestOrchestrator {
 
       // Always throw error for proper Playwright failure reporting (screenshots, traces)
       // In continueOnFailure mode, the error will be caught at the test wrapper level
-      this.log(`⚠️ Test failed but suite will continue execution`, 'detailed');
+      this.log(` Test failed but suite will continue execution`, 'detailed');
       throw error;
     }
 
@@ -472,7 +472,7 @@ export class TestOrchestrator {
   private shouldRunTest(testConfig: OrchestratedTestConfig): { run: boolean; reason?: string } {
     // If runRegardless is true, always run the test
     if (testConfig.runRegardless) {
-      this.log(`🔄 Test "${testConfig.name}" set to run regardless of dependencies`, 'verbose');
+      this.log(` Test "${testConfig.name}" set to run regardless of dependencies`, 'verbose');
       return { run: true };
     }
 
@@ -550,7 +550,7 @@ export class TestOrchestrator {
     if (!testConfig.dependencies || testConfig.dependencies.length === 0) return;
     
     const depNames = this.extractDependencyNames(testConfig.dependencies);
-    this.log(`📋 Dependencies for "${testConfig.name}": [${depNames?.join(', ')}]`, level);
+    this.log(` Dependencies for "${testConfig.name}": [${depNames?.join(', ')}]`, level);
   }
 
   /**
@@ -685,7 +685,7 @@ export class TestOrchestrator {
    */
   clearResults(): void {
     this.suiteResults.clear();
-    this.log('🧹 Test orchestrator results cleared', 'detailed');
+    this.log(' Test orchestrator results cleared', 'detailed');
   }
 
   /**

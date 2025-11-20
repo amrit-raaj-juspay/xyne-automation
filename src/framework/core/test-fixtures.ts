@@ -50,7 +50,7 @@ export const test = base.extend<CustomFixtures>({
     const apiMonitor = new APIMonitor(page, `${fileId}-${testName}`);
     await apiMonitor.startMonitoring(`${fileId}-${testName}`);
     
-    console.log(`� Using regular page for test: ${testName}`);
+    console.log(` Using regular page for test: ${testName}`);
     
     try {
       await use(page);
@@ -60,7 +60,7 @@ export const test = base.extend<CustomFixtures>({
         // const filePath = await apiMonitor.stopMonitoring();
         // console.log(`📁 API calls auto-saved to: ${filePath}`);
       } catch (error) {
-        console.error(`❌ Failed to save API calls: ${error}`);
+        console.error(` Failed to save API calls: ${error}`);
       }
       
       // Cleanup
@@ -84,13 +84,13 @@ export const test = base.extend<CustomFixtures>({
         dependencyManager.buildDependencyGraph();
       }
     } catch (error) {
-      console.error('❌ Dependency graph error:', error);
+      console.error(' Dependency graph error:', error);
     }
 
     // Check if test should be skipped due to failed dependencies
     const skipInfo = dependencyManager.shouldSkipTest(testName);
     if (skipInfo.skip) {
-      console.log(`⏭️  Skipping test "${testName}": ${skipInfo.reason}`);
+      console.log(`⏭  Skipping test "${testName}": ${skipInfo.reason}`);
       
       // Record the skip in dependency manager
       const skipResult: TestExecutionResult = {
@@ -139,7 +139,7 @@ export const test = base.extend<CustomFixtures>({
         shouldCleanupPage = false;
       }
 
-      console.log(`🔗 Using shared page for test: ${testName}`);
+      console.log(` Using shared page for test: ${testName}`);
 
       // Initialize API monitor for all tests using shared page
       apiMonitor = new APIMonitor(page, `${fileId}-${testName}`);
@@ -166,7 +166,7 @@ export const test = base.extend<CustomFixtures>({
           dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
         };
 
-        console.log(`✅ Test passed: ${testName} (${duration}ms)`);
+        console.log(` Test passed: ${testName} (${duration}ms)`);
       }
 
     } catch (error) {
@@ -174,17 +174,17 @@ export const test = base.extend<CustomFixtures>({
       // Take screenshot on failure (use original page, not instrumented)
       if (page) {
         try {
-          console.log(`📸 Attempting to capture screenshot for failed test: ${testName}`);
+          console.log(` Attempting to capture screenshot for failed test: ${testName}`);
           const screenshotPath = testInfo.outputPath(`failure-${Date.now()}.png`);
-          console.log(`📸 Screenshot path: ${screenshotPath}`);
+          console.log(` Screenshot path: ${screenshotPath}`);
           await page.screenshot({ path: screenshotPath, fullPage: true });
           await testInfo.attach('screenshot', { path: screenshotPath, contentType: 'image/png' });
-          console.log(`📸 Screenshot captured and attached successfully: ${screenshotPath}`);
+          console.log(` Screenshot captured and attached successfully: ${screenshotPath}`);
         } catch (screenshotError) {
-          console.error(`❌ Failed to capture screenshot:`, screenshotError);
+          console.error(` Failed to capture screenshot:`, screenshotError);
         }
       } else {
-        console.log(`⚠️  No page object available for screenshot`);
+        console.log(`️  No page object available for screenshot`);
       }
 
       // NOTE: For orchestrated tests, error handling is done by the orchestrator
@@ -203,7 +203,7 @@ export const test = base.extend<CustomFixtures>({
           dependencies: dependencyManager.getTestMetadata(testName)?.dependsOn
         };
 
-        console.log(`❌ Test failed: ${testName} (${duration}ms) - ${testResult.error}`);
+        console.log(` Test failed: ${testName} (${duration}ms) - ${testResult.error}`);
 
         // Record the failure immediately
         dependencyManager.recordTestResult(testResult);
@@ -219,7 +219,7 @@ export const test = base.extend<CustomFixtures>({
           const filePath = await apiMonitor.stopMonitoring();
           console.log(`📁 API calls saved to: ${filePath}`);
         } catch (error) {
-          console.error(`❌ Failed to save API calls: ${error}`);
+          console.error(` Failed to save API calls: ${error}`);
         }
       }
 
@@ -235,7 +235,7 @@ export const test = base.extend<CustomFixtures>({
       if (shouldCleanupPage && page && !continueOnFailure) {
         await page.context().close();
       } else if (shouldCleanupPage && page && continueOnFailure) {
-        console.log(`🛡️ Skipped page cleanup due to orchestrated mode`);
+        console.log(`🛡 Skipped page cleanup due to orchestrated mode`);
       }
     }
   },
@@ -267,7 +267,7 @@ export const test = base.extend<CustomFixtures>({
     console.log(`🆕 Using new shared ${defaultScope} page for test: ${testInfo.title}`);
 
     await use(newSharedPage);
-    console.log(`✅ New shared page test completed: ${testInfo.title}`);
+    console.log(` New shared page test completed: ${testInfo.title}`);
   },
 
   /**
@@ -307,7 +307,7 @@ export const test = base.extend<CustomFixtures>({
     const apiMonitor = new APIMonitor(page, testName);
     await apiMonitor.startMonitoring(testName);
 
-    console.log(`📊 API monitoring enabled for test: ${testName}`);
+    console.log(` API monitoring enabled for test: ${testName}`);
 
     try {
       await use({ page, apiMonitor });
@@ -317,7 +317,7 @@ export const test = base.extend<CustomFixtures>({
         const filePath = await apiMonitor.stopMonitoring();
         console.log(`📁 API calls saved to: ${filePath}`);
       } catch (error) {
-        console.error(`❌ Failed to save API calls: ${error}`);
+        console.error(` Failed to save API calls: ${error}`);
       }
 
       // Cleanup

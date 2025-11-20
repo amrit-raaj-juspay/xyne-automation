@@ -32,7 +32,7 @@ export class SpacesMultiUserChatPage {
     user1Name: string = 'User 1',
     user2Name: string = 'User 2'
   ): Promise<{ user1: SpacesChatUser; user2: SpacesChatUser }> {
-    console.log('🚀 Initializing two users for Spaces chat testing');
+    console.log(' Initializing two users for Spaces chat testing');
 
     // Create pages for both users
     const page1 = await context1.newPage();
@@ -51,7 +51,7 @@ export class SpacesMultiUserChatPage {
       name: user2Name,
     };
 
-    console.log(`✅ Initialized ${user1Name} and ${user2Name} for Spaces`);
+    console.log(` Initialized ${user1Name} and ${user2Name} for Spaces`);
 
     return {
       user1: this.user1,
@@ -75,7 +75,7 @@ export class SpacesMultiUserChatPage {
 
     if (useDifferentUsers) {
       // Use different credentials for each user with small stagger to avoid race conditions
-      console.log(`🔐 Logging in ${this.user1.name} to Spaces with USER1 credentials (${process.env.USER1_GOOGLE_EMAIL})`);
+      console.log(` Logging in ${this.user1.name} to Spaces with USER1 credentials (${process.env.USER1_GOOGLE_EMAIL})`);
       const user1Success = await SpacesLoginHelper.performLoginWithCredentials(
         this.user1.page,
         process.env.USER1_GOOGLE_EMAIL!,
@@ -88,10 +88,10 @@ export class SpacesMultiUserChatPage {
       }
       
       // Small delay to avoid Google OAuth race conditions (much shorter than 45 seconds!)
-      console.log(`⏳ Waiting 5 seconds before ${this.user2.name} login (different user, just avoiding race condition)...`);
+      console.log(` Waiting 5 seconds before ${this.user2.name} login (different user, just avoiding race condition)...`);
       await this.user1.page.waitForTimeout(5000);
       
-      console.log(`🔐 Logging in ${this.user2.name} to Spaces with USER2 credentials (${process.env.USER2_GOOGLE_EMAIL})`);
+      console.log(` Logging in ${this.user2.name} to Spaces with USER2 credentials (${process.env.USER2_GOOGLE_EMAIL})`);
       const user2Success = await SpacesLoginHelper.performLoginWithCredentials(
         this.user2.page,
         process.env.USER2_GOOGLE_EMAIL!,
@@ -104,49 +104,49 @@ export class SpacesMultiUserChatPage {
       }
     } else {
       // Use same credentials (legacy mode)
-      console.log(`🔐 Logging in ${this.user1.name} to Spaces`);
+      console.log(` Logging in ${this.user1.name} to Spaces`);
       await SpacesLoginHelper.performLogin(this.user1.page);
       
-      console.log(`⏳ Waiting ${loginDelay / 1000} seconds for OTP to refresh before ${this.user2.name} login...`);
+      console.log(` Waiting ${loginDelay / 1000} seconds for OTP to refresh before ${this.user2.name} login...`);
       await this.user1.page.waitForTimeout(loginDelay);
       
-      console.log(`🔐 Logging in ${this.user2.name} to Spaces`);
+      console.log(` Logging in ${this.user2.name} to Spaces`);
       await SpacesLoginHelper.performLogin(this.user2.page);
     }
     
-    console.log('✅ Both users logged in successfully to Spaces');
+    console.log(' Both users logged in successfully to Spaces');
   }
 
   /**
    * Open Chat and search for a specific user to start conversation in Spaces
    */
   async openChatWithUser(fromUserPage: any, toUserName: string): Promise<void> {
-    console.log(`🔍 ${fromUserPage.name} opening Spaces chat with ${toUserName}...`);
+    console.log(` ${fromUserPage.name} opening Spaces chat with ${toUserName}...`);
     
     // Wait for page to be ready
     await fromUserPage.page.waitForLoadState('networkidle');
     await fromUserPage.page.waitForTimeout(3000);
     
     // Step 1: Click on Chat button in sidebar
-    console.log(`💬 Clicking Chat button in Spaces sidebar...`);
+    console.log(` Clicking Chat button in Spaces sidebar...`);
     const chatButton = fromUserPage.page.locator('button[data-sidebar-sub-option="Chat"]').first();
     
     try {
       await chatButton.waitFor({ state: 'visible', timeout: 10000 });
       await chatButton.click();
-      console.log(`✅ Spaces Chat button clicked`);
+      console.log(` Spaces Chat button clicked`);
       await fromUserPage.page.waitForTimeout(3000);
     } catch (e) {
-      console.log(`⚠️ Spaces Chat button not found, trying alternative...`);
+      console.log(` Spaces Chat button not found, trying alternative...`);
       const altChatButton = fromUserPage.page.locator('button:has(svg.lucide-message-square)').first();
       await altChatButton.waitFor({ state: 'visible', timeout: 5000 });
       await altChatButton.click();
-      console.log(`✅ Spaces Chat button clicked (alternative selector)`);
+      console.log(` Spaces Chat button clicked (alternative selector)`);
       await fromUserPage.page.waitForTimeout(3000);
     }
     
     // Step 2: Find and use the search input to search for the user
-    console.log(`🔍 Searching for user in Spaces: ${toUserName}...`);
+    console.log(` Searching for user in Spaces: ${toUserName}...`);
     const searchInput = fromUserPage.page.locator('input[placeholder="Search users and channels"]');
     
     try {
@@ -154,16 +154,16 @@ export class SpacesMultiUserChatPage {
       
       // Click on the search input to focus it
       await searchInput.click();
-      console.log(`✅ Spaces search input focused`);
+      console.log(` Spaces search input focused`);
       await fromUserPage.page.waitForTimeout(1000);
       
       // Type the user name to search
       await searchInput.fill(toUserName);
-      console.log(`✅ Typed "${toUserName}" in Spaces search`);
+      console.log(` Typed "${toUserName}" in Spaces search`);
       await fromUserPage.page.waitForTimeout(2000);
       
       // Wait for search results to appear
-      console.log(`⏳ Waiting for Spaces search results...`);
+      console.log(` Waiting for Spaces search results...`);
       await fromUserPage.page.waitForTimeout(2000);
       
       // Click on the search result using the exact element structure
@@ -172,10 +172,10 @@ export class SpacesMultiUserChatPage {
       try {
         await searchResultItem.waitFor({ state: 'visible', timeout: 5000 });
         await searchResultItem.click();
-        console.log(`✅ Clicked on Spaces search result for ${toUserName}`);
+        console.log(` Clicked on Spaces search result for ${toUserName}`);
         await fromUserPage.page.waitForTimeout(2000);
       } catch (e) {
-        console.log(`⚠️ Primary Spaces search result not found, trying alternative...`);
+        console.log(` Primary Spaces search result not found, trying alternative...`);
         
         // Alternative: Try clicking on the name span within the result
         const nameSpan = fromUserPage.page.locator('span.chat-sidebar-search-result-name', { hasText: toUserName }).first();
@@ -183,18 +183,18 @@ export class SpacesMultiUserChatPage {
         
         if (nameVisible) {
           await nameSpan.click();
-          console.log(`✅ Clicked on name span in Spaces for ${toUserName}`);
+          console.log(` Clicked on name span in Spaces for ${toUserName}`);
           await fromUserPage.page.waitForTimeout(2000);
         } else {
-          console.log(`⚠️ Spaces search result not found, continuing anyway...`);
+          console.log(` Spaces search result not found, continuing anyway...`);
         }
       }
       
     } catch (e) {
-      console.log(`⚠️ Spaces search input not found or error: ${e}`);
+      console.log(` Spaces search input not found or error: ${e}`);
     }
     
-    console.log(`✅ Spaces chat with ${toUserName} should be open`);
+    console.log(` Spaces chat with ${toUserName} should be open`);
   }
 
   async navigateBothUsersToChat(): Promise<void> {
@@ -202,7 +202,7 @@ export class SpacesMultiUserChatPage {
       throw new Error('Users not initialized. Call initializeUsers() first.');
     }
 
-    console.log('🚀 Setting up Spaces chat between both users');
+    console.log(' Setting up Spaces chat between both users');
 
     // Wait for both pages to be ready after login
     await this.user1.page.waitForLoadState('networkidle');
@@ -210,7 +210,7 @@ export class SpacesMultiUserChatPage {
     await this.user1.page.waitForTimeout(3000);
     await this.user2.page.waitForTimeout(3000);
     
-    console.log('✅ Both users are logged in to Spaces and pages are ready');
+    console.log(' Both users are logged in to Spaces and pages are ready');
     
     // User 1 opens chat with User 2
     await this.openChatWithUser(this.user1, this.user2.name);
@@ -218,7 +218,7 @@ export class SpacesMultiUserChatPage {
     // User 2 opens chat with User 1
     await this.openChatWithUser(this.user2, this.user1.name);
 
-    console.log('✅ Both users have opened Spaces chat with each other');
+    console.log(' Both users have opened Spaces chat with each other');
   }
 
   /**
@@ -229,7 +229,7 @@ export class SpacesMultiUserChatPage {
       throw new Error('User 1 not initialized');
     }
 
-    console.log(`📤 ${this.user1.name} sending in Spaces: "${message}"`);
+    console.log(` ${this.user1.name} sending in Spaces: "${message}"`);
     
     // Send message using chat input
     const chatInput = this.user1.page.locator('textarea[placeholder*="Message"], input[placeholder*="Type a message"]');
@@ -237,7 +237,7 @@ export class SpacesMultiUserChatPage {
     await chatInput.press('Enter');
     await this.user1.page.waitForTimeout(1000);
     
-    console.log(`✅ ${this.user1.name} message sent in Spaces`);
+    console.log(` ${this.user1.name} message sent in Spaces`);
   }
 
   /**
@@ -248,7 +248,7 @@ export class SpacesMultiUserChatPage {
       throw new Error('User 2 not initialized');
     }
 
-    console.log(`📤 ${this.user2.name} sending in Spaces: "${message}"`);
+    console.log(` ${this.user2.name} sending in Spaces: "${message}"`);
     
     // Send message using chat input
     const chatInput = this.user2.page.locator('textarea[placeholder*="Message"], input[placeholder*="Type a message"]');
@@ -256,7 +256,7 @@ export class SpacesMultiUserChatPage {
     await chatInput.press('Enter');
     await this.user2.page.waitForTimeout(1000);
     
-    console.log(`✅ ${this.user2.name} message sent in Spaces`);
+    console.log(` ${this.user2.name} message sent in Spaces`);
   }
 
   /**
@@ -267,12 +267,12 @@ export class SpacesMultiUserChatPage {
       throw new Error('User 1 not initialized');
     }
 
-    console.log(`🔍 Verifying ${this.user1.name} sees in Spaces: "${message}"`);
+    console.log(` Verifying ${this.user1.name} sees in Spaces: "${message}"`);
     
     const messageLocator = this.user1.page.locator(`text="${message}"`).first();
     await expect(messageLocator).toBeVisible({ timeout });
     
-    console.log(`✅ ${this.user1.name} confirmed message visible in Spaces`);
+    console.log(` ${this.user1.name} confirmed message visible in Spaces`);
   }
 
   /**
@@ -283,12 +283,12 @@ export class SpacesMultiUserChatPage {
       throw new Error('User 2 not initialized');
     }
 
-    console.log(`🔍 Verifying ${this.user2.name} sees in Spaces: "${message}"`);
+    console.log(` Verifying ${this.user2.name} sees in Spaces: "${message}"`);
     
     const messageLocator = this.user2.page.locator(`text="${message}"`).first();
     await expect(messageLocator).toBeVisible({ timeout });
     
-    console.log(`✅ ${this.user2.name} confirmed message visible in Spaces`);
+    console.log(` ${this.user2.name} confirmed message visible in Spaces`);
   }
 
   /**
@@ -298,7 +298,7 @@ export class SpacesMultiUserChatPage {
   async simulateConversation(
     conversation: Array<{ sender: 1 | 2; message: string; delay?: number }>
   ): Promise<void> {
-    console.log('🎭 Starting Spaces conversation simulation');
+    console.log(' Starting Spaces conversation simulation');
 
     for (const { sender, message, delay = 2000 } of conversation) {
       if (sender === 1) {
@@ -315,7 +315,7 @@ export class SpacesMultiUserChatPage {
       await this.user1?.page.waitForTimeout(delay);
     }
 
-    console.log('✅ Spaces conversation simulation completed');
+    console.log(' Spaces conversation simulation completed');
   }
 
   /**
@@ -326,7 +326,7 @@ export class SpacesMultiUserChatPage {
       throw new Error('Users not initialized');
     }
 
-    console.log('🚀 Testing parallel messaging in Spaces');
+    console.log(' Testing parallel messaging in Spaces');
 
     // Send messages in parallel
     await Promise.all([
@@ -342,7 +342,7 @@ export class SpacesMultiUserChatPage {
       this.verifyUser2SeesMessage(message2),
     ]);
 
-    console.log('✅ Spaces parallel messaging test completed');
+    console.log(' Spaces parallel messaging test completed');
   }
 
   /**
@@ -353,7 +353,7 @@ export class SpacesMultiUserChatPage {
       throw new Error('Users not initialized');
     }
 
-    console.log('🔍 Verifying message order in Spaces');
+    console.log(' Verifying message order in Spaces');
 
     for (const [index, message] of messages.entries()) {
       console.log(`Checking message ${index + 1} in Spaces: "${message}"`);
@@ -365,7 +365,7 @@ export class SpacesMultiUserChatPage {
       ]);
     }
 
-    console.log('✅ Message order verified for both users in Spaces');
+    console.log(' Message order verified for both users in Spaces');
   }
 
   /**
@@ -403,11 +403,11 @@ export class SpacesMultiUserChatPage {
     const user1Messages = await this.getUser1Messages();
     const user2Messages = await this.getUser2Messages();
 
-    console.log(`📊 Spaces - User 1 sees ${user1Messages.length} messages`);
-    console.log(`📊 Spaces - User 2 sees ${user2Messages.length} messages`);
+    console.log(` Spaces - User 1 sees ${user1Messages.length} messages`);
+    console.log(` Spaces - User 2 sees ${user2Messages.length} messages`);
 
     if (user1Messages.length === user2Messages.length) {
-      console.log('✅ Spaces message counts match');
+      console.log(' Spaces message counts match');
     } else {
       throw new Error(`Spaces message count mismatch: User 1 (${user1Messages.length}) vs User 2 (${user2Messages.length})`);
     }
@@ -417,7 +417,7 @@ export class SpacesMultiUserChatPage {
    * Clean up - close all pages and contexts
    */
   async cleanup(): Promise<void> {
-    console.log('🧹 Cleaning up Spaces user sessions');
+    console.log(' Cleaning up Spaces user sessions');
 
     const closePromises = [];
 
@@ -434,7 +434,7 @@ export class SpacesMultiUserChatPage {
     this.user1 = null;
     this.user2 = null;
 
-    console.log('✅ Spaces cleanup completed');
+    console.log(' Spaces cleanup completed');
   }
 
   /**
@@ -458,6 +458,6 @@ export class SpacesMultiUserChatPage {
       }),
     ]);
 
-    console.log(`✅ Spaces screenshots saved: ${prefix}-user1/user2-${timestamp}.png`);
+    console.log(` Spaces screenshots saved: ${prefix}-user1/user2-${timestamp}.png`);
   }
 }

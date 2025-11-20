@@ -172,7 +172,7 @@ export async function logStep(message: string, ...args: any[]): Promise<void> {
     ? `${message} ${args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ')}`
     : message;
 
-  return await step(`📝 ${fullMessage}`, async () => {
+  return await step(` ${fullMessage}`, async () => {
     console.log(message, ...args);
   });
 }
@@ -182,7 +182,7 @@ export async function logStep(message: string, ...args: any[]): Promise<void> {
  * Note: This won't create a test step, but will still log to console
  */
 export function logStepSync(message: string, ...args: any[]): void {
-  console.log(`📝 ${message}`, ...args);
+  console.log(` ${message}`, ...args);
 }
 
 /**

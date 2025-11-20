@@ -16,12 +16,12 @@ echo ""
 crontab -l 2>/dev/null | grep -v "run-staggered-tests-server.sh" | crontab -
 
 if [ $? -eq 0 ]; then
-    echo "✅ Cron job successfully removed!"
+    echo " Cron job successfully removed!"
     echo ""
     echo "Remaining cron jobs:"
     crontab -l 2>/dev/null || echo "No cron jobs remaining."
 else
-    echo "❌ Failed to remove cron job!"
+    echo " Failed to remove cron job!"
     exit 1
 fi
 

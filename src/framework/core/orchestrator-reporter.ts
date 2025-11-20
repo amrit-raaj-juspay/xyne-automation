@@ -38,7 +38,7 @@ class OrchestratorReporter implements Reporter {
   private orchestratorResults: Map<string, OrchestratorResult> = new Map();
 
   onBegin(config: FullConfig, suite: Suite) {
-    console.log('\n🎭 Orchestrator Reporter: Starting test run');
+    console.log('\n Orchestrator Reporter: Starting test run');
 
     // Try to load orchestrator results if available
     try {
@@ -46,10 +46,10 @@ class OrchestratorReporter implements Reporter {
         const data = fs.readFileSync(ORCHESTRATOR_RESULTS_FILE, 'utf-8');
         const results = JSON.parse(data);
         this.orchestratorResults = new Map(Object.entries(results));
-        console.log(`📊 Loaded ${this.orchestratorResults.size} orchestrator results`);
+        console.log(` Loaded ${this.orchestratorResults.size} orchestrator results`);
       }
     } catch (error) {
-      console.log('⚠️ Could not load orchestrator results:', error);
+      console.log('️ Could not load orchestrator results:', error);
     }
   }
 
@@ -57,7 +57,7 @@ class OrchestratorReporter implements Reporter {
     const testName = test.title;
 
     // Exclude the orchestrator summary test from reports
-    if (testName === '📊 Test Suite Summary') {
+    if (testName === ' Test Suite Summary') {
       return;
     }
 
@@ -77,7 +77,7 @@ class OrchestratorReporter implements Reporter {
     if (orchestratorResult) {
       // Override Playwright's result with orchestrator's actual result
       if (orchestratorResult.status === 'failed' && result.status === 'passed') {
-        console.log(`🔄 Fixing status for "${testName}": passed → failed`);
+        console.log(` Fixing status for "${testName}": passed → failed`);
 
         // Mark the result as failed
         result.status = 'failed';
@@ -99,18 +99,18 @@ class OrchestratorReporter implements Reporter {
             contentType: 'image/png',
             body: undefined
           });
-          console.log(`📸 Added screenshot: ${orchestratorResult.screenshotPath}`);
+          console.log(` Added screenshot: ${orchestratorResult.screenshotPath}`);
         }
       } else if (orchestratorResult.status === 'skipped' && result.status === 'passed') {
-        console.log(`🔄 Fixing status for "${testName}": passed → skipped`);
+        console.log(` Fixing status for "${testName}": passed → skipped`);
         result.status = 'skipped';
       }
     }
   }
 
   onEnd(result: FullResult) {
-    console.log('\n📊 Orchestrator Reporter: Test run completed');
-    console.log(`✅ Status: ${result.status}`);
+    console.log('\n Orchestrator Reporter: Test run completed');
+    console.log(` Status: ${result.status}`);
 
     // Reload orchestrator results to get the latest data from this test run
     try {
@@ -120,7 +120,7 @@ class OrchestratorReporter implements Reporter {
         this.orchestratorResults = new Map(Object.entries(results));
       }
     } catch (error) {
-      console.log('⚠️ Could not reload orchestrator results:', error);
+      console.log('️ Could not reload orchestrator results:', error);
     }
 
     // Print summary from orchestrator results
@@ -130,10 +130,10 @@ class OrchestratorReporter implements Reporter {
       const skipped = Array.from(this.orchestratorResults.values()).filter(r => r.status === 'skipped').length;
 
       console.log('\n📈 Orchestrator Results (Accurate):');
-      console.log(`   ✅ Passed: ${passed}`);
-      console.log(`   ❌ Failed: ${failed}`);
-      console.log(`   ⏭️ Skipped: ${skipped}`);
-      console.log(`   📊 Total: ${this.orchestratorResults.size}`);
+      console.log(`    Passed: ${passed}`);
+      console.log(`    Failed: ${failed}`);
+      console.log(`   ⏭ Skipped: ${skipped}`);
+      console.log(`    Total: ${this.orchestratorResults.size}`);
     }
   }
 }

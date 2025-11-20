@@ -66,7 +66,7 @@ export class APIMonitor {
       }), 'utf-8');
 
     } catch (error) {
-      console.warn('⚠️ Could not create API monitoring marker file:', error);
+      console.warn(' Could not create API monitoring marker file:', error);
     }
     
     // Listen to all requests
