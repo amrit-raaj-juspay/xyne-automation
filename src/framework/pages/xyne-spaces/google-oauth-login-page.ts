@@ -298,6 +298,20 @@ export class GoogleOAuthLoginPage extends LoginPage {
     console.log('Step 6: Handling final consent');
     
     try {
+      // Wait a moment for the page to load
+      await this.page.waitForTimeout(2000);
+      await this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+        console.log('   Network not idle, continuing...');
+      });
+      
+      // Check if we're on device protection challenge page (common in headless mode)
+      const currentUrl = this.page.url();
+      if (currentUrl.includes('/challenge/dp')) {
+        console.log('🔐 Device Protection (DP) challenge detected in headless mode');
+        await this.handleDeviceProtectionChallenge();
+        return;
+      }
+      
       // Look for various possible final consent buttons
       const possibleButtons = [
         this.googleSelectors.finalContinueButton,
@@ -310,22 +324,193 @@ export class GoogleOAuthLoginPage extends LoginPage {
       
       for (const buttonSelector of possibleButtons) {
         try {
-          const buttonVisible = await this.isElementVisible(buttonSelector);
+          console.log(`🔍 Checking for button: ${buttonSelector}`);
+          
+          // Wait for the button with a reasonable timeout
+          const button = this.page.locator(buttonSelector).first();
+          await button.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+          
+          const buttonVisible = await button.isVisible().catch(() => false);
+          console.log(`   Button visible: ${buttonVisible}`);
+          
           if (buttonVisible) {
-            console.log(`Found final button: ${buttonSelector}`);
-            await this.clickElement(buttonSelector);
+            console.log(`🔘 Found final button: ${buttonSelector}`);
+            console.log(`⏳ Waiting 5 seconds before clicking Continue button...`);
+            await this.page.waitForTimeout(5000);
+            console.log(`✅ Wait complete, clicking button now`);
+            await button.click();
             await this.page.waitForTimeout(3000);
+            console.log(`✅ Button clicked successfully`);
             break;
           }
         } catch (error) {
+          console.log(`   ⚠️ Error checking button "${buttonSelector}": ${error}`);
           // Continue to next button option
           continue;
         }
       }
+
       
-      console.log('Final consent step completed');
+      console.log('✅ Final consent step completed');
+      console.log(`📍 Final URL after consent: ${this.page.url()}`);
     } catch (error) {
-      console.log('INFO: Final consent step skipped or not needed:', error);
+      console.log('ℹ️ Final consent step skipped or not needed:', error);
+      console.log(`📍 Current URL on error: ${this.page.url()}`);
+      // Take screenshot for debugging
+      await this.takeLoginScreenshot('final_consent_error').catch(() => {});
+    }
+  }
+
+  /**
+   * Handle device protection challenge (common in headless mode)
+   */
+  private async handleDeviceProtectionChallenge(): Promise<void> {
+    console.log('🔐 Handling device protection challenge (headless mode)');
+    
+    try {
+      // Wait for page to stabilize
+      await this.page.waitForTimeout(3000);
+      
+      // Take a screenshot to see what's on the page
+      await this.takeLoginScreenshot('dp_challenge_page');
+      
+      console.log('🔍 Looking for "More ways to verify" button...');
+      console.log('📍 Current URL:', this.page.url());
+      
+      // STEP 1: Look for "More ways to verify" button (mobile verification alternative)
+      const moreWaysSelectors = [
+        'button:has-text("More ways to verify")',
+        'text=More ways to verify',
+        '[role="button"]:has-text("More ways to verify")',
+        'div:has-text("More ways to verify")',
+        '[aria-label*="More ways"]',
+        'button:has-text("Try another way")',
+        'text=Try another way'
+      ];
+      
+      let moreWaysClicked = false;
+      for (const selector of moreWaysSelectors) {
+        try {
+          const button = this.page.locator(selector).first();
+          const isVisible = await button.isVisible({ timeout: 3000 }).catch(() => false);
+          
+          if (isVisible) {
+            console.log(`✅ Found "More ways to verify" button: ${selector}`);
+            await button.click();
+            console.log('✅ Clicked "More ways to verify"');
+            await this.page.waitForTimeout(3000);
+            await this.takeLoginScreenshot('dp_after_more_ways');
+            moreWaysClicked = true;
+            break;
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+      
+      if (moreWaysClicked) {
+        console.log('🔍 Looking for alternative verification options...');
+        
+        // STEP 2: After clicking "More ways to verify", look for authenticator/TOTP option
+        const authenticatorSelectors = [
+          'text=Use your authenticator app',
+          'text=Get a verification code from the Google Authenticator app',
+          'button:has-text("authenticator")',
+          'div:has-text("authenticator app")',
+          '[data-testid="authenticator-app"]',
+          'button:has-text("Use another verification method")',
+          'text=Get a code',
+          'text=verification code'
+        ];
+        
+        for (const selector of authenticatorSelectors) {
+          try {
+            const option = this.page.locator(selector).first();
+            const isVisible = await option.isVisible({ timeout: 3000 }).catch(() => false);
+            
+            if (isVisible) {
+              console.log(`✅ Found authenticator option: ${selector}`);
+              await option.click();
+              console.log('✅ Clicked authenticator option');
+              await this.page.waitForTimeout(3000);
+              
+              // Now we should be at TOTP input page - let the main flow handle it
+              console.log('✅ DP challenge bypassed, should now be at TOTP input');
+              return;
+            }
+          } catch (error) {
+            continue;
+          }
+        }
+      }
+      
+      // STEP 3: If no "More ways to verify" found, try other DP challenge buttons
+      console.log('🔍 Looking for other device protection confirmation buttons...');
+      
+      const dpSelectors = [
+        // Trust device options
+        'button:has-text("I know this device")',
+        'button:has-text("Trust this device")',
+        'button:has-text("This is my device")',
+        'text=I know this device',
+        'text=Trust this device',
+        'text=This is my device',
+        '[data-testid="trust-device"]',
+        '[aria-label="Trust this device"]',
+        
+        // Continue/Next buttons on DP page
+        'button:has-text("Continue")',
+        'button:has-text("Next")',
+        'button:has-text("Confirm")',
+        'button:has-text("Yes")',
+        '[role="button"]:has-text("Continue")',
+        '[role="button"]:has-text("Next")',
+        
+        // Generic continue button
+        this.googleSelectors.finalContinueButton
+      ];
+      
+      let buttonFound = false;
+      for (const selector of dpSelectors) {
+        try {
+          const button = this.page.locator(selector).first();
+          const isVisible = await button.isVisible({ timeout: 2000 }).catch(() => false);
+          
+          if (isVisible) {
+            console.log(`✅ Found DP button: ${selector}`);
+            await this.page.waitForTimeout(2000);
+            await button.click();
+            console.log('✅ Clicked device protection confirmation');
+            await this.page.waitForTimeout(5000);
+            buttonFound = true;
+            break;
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+      
+      if (!buttonFound && !moreWaysClicked) {
+        console.log('⚠️ No verification options found, waiting for auto-redirect...');
+        await this.page.waitForTimeout(10000);
+      }
+      
+      // Final check
+      const finalUrl = this.page.url();
+      console.log(`📍 Final URL after DP handling: ${finalUrl}`);
+      
+      if (finalUrl.includes('/challenge/dp')) {
+        console.log('❌ Still on DP challenge page after all attempts');
+        await this.takeLoginScreenshot('dp_challenge_failed');
+        throw new Error('Unable to bypass Google Device Protection challenge. Please run in non-headless mode first or use saved authentication state.');
+      } else {
+        console.log('✅ Successfully bypassed DP challenge');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error handling device protection challenge:', error);
+      await this.takeLoginScreenshot('dp_challenge_error');
+      throw error;
     }
   }
 

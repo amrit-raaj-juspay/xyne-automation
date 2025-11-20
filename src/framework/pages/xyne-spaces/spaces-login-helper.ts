@@ -93,7 +93,8 @@ export class SpacesLoginHelper {
     totpSecret?: string
   ): Promise<boolean> {
     try {
-      console.log(' Starting Google OAuth flow on current page (Spaces)');
+      console.log(`🔑 Starting Google OAuth flow for: ${email}`);
+      console.log(`📍 Current URL: ${page.url()}`);
       
       // Step 1: Click "Sign in with Google" button (Spaces specific)
       console.log(' Looking for "Sign in with Google" button...');
@@ -104,6 +105,7 @@ export class SpacesLoginHelper {
       
       // Wait for Google OAuth page to load
       await page.waitForTimeout(3000);
+      console.log(`📍 After button click URL: ${page.url()}`);
       
       // Step 2: Use the existing GoogleOAuthLoginPage methods by temporarily setting env vars
       const originalEmail = process.env.GOOGLE_EMAIL;
@@ -127,8 +129,10 @@ export class SpacesLoginHelper {
         await (oauthPage as any).handle2FASelection();
         await (oauthPage as any).handleTOTPStep();
         await (oauthPage as any).handleFinalConsent();
+        console.log('✅ Final consent completed');
         
         // Verify login success
+        console.log('🔍 Step 6: Verifying login success...');
         const loginSuccess = await (oauthPage as any).verifyLoginSuccess();
         
         if (loginSuccess) {
