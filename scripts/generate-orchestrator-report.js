@@ -144,7 +144,7 @@ function renderStepsWithIndent(steps, depth = 0) {
           <div class="step-title">${escapeHtml(step.title)}</div>
           ${step.location ? `
             <div class="step-location">
-              📍 <span class="step-location-link">${escapeHtml(extractFileName(step.location))}</span>
+               <span class="step-location-link">${escapeHtml(extractFileName(step.location))}</span>
             </div>
           ` : ''}
           ${step.error ? `
@@ -662,9 +662,9 @@ const html = `
     </div>
 
     <div class="controls">
-      <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search tests..." />
+      <input type="text" class="search-box" id="searchBox" placeholder=" Search tests..." />
       <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn passed" data-filter="passed">✅ Passed</button>
+      <button class="filter-btn passed" data-filter="passed"> Passed</button>
       <button class="filter-btn failed" data-filter="failed">❌ Failed</button>
       <button class="filter-btn skipped" data-filter="skipped">⏭️ Skipped</button>
     </div>
@@ -709,7 +709,7 @@ const html = `
                     <div class="error-message">${escapeHtml(test.errorDetails.message || test.error)}</div>
                     ${test.errorDetails.location ? `
                       <div class="error-location">
-                        📍 ${escapeHtml(test.errorDetails.location.file)}:${test.errorDetails.location.line}:${test.errorDetails.location.column}
+                         ${escapeHtml(test.errorDetails.location.file)}:${test.errorDetails.location.line}:${test.errorDetails.location.column}
                       </div>
                     ` : ''}
                     ${test.errorDetails.stack ? `
@@ -805,7 +805,7 @@ const html = `
     </div>
 
     <div class="empty-state" id="emptyState" style="display: none;">
-      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-icon"></div>
       <div class="empty-state-text">No tests match your search or filter</div>
     </div>
   </div>
@@ -920,13 +920,13 @@ if (shouldOpen) {
 
     console.log('\n🌐 Opening report in browser...');
     execSync(openCommand);
-    console.log('✅ Report opened successfully!\n');
+    console.log(' Report opened successfully!\n');
   } catch (error) {
     console.warn('⚠️  Could not auto-open report. Please open manually:', OUTPUT_FILE);
     console.log(`   Command: open ${OUTPUT_FILE}\n`);
   }
 } else {
-  console.log('\n✅ Report generation complete (auto-open skipped)\n');
+  console.log('\n Report generation complete (auto-open skipped)\n');
 }
 
 // Exit with error code if any tests failed (only when run manually, not from reporter)

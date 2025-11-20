@@ -48,7 +48,7 @@ export class TestRunDbService {
   /**
    * Authenticate with Juspay APIs
    */
-  private async authenticate(): Promise<string> {
+  public async authenticate(): Promise<string> {
     try {
       if (this.authToken && Date.now() < this.tokenExpiry) {
         return this.authToken;
@@ -62,7 +62,7 @@ export class TestRunDbService {
         throw new Error('Missing JUSPAY_USERNAME or JUSPAY_PASSWORD environment variables');
       }
 
-      console.log(`🔐 Authenticating for database operations...`);
+      console.log(` Authenticating for database operations...`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -91,7 +91,7 @@ export class TestRunDbService {
 
         this.authToken = data.token;
         this.tokenExpiry = Date.now() + 3600000;
-        console.log('✅ Authentication successful');
+        console.log(' Authentication successful');
         return data.token;
 
       } catch (error) {
@@ -99,7 +99,7 @@ export class TestRunDbService {
         throw error;
       }
     } catch (error) {
-      console.error('❌ Authentication failed:', error);
+      console.error(' Authentication failed:', error);
       throw error;
     }
   }
@@ -107,13 +107,13 @@ export class TestRunDbService {
   /**
    * Execute a database query
    */
-  private async executeQuery(query: string): Promise<any> {
+  public async executeQuery(query: string): Promise<any> {
     const axios = require('axios');
     const token = await this.authenticate();
     const dbEndpoint = process.env.DB_API_ENDPOINT ||
       'https://sandbox.portal.juspay.in/dashboard-test-automation/dbQuery';
 
-    console.log('🔍 Executing query:', query);
+    console.log(' Executing query:', query);
 
     // Use axios which supports GET with JSON body (like Python's requests library)
     const response = await axios.get(dbEndpoint, {
@@ -150,7 +150,7 @@ export class TestRunDbService {
    */
   async getPreviousRunInfo(runEnv: string): Promise<PreviousRunInfo | null> {
     try {
-      console.log(`🔍 Fetching previous run info for environment: ${runEnv}`);
+      console.log(` Fetching previous run info for environment: ${runEnv}`);
 
       const query = `
         SELECT cron_run_id, repo_version
@@ -164,22 +164,22 @@ export class TestRunDbService {
 
       const result = await this.executeQuery(query);
 
-      console.log('🔍 Query result:', JSON.stringify(result, null, 2));
+      console.log(' Query result:', JSON.stringify(result, null, 2));
 
       // Handle response format: result.response can be an array or a string message
       if (result && result.response && Array.isArray(result.response) && result.response.length > 0) {
         const row = result.response[0];
-        console.log(`✅ Found previous active run: ${row.cron_run_id} (version: ${row.repo_version})`);
+        console.log(` Found previous active run: ${row.cron_run_id} (version: ${row.repo_version})`);
         return {
           cronRunId: row.cron_run_id,
           repoVersion: row.repo_version
         };
       }
 
-      console.log('ℹ️  No previous active completed run found (query returned no rows)');
+      console.log('️  No previous active completed run found (query returned no rows)');
       return null;
     } catch (error) {
-      console.warn('⚠️  Failed to fetch previous run info:', error);
+      console.warn('️  Failed to fetch previous run info:', error);
       return null;
     }
   }
@@ -189,7 +189,7 @@ export class TestRunDbService {
    */
   async markVersionInactive(repoVersion: string, runEnv: string): Promise<void> {
     try {
-      console.log(`🔄 Marking all runs of version ${repoVersion} as inactive...`);
+      console.log(` Marking all runs of version ${repoVersion} as inactive...`);
 
       const query = `
         UPDATE xyne_test_runs
@@ -199,9 +199,9 @@ export class TestRunDbService {
       `;
 
       await this.executeQuery(query);
-      console.log('✅ Version marked as inactive');
+      console.log(' Version marked as inactive');
     } catch (error) {
-      console.error('❌ Failed to mark version inactive:', error);
+      console.error(' Failed to mark version inactive:', error);
       throw error;
     }
   }
@@ -241,7 +241,7 @@ export class TestRunDbService {
 
       return null;
     } catch (error) {
-      console.warn('⚠️  Failed to fetch last run of version:', error);
+      console.warn('️  Failed to fetch last run of version:', error);
       return null;
     }
   }
@@ -269,7 +269,7 @@ export class TestRunDbService {
 
       return null;
     } catch (error) {
-      console.warn('⚠️  Failed to fetch run details:', error);
+      console.warn('️  Failed to fetch run details:', error);
       return null;
     }
   }
@@ -280,7 +280,7 @@ export class TestRunDbService {
   async initializeTestRun(data: TestRunData): Promise<void> {
     try {
       console.log('💾 Initializing test run in database...');
-      console.log('📊 Test Run Data:', {
+      console.log(' Test Run Data:', {
         cronRunId: data.cronRunId,
         repoVersion: data.repoVersion,
         runEnv: data.runEnv,
@@ -317,9 +317,9 @@ export class TestRunDbService {
       `;
 
       await this.executeQuery(query);
-      console.log(`✅ Test run initialized successfully (Batch ID: ${data.cronRunId})`);
+      console.log(` Test run initialized successfully (Batch ID: ${data.cronRunId})`);
     } catch (error) {
-      console.error('❌ Failed to initialize test run:', error);
+      console.error(' Failed to initialize test run:', error);
       throw error;
     }
   }
@@ -369,9 +369,9 @@ export class TestRunDbService {
       `;
 
       await this.executeQuery(query);
-      console.log(`✅ Module results saved: ${data.moduleName}`);
+      console.log(` Module results saved: ${data.moduleName}`);
     } catch (error) {
-      console.error(`❌ Failed to save module results for ${data.moduleName}:`, error);
+      console.error(` Failed to save module results for ${data.moduleName}:`, error);
       throw error;
     }
   }
@@ -392,7 +392,7 @@ export class TestRunDbService {
 
       // If it doesn't exist, create it
       if (!result || !result.response || result.response.length === 0) {
-        console.log(`⚠️  Test run ${cronRunId} not found, creating it now...`);
+        console.log(`️  Test run ${cronRunId} not found, creating it now...`);
 
         const runEnv = process.env.TEST_ENV || 'local';
         const runBy = process.env.SCRIPT_RUN_BY || process.env.USER || process.env.USERNAME || 'Unknown';
@@ -418,10 +418,10 @@ export class TestRunDbService {
         `;
 
         await this.executeQuery(insertQuery);
-        console.log(`✅ Created missing test run entry for ${cronRunId}`);
+        console.log(` Created missing test run entry for ${cronRunId}`);
       }
     } catch (error) {
-      console.warn(`⚠️  Could not verify/create test run ${cronRunId}:`, error);
+      console.warn(`️  Could not verify/create test run ${cronRunId}:`, error);
       // Don't throw - let the module insert attempt to proceed and fail if needed
     }
   }
@@ -431,7 +431,7 @@ export class TestRunDbService {
    */
   async updateTestRunStatus(cronRunId: string, status: 'completed' | 'failed'): Promise<void> {
     try {
-      console.log(`🔄 Updating test run status to: ${status}`);
+      console.log(` Updating test run status to: ${status}`);
 
       const query = `
         UPDATE xyne_test_runs
@@ -441,9 +441,9 @@ export class TestRunDbService {
       `;
 
       await this.executeQuery(query);
-      console.log(`✅ Test run status updated to: ${status}`);
+      console.log(` Test run status updated to: ${status}`);
     } catch (error) {
-      console.error('❌ Failed to update test run status:', error);
+      console.error(' Failed to update test run status:', error);
       throw error;
     }
   }
@@ -468,11 +468,11 @@ export class TestRunDbService {
         throw new Error('CRON_RUN_ID environment variable not set');
       }
 
-      console.log('🚀 Starting test run initialization with version tracking...');
-      console.log(`📌 Step 1: Current repo version: ${repoVersion}`);
+      console.log(' Starting test run initialization with version tracking...');
+      console.log(` Step 1: Current repo version: ${repoVersion}`);
 
       // Step 2: Get last active completed run
-      console.log(`📌 Step 2: Fetching last active completed run...`);
+      console.log(` Step 2: Fetching last active completed run...`);
       const lastActiveRun = await this.getPreviousRunInfo(runEnv);
 
       let isVersionActive = true;
@@ -483,12 +483,12 @@ export class TestRunDbService {
         const lastActiveVersion = lastActiveRun.repoVersion;
         const lastActiveRunId = lastActiveRun.cronRunId;
 
-        console.log(`   ✅ Found last active run: ${lastActiveRunId} (version: ${lastActiveVersion})`);
+        console.log(`    Found last active run: ${lastActiveRunId} (version: ${lastActiveVersion})`);
 
         // Step 3: Check if version is same or different
         if (repoVersion === lastActiveVersion) {
           // Step 3a: Version SAME
-          console.log(`📌 Step 3a: Version SAME (${repoVersion})`);
+          console.log(` Step 3a: Version SAME (${repoVersion})`);
           console.log(`   → Getting previous version from last run...`);
 
           // Get the previous version info from the last active run
@@ -497,15 +497,15 @@ export class TestRunDbService {
           if (lastRunDetails && lastRunDetails.previousVersion && lastRunDetails.previousRunId) {
             previousVersion = lastRunDetails.previousVersion;
             previousRunId = lastRunDetails.previousRunId;
-            console.log(`   ✅ Using previous version: ${previousVersion} (Run: ${previousRunId})`);
+            console.log(`    Using previous version: ${previousVersion} (Run: ${previousRunId})`);
           } else {
-            console.log(`   ℹ️  No previous version found in last run (might be first version)`);
+            console.log(`   ️  No previous version found in last run (might be first version)`);
           }
 
           isVersionActive = true;
         } else {
           // Step 3b: Version DIFFERENT
-          console.log(`📌 Step 3b: Version DIFFERENT (${lastActiveVersion} → ${repoVersion})`);
+          console.log(` Step 3b: Version DIFFERENT (${lastActiveVersion} → ${repoVersion})`);
           console.log(`   → Marking all runs of version ${lastActiveVersion} as inactive...`);
 
           // Mark all runs of the old version as inactive
@@ -515,11 +515,11 @@ export class TestRunDbService {
           previousVersion = lastActiveVersion;
           previousRunId = lastActiveRunId;
 
-          console.log(`   ✅ Will compare with previous version: ${previousVersion} (Run: ${previousRunId})`);
+          console.log(`    Will compare with previous version: ${previousVersion} (Run: ${previousRunId})`);
           isVersionActive = true;
         }
       } else {
-        console.log('📌 Step 2-3: First run detected (no previous run found)');
+        console.log(' Step 2-3: First run detected (no previous run found)');
       }
 
       // Collect metadata
@@ -545,9 +545,9 @@ export class TestRunDbService {
         metadata
       });
 
-      console.log('✅ Test run initialization completed');
+      console.log(' Test run initialization completed');
     } catch (error) {
-      console.error('❌ Test run initialization failed:', error);
+      console.error(' Test run initialization failed:', error);
       throw error;
     }
   }
@@ -561,7 +561,7 @@ export class TestRunDbService {
 
       // If DB_ALLOWED_USERS is not set or empty, disable database operations
       if (!allowedUsersEnv) {
-        console.log('🔍 DB_ALLOWED_USERS not configured, skipping database operations');
+        console.log(' DB_ALLOWED_USERS not configured, skipping database operations');
         return false;
       }
 
@@ -569,22 +569,22 @@ export class TestRunDbService {
       const currentUser = process.env.SCRIPT_RUN_BY || process.env.USER || process.env.USERNAME;
 
       if (!currentUser) {
-        console.log('🔍 No user identified, skipping database operations');
+        console.log(' No user identified, skipping database operations');
         return false;
       }
 
       const shouldPerform = allowedUsers.includes(currentUser);
 
       if (!shouldPerform) {
-        console.log(`🔍 Database operations: DISABLED for user "${currentUser}"`);
-        console.log(`ℹ️  Allowed users: ${allowedUsers.join(', ')}`);
+        console.log(` Database operations: DISABLED for user "${currentUser}"`);
+        console.log(`️  Allowed users: ${allowedUsers.join(', ')}`);
       } else {
-        console.log(`🔍 Database operations: ENABLED for user "${currentUser}"`);
+        console.log(` Database operations: ENABLED for user "${currentUser}"`);
       }
 
       return shouldPerform;
     } catch (error) {
-      console.warn('⚠️ Error checking database eligibility:', error);
+      console.warn('️ Error checking database eligibility:', error);
       return false;
     }
   }

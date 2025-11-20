@@ -70,7 +70,21 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Enable network monitoring
         launchOptions: {
-          args: ['--disable-web-security', '--disable-features=VizDisplayCompositor']
+          args: [
+            '--disable-web-security', 
+            '--disable-features=VizDisplayCompositor',
+            // Additional args to avoid Google device protection challenges in headless mode
+            '--disable-blink-features=AutomationControlled',
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+            '--lang=en-US,en',
+            '--window-size=1920,1080'
+          ]
         }
       },
     },

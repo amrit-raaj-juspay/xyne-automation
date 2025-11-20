@@ -40,7 +40,7 @@ async function initializeTestRun(): Promise<void> {
   await testRunDbService.initializeTestRunWithVersionTracking();
 
   console.log('==========================================');
-  console.log('✅ Test Run Initialized Successfully');
+  console.log(' Test Run Initialized Successfully');
   console.log('==========================================');
   console.log('');
 }
@@ -76,7 +76,7 @@ async function completeTestRun(exitCode: string = '0'): Promise<void> {
   await testRunDbService.updateTestRunStatus(cronRunId, status);
 
   console.log('==========================================');
-  console.log(`✅ Test Run Status Updated: ${status.toUpperCase()}`);
+  console.log(` Test Run Status Updated: ${status.toUpperCase()}`);
   console.log('==========================================');
   console.log('');
 }
@@ -88,12 +88,12 @@ async function verifyTestData(cronRunId?: string): Promise<boolean> {
   const runId = cronRunId || process.env.CRON_RUN_ID;
 
   if (!runId) {
-    console.error('❌ Error: CRON_RUN_ID is required');
+    console.error(' Error: CRON_RUN_ID is required');
     console.log('Usage: npx tsx scripts/manage-test-run.ts verify <CRON_RUN_ID>');
     return false;
   }
 
-  console.log(`\n🔍 Verifying test data for CRON_RUN_ID: ${runId}`);
+  console.log(`\n Verifying test data for CRON_RUN_ID: ${runId}`);
 
   const shouldPerform = await testRunDbService.shouldPerformDbOperations();
   if (!shouldPerform) {
@@ -101,9 +101,9 @@ async function verifyTestData(cronRunId?: string): Promise<boolean> {
     return false;
   }
 
-  console.log('🔐 Authenticating for database operations...');
+  console.log(' Authenticating for database operations...');
   await testRunDbService.authenticate();
-  console.log('✅ Authentication successful');
+  console.log(' Authentication successful');
 
   // Query to check if data exists in xyne_test_module
   const query = `
@@ -115,15 +115,15 @@ async function verifyTestData(cronRunId?: string): Promise<boolean> {
     ORDER BY module_name
   `;
 
-  console.log('🔍 Checking for module data...');
+  console.log(' Checking for module data...');
   const result = await testRunDbService.executeQuery(query);
 
   if (!result || !result.response || result.response.length === 0) {
-    console.log('❌ No data found in database');
+    console.log('No data found in database');
     return false;
   }
 
-  console.log(`\n✅ Found ${result.response.length} module(s):\n`);
+  console.log(`\n Found ${result.response.length} module(s):\n`);
 
   // Parse response data (database API returns arrays)
   for (let i = 0; i < result.response.length; i++) {
@@ -171,7 +171,7 @@ async function main() {
         break;
 
       default:
-        console.error('❌ Unknown command:', command);
+        console.error('Unknown command:', command);
         console.log('');
         console.log('Usage:');
         console.log('  npx tsx scripts/manage-test-run.ts init              # Initialize test run');
@@ -185,7 +185,7 @@ async function main() {
   } catch (error) {
     console.error('');
     console.error('==========================================');
-    console.error('❌ Database Operation Failed');
+    console.error('Database Operation Failed');
     console.error('==========================================');
     console.error(error);
     console.error('');

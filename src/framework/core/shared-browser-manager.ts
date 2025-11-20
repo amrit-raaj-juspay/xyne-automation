@@ -92,10 +92,10 @@ class SharedBrowserManager {
 
       if (!existingInstance.page.isClosed()) {
         existingInstance.lastUsed = new Date();
-        console.log(`🔄 Reusing shared ${scope} page: ${instanceKey}`);
+        console.log(` Reusing shared ${scope} page: ${instanceKey}`);
         return existingInstance.page;
       } else if (isOrchestratedMode) {
-        console.log(`⚠️ Page was closed but attempting to preserve session in orchestrated mode`);
+        console.log(`️ Page was closed but attempting to preserve session in orchestrated mode`);
         // Don't create a new instance, try to recover
       }
     }
@@ -130,7 +130,7 @@ class SharedBrowserManager {
 
     if (!isOrchestratedMode) {
       page.on('close', () => {
-        console.log(`🗑️ Shared page closed: ${instanceKey}`);
+        console.log(`🗑 Shared page closed: ${instanceKey}`);
         this.sharedInstances.delete(instanceKey);
       });
     } else {
@@ -141,12 +141,12 @@ class SharedBrowserManager {
       const originalContextClose = context.close.bind(context);
 
       page.close = async () => {
-        console.log(`🛡️ Prevented page close in orchestrated mode: ${instanceKey}`);
+        console.log(`🛡 Prevented page close in orchestrated mode: ${instanceKey}`);
         return Promise.resolve();
       };
 
       context.close = async () => {
-        console.log(`🛡️ Prevented context close in orchestrated mode: ${instanceKey}`);
+        console.log(`🛡 Prevented context close in orchestrated mode: ${instanceKey}`);
         return Promise.resolve();
       };
 
@@ -217,10 +217,10 @@ class SharedBrowserManager {
         }
         await instance.context.close();
       } catch (error) {
-        console.warn(`⚠️ Error cleaning up shared instance ${instanceKey}:`, error);
+        console.warn(`️ Error cleaning up shared instance ${instanceKey}:`, error);
       }
       this.sharedInstances.delete(instanceKey);
-      console.log(`🧹 Cleaned up shared instance: ${instanceKey}`);
+      console.log(` Cleaned up shared instance: ${instanceKey}`);
     }
   }
 
@@ -251,12 +251,12 @@ class SharedBrowserManager {
    * Cleanup all shared instances
    */
   async cleanupAll(): Promise<void> {
-    console.log('🧹 Cleaning up all shared browser instances...');
+    console.log(' Cleaning up all shared browser instances...');
     const cleanupPromises = Array.from(this.sharedInstances.keys()).map(key =>
       this.cleanupInstance(key)
     );
     await Promise.all(cleanupPromises);
-    console.log('✅ All shared instances cleaned up');
+    console.log(' All shared instances cleaned up');
   }
 
   /**

@@ -915,7 +915,7 @@ const html = `<!DOCTYPE html>
 
     <!-- Filters -->
     <div class="filters">
-      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search tests..." />
+      <input type="text" class="search-input" id="searchInput" placeholder=" Search tests..." />
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn passed" data-filter="passed">✓ Passed</button>
       <button class="filter-btn failed" data-filter="failed">✕ Failed</button>
@@ -1017,7 +1017,7 @@ const html = `<!DOCTYPE html>
     </div>
 
     <div class="empty-state" id="emptyState" style="display: none;">
-      <div class="empty-icon">🔍</div>
+      <div class="empty-icon"></div>
       <div class="empty-text">No tests match your search or filter</div>
     </div>
   </div>
@@ -1096,11 +1096,11 @@ const html = `<!DOCTYPE html>
 // Write the HTML file
 fs.writeFileSync(OUTPUT_FILE, html);
 
-console.log('\n✅ Playwright-style Orchestrator Report Generated!');
+console.log('\n Playwright-style Orchestrator Report Generated!');
 console.log(`📄 Report: ${OUTPUT_FILE}`);
 console.log(`\n📊 Summary:`);
 console.log(`   Total: ${summary.total}`);
-console.log(`   ✅ Passed: ${summary.passed}`);
+console.log(`    Passed: ${summary.passed}`);
 console.log(`   ❌ Failed: ${summary.failed}`);
 console.log(`   ⏭️ Skipped: ${summary.skipped}`);
 console.log(`   📈 Pass Rate: ${summary.passRate.toFixed(1)}%`);
@@ -1116,7 +1116,7 @@ if (shouldOpen) {
 
     console.log('\n🌐 Opening report in browser...');
     execSync(openCommand);
-    console.log('✅ Report opened successfully!\n');
+    console.log(' Report opened successfully!\n');
   } catch (error) {
     console.warn('⚠️  Could not auto-open report');
     console.log(`   Please open manually: ${OUTPUT_FILE}\n`);

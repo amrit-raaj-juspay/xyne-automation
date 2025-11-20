@@ -30,7 +30,7 @@ export class PdfReportService {
    */
   public async generatePdfReport(cronRunId: string): Promise<PdfGenerationResult> {
     try {
-      console.log(`📊 Starting PDF report generation for CRON_RUN_ID: ${cronRunId}`);
+      console.log(` Starting PDF report generation for CRON_RUN_ID: ${cronRunId}`);
 
       // Check if Python script exists
       const pythonScriptPath = path.join(__dirname, 'pdf-report-generator.py');
@@ -48,16 +48,16 @@ export class PdfReportService {
       const result = await this.executePythonScript(pythonCommand, pythonScriptPath, cronRunId);
       
       if (result.success && result.pdfPath) {
-        console.log(`✅ PDF report generated successfully: ${result.pdfPath}`);
+        console.log(` PDF report generated successfully: ${result.pdfPath}`);
         return result;
       } else {
-        console.error(`❌ PDF generation failed: ${result.error}`);
+        console.error(` PDF generation failed: ${result.error}`);
         return result;
       }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Error in PDF report generation: ${errorMessage}`);
+      console.error(` Error in PDF report generation: ${errorMessage}`);
       return {
         success: false,
         error: errorMessage
@@ -73,15 +73,15 @@ export class PdfReportService {
       const cronRunId = process.env.CRON_RUN_ID;
       
       if (!cronRunId) {
-        console.log('📋 No CRON_RUN_ID found, skipping PDF report generation');
+        console.log(' No CRON_RUN_ID found, skipping PDF report generation');
         return null;
       }
 
-      console.log(`📊 CRON_RUN_ID detected: ${cronRunId}, generating PDF report...`);
+      console.log(` CRON_RUN_ID detected: ${cronRunId}, generating PDF report...`);
       return await this.generatePdfReport(cronRunId);
 
     } catch (error) {
-      console.error('❌ Error in generateReportIfNeeded:', error);
+      console.error(' Error in generateReportIfNeeded:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -98,19 +98,19 @@ export class PdfReportService {
     const venvPythonPath = path.join(venvPath, 'bin', 'python');
     
     if (fs.existsSync(venvPythonPath)) {
-      console.log(`🔍 Found virtual environment at: ${venvPath}`);
+      console.log(` Found virtual environment at: ${venvPath}`);
       
       // Test if the virtual environment has the required packages
       try {
         const testResult = await this.executeCommand(venvPythonPath, ['-c', 'import reportlab, requests; print("Dependencies OK")']);
         if (testResult.success) {
-          console.log(`🐍 Using virtual environment Python: ${venvPythonPath}`);
+          console.log(` Using virtual environment Python: ${venvPythonPath}`);
           return venvPythonPath;
         } else {
-          console.log(`⚠️ Virtual environment found but missing dependencies`);
+          console.log(` Virtual environment found but missing dependencies`);
         }
       } catch (error) {
-        console.log(`⚠️ Error testing virtual environment: ${error}`);
+        console.log(` Error testing virtual environment: ${error}`);
       }
     }
     
@@ -121,7 +121,7 @@ export class PdfReportService {
       try {
         const result = await this.executeCommand(cmd, ['--version']);
         if (result.success) {
-          console.log(`🐍 Using system Python command: ${cmd}`);
+          console.log(` Using system Python command: ${cmd}`);
           return cmd;
         }
       } catch (error) {
@@ -151,7 +151,7 @@ export class PdfReportService {
         CRON_RUN_ID: cronRunId
       };
 
-      console.log(`🚀 Executing: ${pythonCommand} ${scriptPath} ${cronRunId}`);
+      console.log(` Executing: ${pythonCommand} ${scriptPath} ${cronRunId}`);
 
       const pythonProcess = spawn(pythonCommand, [scriptPath, cronRunId], {
         env,
@@ -292,13 +292,13 @@ export class PdfReportService {
         };
       }
 
-      console.log('📦 Installing Python dependencies...');
+      console.log(' Installing Python dependencies...');
       
       const packages = ['reportlab', 'requests'];
       const result = await this.executeCommand(pythonCommand, ['-m', 'pip', 'install', ...packages]);
 
       if (result.success) {
-        console.log('✅ Python dependencies installed successfully');
+        console.log(' Python dependencies installed successfully');
         return { success: true };
       } else {
         return {

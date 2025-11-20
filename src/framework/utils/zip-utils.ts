@@ -21,7 +21,7 @@ export async function createZipArchive(options: ZipOptions): Promise<void> {
 
     output.on('close', () => {
       if (options.verbose) {
-        console.log(`📦 Zip archive created: ${options.outputFile} (${archive.pointer()} total bytes)`);
+        console.log(` Zip archive created: ${options.outputFile} (${archive.pointer()} total bytes)`);
       }
       resolve();
     });

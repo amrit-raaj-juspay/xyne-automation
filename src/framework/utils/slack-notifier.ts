@@ -54,7 +54,7 @@ export class SlackNotifier {
     if (this.isEnabled && botToken) {
       this.client = new WebClient(botToken);
     } else {
-      console.log('⚠️  Slack notifications disabled: SLACK_BOT_TOKEN not found in environment');
+      console.log('️  Slack notifications disabled: SLACK_BOT_TOKEN not found in environment');
     }
   }
 
@@ -78,7 +78,7 @@ export class SlackNotifier {
       });
 
       if (result.ok && result.ts && result.channel) {
-        console.log('✅ Slack notification sent successfully');
+        console.log(' Slack notification sent successfully');
         
         // Generate the Slack message URL
         const messageUrl = await this.generateSlackMessageUrl(result.channel, result.ts);
@@ -108,17 +108,17 @@ export class SlackNotifier {
           channelId: result.channel
         };
       } else {
-        console.error('❌ Failed to send Slack notification:', result.error);
+        console.error(' Failed to send Slack notification:', result.error);
         return { success: false, error: result.error || 'Unknown error' };
       }
     } catch (error: any) {
       // Handle specific Slack API errors
       if (error.code === 'slack_webapi_platform_error' && error.data?.error === 'account_inactive') {
-        console.log('⚠️  Slack notification skipped: Account inactive. Please update SLACK_BOT_TOKEN in .env file.');
+        console.log('️  Slack notification skipped: Account inactive. Please update SLACK_BOT_TOKEN in .env file.');
         this.isEnabled = false; // Disable further attempts
         return { success: false, error: 'Account inactive' };
       }
-      console.error('❌ Error sending Slack notification:', error);
+      console.error(' Error sending Slack notification:', error);
       return { success: false, error: error.message || 'Unknown error' };
     }
   }
@@ -144,7 +144,7 @@ export class SlackNotifier {
     try {
       // Check if file exists
       if (!fs.existsSync(htmlReportPath)) {
-        console.warn(`⚠️ HTML report file not found: ${htmlReportPath}`);
+        console.warn(`️ HTML report file not found: ${htmlReportPath}`);
         return;
       }
 
@@ -161,12 +161,12 @@ export class SlackNotifier {
       });
 
       if (result.ok) {
-        console.log('✅ HTML report file uploaded successfully');
+        console.log(' HTML report file uploaded successfully');
       } else {
-        console.error('❌ Failed to upload HTML report file:', result.error);
+        console.error(' Failed to upload HTML report file:', result.error);
       }
     } catch (error) {
-      console.error('❌ Error uploading HTML report file:', error);
+      console.error(' Error uploading HTML report file:', error);
     }
   }
 
@@ -256,7 +256,7 @@ export class SlackNotifier {
     const apiCallsDir = path.join(process.cwd(), 'reports', 'api-calls');
 
     if (!fs.existsSync(apiCallsDir)) {
-      console.log('📊 No API calls directory found');
+      console.log(' No API calls directory found');
       return;
     }
 
@@ -265,7 +265,7 @@ export class SlackNotifier {
     const apiMarkerFile = path.join(apiCallsDir, `.api-monitoring-active-${moduleName}`);
 
     if (!fs.existsSync(apiMarkerFile)) {
-      console.log('📊 No API monitoring marker found - test suite does not use API monitoring');
+      console.log(' No API monitoring marker found - test suite does not use API monitoring');
       return;
     }
 
@@ -280,11 +280,11 @@ export class SlackNotifier {
       .sort();
 
     if (apiCallsFiles.length === 0) {
-      console.log('📊 No API calls JSON files found');
+      console.log(' No API calls JSON files found');
       return;
     }
 
-    console.log(`📊 Found ${apiCallsFiles.length} API calls files, consolidating and uploading...`);
+    console.log(` Found ${apiCallsFiles.length} API calls files, consolidating and uploading...`);
 
     // Consolidate all API calls into a single object
     const consolidatedAPICalls: Record<string, any> = {};
@@ -293,7 +293,7 @@ export class SlackNotifier {
     let failedCalls = 0;
 
     for (const file of apiCallsFiles) {
-      console.log(`📄 Processing: ${file}`);
+      console.log(` Processing: ${file}`);
       const filePath = path.join(apiCallsDir, file);
       
       try {
@@ -304,7 +304,7 @@ export class SlackNotifier {
         Object.assign(consolidatedAPICalls, apiCalls);
         
       } catch (error) {
-        console.error(`❌ Error processing ${file}: ${error}`);
+        console.error(` Error processing ${file}: ${error}`);
       }
     }
 
@@ -319,7 +319,7 @@ export class SlackNotifier {
       }
     }
 
-    console.log(`📊 Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
+    console.log(` Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
 
     // Save module-specific consolidated file
     const consolidatedFileName = `consolidated-api-calls-${moduleName}.json`;
@@ -332,21 +332,21 @@ export class SlackNotifier {
       await this.uploadFile(
         consolidatedFilePath,
         consolidatedFileName,
-        `📊 API Calls Summary: ${totalCalls} total calls (${successfulCalls} successful, ${failedCalls} failed)`,
+        ` API Calls Summary: ${totalCalls} total calls (${successfulCalls} successful, ${failedCalls} failed)`,
         threadTs
       );
 
-      console.log(`✅ Consolidated ${apiCallsFiles.length} API calls files into single upload`);
+      console.log(` Consolidated ${apiCallsFiles.length} API calls files into single upload`);
 
       // Clean up module-specific marker file after successful upload
       try {
         fs.unlinkSync(apiMarkerFile);
       } catch (error) {
-        console.warn('⚠️ Could not remove API monitoring marker file:', error);
+        console.warn('️ Could not remove API monitoring marker file:', error);
       }
 
     } catch (error) {
-      console.error(`❌ Error creating consolidated file: ${error}`);
+      console.error(` Error creating consolidated file: ${error}`);
     }
   }
 
@@ -355,23 +355,23 @@ export class SlackNotifier {
    */
   async testConnection(): Promise<boolean> {
     if (!this.isEnabled || !this.client) {
-      console.log('❌ Slack not configured');
+      console.log(' Slack not configured');
       return false;
     }
 
     try {
       const result = await this.client.auth.test();
       if (result.ok) {
-        console.log('✅ Slack connection successful');
+        console.log(' Slack connection successful');
         console.log(`   Bot User: ${result.user}`);
         console.log(`   Team: ${result.team}`);
         return true;
       } else {
-        console.error('❌ Slack connection failed:', result.error);
+        console.error(' Slack connection failed:', result.error);
         return false;
       }
     } catch (error) {
-      console.error('❌ Error testing Slack connection:', error);
+      console.error(' Error testing Slack connection:', error);
       return false;
     }
   }
@@ -385,7 +385,7 @@ export class SlackNotifier {
     try {
       // Check if file exists
       if (!fs.existsSync(apiCallsPath)) {
-        console.warn(`⚠️ API calls file not found: ${apiCallsPath}`);
+        console.warn(`️ API calls file not found: ${apiCallsPath}`);
         return;
       }
 
@@ -398,16 +398,16 @@ export class SlackNotifier {
         filename: fileName,
         title: fileTitle,
         thread_ts: threadTs,
-        initial_comment: '*📊 API Calls Report*\n\nThis JSON file contains:\n• All API calls made during test execution\n• Request/Response details with status codes\n• Headers and response payloads\n• Timestamps and performance metrics\n\n*Usage:* Download and open in a JSON viewer or text editor for detailed analysis.'
+        initial_comment: '* API Calls Report*\n\nThis JSON file contains:\n• All API calls made during test execution\n• Request/Response details with status codes\n• Headers and response payloads\n• Timestamps and performance metrics\n\n*Usage:* Download and open in a JSON viewer or text editor for detailed analysis.'
       });
 
       if (result.ok) {
-        console.log('✅ API calls file uploaded successfully');
+        console.log(' API calls file uploaded successfully');
       } else {
-        console.error('❌ Failed to upload API calls file:', result.error);
+        console.error(' Failed to upload API calls file:', result.error);
       }
     } catch (error) {
-      console.error('❌ Error uploading API calls file:', error);
+      console.error(' Error uploading API calls file:', error);
     }
   }
 
@@ -422,7 +422,7 @@ export class SlackNotifier {
       await this.uploadAPICallsFiles(threadTs);
 
     } catch (error) {
-      console.error('❌ Error consolidating and uploading API calls files:', error);
+      console.error(' Error consolidating and uploading API calls files:', error);
     }
   }
 
@@ -440,7 +440,7 @@ export class SlackNotifier {
         const fileContent = fs.readFileSync(file.path, 'utf-8');
         const apiData = JSON.parse(fileContent);
         
-        console.log(`📄 Processing: ${file.name}`);
+        console.log(` Processing: ${file.name}`);
         
         // Merge API calls (avoid duplicates by using URL as key)
         for (const [url, callData] of Object.entries(apiData)) {
@@ -466,11 +466,11 @@ export class SlackNotifier {
         }
         
       } catch (error) {
-        console.warn(`⚠️ Failed to process file ${file.path}: ${error}`);
+        console.warn(`️ Failed to process file ${file.path}: ${error}`);
       }
     }
 
-    console.log(`📊 Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
+    console.log(` Consolidated ${totalCalls} total API calls (${successfulCalls} successful, ${failedCalls} failed)`);
     
     return consolidatedData;
   }
@@ -502,19 +502,19 @@ export class SlackNotifier {
           try {
             fs.unlinkSync(file.path);
             deletedCount++;
-            console.log(`🗑️  Deleted old API call file: ${file.name}`);
+            console.log(`🗑  Deleted old API call file: ${file.name}`);
           } catch (error) {
-            console.warn(`⚠️ Failed to delete old file ${file.name}: ${error}`);
+            console.warn(`️ Failed to delete old file ${file.name}: ${error}`);
           }
         }
       }
       
       if (deletedCount > 0) {
-        console.log(`🧹 Cleaned up ${deletedCount} old API call files`);
+        console.log(` Cleaned up ${deletedCount} old API call files`);
       }
       
     } catch (error) {
-      console.warn(`⚠️ Error during API calls cleanup: ${error}`);
+      console.warn(`️ Error during API calls cleanup: ${error}`);
     }
   }
 
@@ -535,12 +535,12 @@ export class SlackNotifier {
       });
 
       if (result.ok) {
-        console.log('✅ Priority breakdown thread sent successfully');
+        console.log(' Priority breakdown thread sent successfully');
       } else {
-        console.error('❌ Failed to send priority breakdown thread:', result.error);
+        console.error(' Failed to send priority breakdown thread:', result.error);
       }
     } catch (error) {
-      console.error('❌ Error sending priority breakdown thread:', error);
+      console.error(' Error sending priority breakdown thread:', error);
     }
   }
 
@@ -557,13 +557,13 @@ export class SlackNotifier {
       if (total === 0) return null;
       
       const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
-      const emoji = failed > 0 ? '🔴' : (skipped > 0 ? '🟡' : '🟢');
+      const emoji = failed > 0 ? '' : (skipped > 0 ? '🟡' : '🟢');
       
       return `${emoji} *${priority.toUpperCase()}*: ${passed}/${total} passed (${passRate}%) | Failed: ${failed} | Skipped: ${skipped}`;
     };
 
     const lines = [
-      '📊 *Test Priority Breakdown*',
+      ' *Test Priority Breakdown*',
       '',
       formatPriorityLine('highest', priorityStats.highest),
       formatPriorityLine('high', priorityStats.high),
@@ -613,12 +613,12 @@ export class SlackNotifier {
       const result = await this.client.files.uploadV2(uploadOptions);
 
       if (result.ok) {
-        console.log(`✅ ${fileName} uploaded successfully`);
+        console.log(` ${fileName} uploaded successfully`);
       } else {
-        console.error(`❌ Failed to upload ${fileName}:`, result.error);
+        console.error(` Failed to upload ${fileName}:`, result.error);
       }
     } catch (error) {
-      console.error(`❌ Error uploading ${fileName}:`, error);
+      console.error(` Error uploading ${fileName}:`, error);
     }
   }
 

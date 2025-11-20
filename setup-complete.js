@@ -206,7 +206,7 @@ async function setupEnvironmentFile() {
   const config = {};
   
   // Application URLs (40 second timeout)
-  log(colors.yellow + '📍 Application URLs:' + colors.reset);
+  log(colors.yellow + ' Application URLs:' + colors.reset);
   config.XYNE_BASE_URL = await askQuestionWithTimeout('Base URL [https://xyne.juspay.net]: ', 'https://xyne.juspay.net', 40000);
   config.XYNE_API_URL = await askQuestionWithTimeout('API URL [https://xyne.juspay.net/api]: ', 'https://xyne.juspay.net/api', 40000);
   
@@ -331,7 +331,7 @@ const { chromium } = require('playwright');
   }
   
   await browser.close();
-  console.log('✅ Browser health check passed');
+  console.log(' Browser health check passed');
 })();
 `;
     

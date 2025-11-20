@@ -78,9 +78,9 @@ app.post('/run-tests', (req, res) => {
     const endTimestamp = new Date().toISOString();
     
     if (code === 0) {
-      const successLog = `\n[${endTimestamp}] ✅ Test execution completed successfully (exit code: ${code})\n=== Test Execution Completed ===\n`;
+      const successLog = `\n[${endTimestamp}]  Test execution completed successfully (exit code: ${code})\n=== Test Execution Completed ===\n`;
       fs.appendFileSync(logFile, successLog);
-      console.log(`[${endTimestamp}] ✅ Test execution completed successfully`);
+      console.log(`[${endTimestamp}]  Test execution completed successfully`);
     } else {
       const errorLog = `\n[${endTimestamp}] ❌ Test execution failed (exit code: ${code})\n=== Test Execution Failed ===\n`;
       fs.appendFileSync(logFile, errorLog);
