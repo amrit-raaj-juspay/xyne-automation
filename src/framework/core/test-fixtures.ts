@@ -58,7 +58,7 @@ export const test = base.extend<CustomFixtures>({
       // Save API monitoring results
       try {
         // const filePath = await apiMonitor.stopMonitoring();
-        // console.log(`📁 API calls auto-saved to: ${filePath}`);
+        // console.log(` API calls auto-saved to: ${filePath}`);
       } catch (error) {
         console.error(` Failed to save API calls: ${error}`);
       }
@@ -217,7 +217,7 @@ export const test = base.extend<CustomFixtures>({
       if (apiMonitor) {
         try {
           const filePath = await apiMonitor.stopMonitoring();
-          console.log(`📁 API calls saved to: ${filePath}`);
+          console.log(` API calls saved to: ${filePath}`);
         } catch (error) {
           console.error(` Failed to save API calls: ${error}`);
         }
@@ -315,7 +315,7 @@ export const test = base.extend<CustomFixtures>({
       // Stop monitoring and save results
       try {
         const filePath = await apiMonitor.stopMonitoring();
-        console.log(`📁 API calls saved to: ${filePath}`);
+        console.log(` API calls saved to: ${filePath}`);
       } catch (error) {
         console.error(` Failed to save API calls: ${error}`);
       }

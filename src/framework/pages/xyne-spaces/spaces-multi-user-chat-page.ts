@@ -77,12 +77,12 @@ export class SpacesMultiUserChatPage {
 
     if (useDifferentUsers) {
       // Use different credentials - PARALLEL execution with 5-second stagger
-      console.log(`🔐 Starting PARALLEL login for ${this.user1.name} and ${this.user2.name} with different credentials (5-second stagger)...`);
+      console.log(` Starting PARALLEL login for ${this.user1.name} and ${this.user2.name} with different credentials (5-second stagger)...`);
       
       // Start User 1 login
-      console.log(`🔐 [User 1] Attempting login with email: ${process.env.USER1_GOOGLE_EMAIL}`);
-      console.log(`🔐 [User 1] Has password: ${!!process.env.USER1_GOOGLE_PASSWORD}`);
-      console.log(`🔐 [User 1] Has TOTP: ${!!process.env.USER1_TOTP_SECRET_KEY}`);
+      console.log(` [User 1] Attempting login with email: ${process.env.USER1_GOOGLE_EMAIL}`);
+      console.log(` [User 1] Has password: ${!!process.env.USER1_GOOGLE_PASSWORD}`);
+      console.log(` [User 1] Has TOTP: ${!!process.env.USER1_TOTP_SECRET_KEY}`);
       
       const user1Promise = SpacesLoginHelper.performLoginWithCredentials(
         this.user1.page,
@@ -92,13 +92,13 @@ export class SpacesMultiUserChatPage {
       );
       
       // Wait 5 seconds before starting User 2 login (stagger to avoid conflicts)
-      console.log(`⏳ Waiting 5 seconds before starting User 2 login...`);
+      console.log(` Waiting 5 seconds before starting User 2 login...`);
       await this.user2.page.waitForTimeout(5000);
       
       // Start User 2 login (runs in parallel with User 1)
-      console.log(`🔐 [User 2] Attempting login with email: ${process.env.USER2_GOOGLE_EMAIL}`);
-      console.log(`🔐 [User 2] Has password: ${!!process.env.USER2_GOOGLE_PASSWORD}`);
-      console.log(`🔐 [User 2] Has TOTP: ${!!process.env.USER2_TOTP_SECRET_KEY}`);
+      console.log(` [User 2] Attempting login with email: ${process.env.USER2_GOOGLE_EMAIL}`);
+      console.log(` [User 2] Has password: ${!!process.env.USER2_GOOGLE_PASSWORD}`);
+      console.log(` [User 2] Has TOTP: ${!!process.env.USER2_TOTP_SECRET_KEY}`);
       
       const user2Promise = SpacesLoginHelper.performLoginWithCredentials(
         this.user2.page,
@@ -108,14 +108,14 @@ export class SpacesMultiUserChatPage {
       );
       
       // Wait for both logins to complete
-      console.log(`⏳ Waiting for both users to complete login...`);
+      console.log(` Waiting for both users to complete login...`);
       const [user1Success, user2Success] = await Promise.all([user1Promise, user2Promise]);
       
       // Check User 1 result
       if (!user1Success) {
         throw new Error(`Failed to login User 1 to Spaces with credentials: ${process.env.USER1_GOOGLE_EMAIL}`);
       }
-      console.log(`✅ [User 1] Login successful`);
+      console.log(` [User 1] Login successful`);
       
       // Check User 2 result
       if (!user2Success) {
@@ -123,17 +123,17 @@ export class SpacesMultiUserChatPage {
         const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
         const screenshotPath = `reports/user2-login-failed-${timestamp}.png`;
         await this.user2.page.screenshot({ path: screenshotPath, fullPage: true }).catch(err => {
-          console.error(`❌ Failed to capture screenshot: ${err.message}`);
+          console.error(` Failed to capture screenshot: ${err.message}`);
         });
-        console.log(`📸 Screenshot saved to: ${screenshotPath}`);
-        console.log(`🌐 [User 2] Current URL: ${this.user2.page.url()}`);
+        console.log(` Screenshot saved to: ${screenshotPath}`);
+        console.log(` [User 2] Current URL: ${this.user2.page.url()}`);
         
         throw new Error(`Failed to login User 2 to Spaces with credentials: ${process.env.USER2_GOOGLE_EMAIL}`);
       }
-      console.log(`✅ [User 2] Login successful`);
+      console.log(` [User 2] Login successful`);
     } else {
       // Use same credentials (legacy mode) - MUST be sequential due to OTP
-      console.log(`🔐 Logging in ${this.user1.name} to Spaces`);
+      console.log(` Logging in ${this.user1.name} to Spaces`);
       await SpacesLoginHelper.performLogin(this.user1.page);
       
       
@@ -500,7 +500,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 Extracting user name from welcome header for ${user}`);
+    console.log(`Extracting user name from welcome header for ${user}`);
 
     // Locate the welcome span containing "Welcome, [Name]"
     const welcomeSpan = targetUser.page.locator('div.flex.justify-between.h-16 span.text-sm.text-gray-700');
@@ -528,7 +528,7 @@ export class SpacesMultiUserChatPage {
       this.user2Name = userName;
     }
 
-    console.log(`✅ Extracted ${user} name: ${userName}`);
+    console.log(` Extracted ${user} name: ${userName}`);
     return userName;
   }
 
@@ -543,7 +543,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`💬 Clicking chat icon for ${user}`);
+    console.log(` Clicking chat icon for ${user}`);
 
     // Locate the chat icon link using the href="/chat" attribute
     const chatIconLink = targetUser.page.locator('a[href="/chat"][data-discover="true"]');
@@ -554,7 +554,7 @@ export class SpacesMultiUserChatPage {
     // Wait for navigation
     await targetUser.page.waitForTimeout(2000);
     
-    console.log(`✅ Chat icon clicked for ${user}`);
+    console.log(` Chat icon clicked for ${user}`);
   }
 
   /**
@@ -582,13 +582,13 @@ export class SpacesMultiUserChatPage {
 
     // Wait for page to be stable
     await targetUser.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
-      console.log('⚠️ Network not idle, continuing anyway...');
+      console.log('Network not idle, continuing anyway...');
     });
 
     // Look for the Direct Messages section first
     const directMessagesSection = targetUser.page.locator('div[data-component="DirectorySectionHeader"]:has(h3:has-text("Direct Messages"))');
     await directMessagesSection.waitFor({ state: 'visible', timeout: 10000 });
-    console.log(`✅ Found Direct Messages section`);
+    console.log(` Found Direct Messages section`);
 
     // Get the plus button in the Direct Messages section (there's only one)
     const plusButton = directMessagesSection.locator('button.text-\\[\\#464C53\\]:has(svg.lucide-plus)');
@@ -596,14 +596,14 @@ export class SpacesMultiUserChatPage {
     try {
       await plusButton.waitFor({ state: 'visible', timeout: 10000 });
       await plusButton.click();
-      console.log(`✅ Clicked plus button in Direct Messages section`);
+      console.log(` Clicked plus button in Direct Messages section`);
     } catch (e) {
       // Try alternative selector - look for the button with the plus icon
-      console.log(`⚠️ Primary + icon not found, trying alternative selectors...`);
+      console.log(`Primary + icon not found, trying alternative selectors...`);
       const altPlusButton = directMessagesSection.locator('button:has(svg.lucide-plus)');
       await altPlusButton.waitFor({ state: 'visible', timeout: 5000 });
       await altPlusButton.click();
-      console.log(`✅ Clicked plus button using alternative selector`);
+      console.log(` Clicked plus button using alternative selector`);
     }
     
     // Wait for modal to appear and animate
@@ -614,10 +614,10 @@ export class SpacesMultiUserChatPage {
       state: 'visible', 
       timeout: 5000 
     }).catch(() => {
-      console.log('⚠️ Modal dialog not detected immediately after click');
+      console.log('Modal dialog not detected immediately after click');
     });
     
-    console.log(`✅ + icon clicked for ${user}`);
+    console.log(` + icon clicked for ${user}`);
   }
 
   /**
@@ -631,7 +631,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 Verifying Start DM modal is visible for ${user}`);
+    console.log(`Verifying Start DM modal is visible for ${user}`);
 
     // Wait a bit for modal animation to complete
     await targetUser.page.waitForTimeout(1500);
@@ -639,7 +639,7 @@ export class SpacesMultiUserChatPage {
     // Check for the modal dialog with the specific structure
     const modalDialog = targetUser.page.locator('div[role="dialog"][aria-modal="true"]');
     await expect(modalDialog).toBeVisible({ timeout: 10000 });
-    console.log(`✅ Modal dialog found for ${user}`);
+    console.log(` Modal dialog found for ${user}`);
 
     // Try multiple selectors for the modal title "Start a DM"
     let titleFound = false;
@@ -649,9 +649,9 @@ export class SpacesMultiUserChatPage {
       const modalTitle = targetUser.page.locator('h5[data-header-text="Start a DM"]');
       await expect(modalTitle).toBeVisible({ timeout: 3000 });
       titleFound = true;
-      console.log(`✅ Modal title found using primary selector for ${user}`);
+      console.log(` Modal title found using primary selector for ${user}`);
     } catch (e) {
-      console.log(`⚠️ Primary title selector not found, trying alternatives...`);
+      console.log(`Primary title selector not found, trying alternatives...`);
     }
 
     // Try alternative selectors if primary failed
@@ -660,22 +660,22 @@ export class SpacesMultiUserChatPage {
         const modalTitleAlt = targetUser.page.locator('h5:has-text("Start a DM"), h2:has-text("Start a DM"), div:has-text("Start a DM")').first();
         await expect(modalTitleAlt).toBeVisible({ timeout: 3000 });
         titleFound = true;
-        console.log(`✅ Modal title found using alternative selector for ${user}`);
+        console.log(` Modal title found using alternative selector for ${user}`);
       } catch (e) {
-        console.log(`⚠️ Modal title not found, but continuing verification...`);
+        console.log(`Modal title not found, but continuing verification...`);
       }
     }
     
     // Verify key elements of the modal
     const addPeopleInput = targetUser.page.locator('input[placeholder="Type to find people..."]');
     await expect(addPeopleInput).toBeVisible({ timeout: 5000 });
-    console.log(`✅ Add people input found for ${user}`);
+    console.log(` Add people input found for ${user}`);
 
     const startDMButton = targetUser.page.locator('button:has-text("Start DM")');
     await expect(startDMButton).toBeVisible({ timeout: 5000 });
-    console.log(`✅ Start DM button found for ${user}`);
+    console.log(` Start DM button found for ${user}`);
 
-    console.log(`✅ Start DM modal verified for ${user}`);
+    console.log(` Start DM modal verified for ${user}`);
   }
 
   /**
@@ -690,7 +690,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`💬 ${user} starting DM with ${targetUserName}`);
+    console.log(` ${user} starting DM with ${targetUserName}`);
 
     // Type in the search input
     const searchInput = currentUser.page.locator('input[placeholder="Type to find people..."]');
@@ -698,14 +698,14 @@ export class SpacesMultiUserChatPage {
     await searchInput.click();
     await searchInput.fill(targetUserName);
     
-    console.log(`✅ Typed "${targetUserName}" in search input`);
+    console.log(` Typed "${targetUserName}" in search input`);
     
     // Wait for search results to load
     await currentUser.page.waitForTimeout(2000);
 
     // Click on the user result button in the dropdown
     // This is the button with user avatar and details
-    console.log(`🔍 Looking for user result button for: ${targetUserName}`);
+    console.log(`Looking for user result button for: ${targetUserName}`);
     
     const userResultButton = currentUser.page.locator('button.flex.w-full.items-start.justify-start.gap-3').filter({
       has: currentUser.page.locator(`text="${targetUserName}"`)
@@ -714,16 +714,16 @@ export class SpacesMultiUserChatPage {
     try {
       await userResultButton.waitFor({ state: 'visible', timeout: 5000 });
       await userResultButton.click();
-      console.log(`✅ Clicked on user result button for: ${targetUserName}`);
+      console.log(` Clicked on user result button for: ${targetUserName}`);
       await currentUser.page.waitForTimeout(1000);
     } catch (e) {
-      console.log(`⚠️ Primary user result button not found, trying alternative selector...`);
+      console.log(`Primary user result button not found, trying alternative selector...`);
       
       // Alternative: Try clicking on the button that contains the user name
       const altUserButton = currentUser.page.locator('button:has-text("' + targetUserName + '")').first();
       await altUserButton.waitFor({ state: 'visible', timeout: 3000 });
       await altUserButton.click();
-      console.log(`✅ Clicked on user result using alternative selector`);
+      console.log(` Clicked on user result using alternative selector`);
       await currentUser.page.waitForTimeout(1000);
     }
 
@@ -737,18 +737,18 @@ export class SpacesMultiUserChatPage {
     const isDisabled = await startDMButton.isDisabled().catch(() => true);
     
     if (isDisabled) {
-      console.log(`⚠️ Start DM button is still disabled, waiting for it to be enabled...`);
+      console.log(`Start DM button is still disabled, waiting for it to be enabled...`);
       // Wait a bit more for the button to become enabled after selecting a user
       await currentUser.page.waitForTimeout(2000);
     }
 
     await startDMButton.click({ force: true }); // Use force in case there are overlay issues
-    console.log(`✅ Clicked Start DM button`);
+    console.log(` Clicked Start DM button`);
     
     // Wait for navigation/modal to close
     await currentUser.page.waitForTimeout(2000);
 
-    console.log(`✅ ${user} started DM with ${targetUserName}`);
+    console.log(` ${user} started DM with ${targetUserName}`);
   }
 
   /**
@@ -785,7 +785,7 @@ export class SpacesMultiUserChatPage {
     await chatInput.click();
     await chatInput.fill(message);
     
-    console.log(`✅ ${user} typed message in chat input`);
+    console.log(` ${user} typed message in chat input`);
   }
 
   /**
@@ -799,14 +799,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🅱️ ${user} clicking Bold button`);
+    console.log(`${user} clicking Bold button`);
 
     const boldButton = currentUser.page.locator('button[aria-label="Bold"]:has(svg.lucide-bold)');
     await boldButton.waitFor({ state: 'visible', timeout: 10000 });
     await boldButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Bold button`);
+    console.log(` ${user} clicked Bold button`);
   }
 
   /**
@@ -820,14 +820,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🅸 ${user} clicking Italic button`);
+    console.log(`${user} clicking Italic button`);
 
     const italicButton = currentUser.page.locator('button[aria-label="Italic"]:has(svg.lucide-italic)');
     await italicButton.waitFor({ state: 'visible', timeout: 10000 });
     await italicButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Italic button`);
+    console.log(` ${user} clicked Italic button`);
   }
 
   /**
@@ -841,14 +841,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔢 ${user} clicking Numbered List button`);
+    console.log(`${user} clicking Numbered List button`);
 
     const numberedListButton = currentUser.page.locator('button[aria-label="Numbered list"]:has(svg.lucide-list-ordered)');
     await numberedListButton.waitFor({ state: 'visible', timeout: 10000 });
     await numberedListButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Numbered List button`);
+    console.log(` ${user} clicked Numbered List button`);
   }
 
   /**
@@ -869,7 +869,7 @@ export class SpacesMultiUserChatPage {
     await bulletListButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Bullet List button`);
+    console.log(` ${user} clicked Bullet List button`);
   }
 
   /**
@@ -883,14 +883,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`📤 ${user} clicking Send button`);
+    console.log(`${user} clicking Send button`);
 
     const sendButton = currentUser.page.locator('button[aria-label="Send message"]:has(svg.lucide-arrow-up)');
     await sendButton.waitFor({ state: 'visible', timeout: 10000 });
     await sendButton.click();
     await currentUser.page.waitForTimeout(1500);
     
-    console.log(`✅ ${user} clicked Send button`);
+    console.log(` ${user} clicked Send button`);
   }
 
   /**
@@ -899,13 +899,13 @@ export class SpacesMultiUserChatPage {
    * @param message - Message to send
    */
   async sendBoldMessage(user: 'user1' | 'user2', message: string): Promise<void> {
-    console.log(`📤 ${user} sending bold message: "${message}"`);
+    console.log(`${user} sending bold message: "${message}"`);
     
     await this.clickBoldButton(user);
     await this.typeInChatInput(user, message);
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent bold message`);
+    console.log(` ${user} sent bold message`);
   }
 
   /**
@@ -914,13 +914,13 @@ export class SpacesMultiUserChatPage {
    * @param message - Message to send
    */
   async sendItalicMessage(user: 'user1' | 'user2', message: string): Promise<void> {
-    console.log(`📤 ${user} sending italic message: "${message}"`);
+    console.log(`${user} sending italic message: "${message}"`);
     
     await this.clickItalicButton(user);
     await this.typeInChatInput(user, message);
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent italic message`);
+    console.log(` ${user} sent italic message`);
   }
 
   /**
@@ -935,7 +935,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`📤 ${user} sending numbered list with ${items.length} items`);
+    console.log(`${user} sending numbered list with ${items.length} items`);
     
     await this.clickNumberedListButton(user);
     
@@ -954,7 +954,7 @@ export class SpacesMultiUserChatPage {
     
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent numbered list message`);
+    console.log(` ${user} sent numbered list message`);
   }
 
   /**
@@ -969,13 +969,13 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying bold message: "${message}"`);
+    console.log(`${user} verifying bold message: "${message}"`);
     
     // Look for <strong> or <b> tag containing the message
     const boldMessage = currentUser.page.locator('strong, b').filter({ hasText: message }).first();
     await expect(boldMessage).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified bold message`);
+    console.log(` ${user} verified bold message`);
   }
 
   /**
@@ -990,13 +990,13 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying italic message: "${message}"`);
+    console.log(`${user} verifying italic message: "${message}"`);
     
     // Look for <em> or <i> tag containing the message
     const italicMessage = currentUser.page.locator('em, i').filter({ hasText: message }).first();
     await expect(italicMessage).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified italic message`);
+    console.log(` ${user} verified italic message`);
   }
 
   /**
@@ -1011,7 +1011,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying numbered list with ${items.length} items`);
+    console.log(`${user} verifying numbered list with ${items.length} items`);
     
     // Look for ordered list (ol) and verify each item
     const orderedList = currentUser.page.locator('ol').last();
@@ -1021,10 +1021,10 @@ export class SpacesMultiUserChatPage {
     for (const item of items) {
       const listItem = orderedList.locator('li').filter({ hasText: item });
       await expect(listItem).toBeVisible({ timeout: 5000 });
-      console.log(`✅ Verified list item: "${item}"`);
+      console.log(` Verified list item: "${item}"`);
     }
     
-    console.log(`✅ ${user} verified numbered list`);
+    console.log(` ${user} verified numbered list`);
   }
 
   /**
@@ -1033,12 +1033,12 @@ export class SpacesMultiUserChatPage {
    * @param message - Message to send
    */
   async sendPlainMessage(user: 'user1' | 'user2', message: string): Promise<void> {
-    console.log(`📤 ${user} sending plain message: "${message}"`);
+    console.log(`${user} sending plain message: "${message}"`);
     
     await this.typeInChatInput(user, message);
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent plain message`);
+    console.log(` ${user} sent plain message`);
   }
 
   /**
@@ -1052,7 +1052,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`😀 ${user} clicking Emoji button`);
+    console.log(`${user} clicking Emoji button`);
 
     // Find the emoji button with the smile SVG icon (more specific selector)
     const emojiButton = currentUser.page.locator('button[aria-label="Insert emoji"]').filter({ has: currentUser.page.locator('svg.lucide-smile') }).first();
@@ -1060,7 +1060,7 @@ export class SpacesMultiUserChatPage {
     await emojiButton.click();
     await currentUser.page.waitForTimeout(1000);
     
-    console.log(`✅ ${user} clicked Emoji button`);
+    console.log(` ${user} clicked Emoji button`);
   }
 
   /**
@@ -1075,7 +1075,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`😀 ${user} selecting emoji: ${emojiAriaLabel}`);
+    console.log(`${user} selecting emoji: ${emojiAriaLabel}`);
 
     // Wait for emoji picker to appear
     await currentUser.page.waitForTimeout(1000);
@@ -1087,7 +1087,7 @@ export class SpacesMultiUserChatPage {
     await emoji.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} selected emoji: ${emojiAriaLabel}`);
+    console.log(` ${user} selected emoji: ${emojiAriaLabel}`);
   }
 
   /**
@@ -1097,7 +1097,7 @@ export class SpacesMultiUserChatPage {
    * @param emojiAriaLabel - The aria-label of the emoji to insert
    */
   async sendMessageWithEmoji(user: 'user1' | 'user2', message: string, emojiAriaLabel: string): Promise<void> {
-    console.log(`📤 ${user} sending message with emoji: "${message}" + ${emojiAriaLabel}`);
+    console.log(`${user} sending message with emoji: "${message}" + ${emojiAriaLabel}`);
     
     // Type the message first
     await this.typeInChatInput(user, message);
@@ -1109,7 +1109,7 @@ export class SpacesMultiUserChatPage {
     // Send the message
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent message with emoji`);
+    console.log(` ${user} sent message with emoji`);
   }
 
   /**
@@ -1131,7 +1131,7 @@ export class SpacesMultiUserChatPage {
     await mentionButton.click();
     await currentUser.page.waitForTimeout(1000);
     
-    console.log(`✅ ${user} clicked Mention button`);
+    console.log(` ${user} clicked Mention button`);
   }
 
   /**
@@ -1165,7 +1165,7 @@ export class SpacesMultiUserChatPage {
     await userOption.waitFor({ state: 'visible', timeout: 5000 });
     await userOption.click();
     
-    console.log(`✅ ${user} selected user to mention: ${mentionUserName}`);
+    console.log(` ${user} selected user to mention: ${mentionUserName}`);
     await currentUser.page.waitForTimeout(500);
   }
 
@@ -1176,7 +1176,7 @@ export class SpacesMultiUserChatPage {
    * @param mentionUserName - Name of the user to mention
    */
   async sendMessageWithMention(user: 'user1' | 'user2', message: string, mentionUserName: string): Promise<void> {
-    console.log(`📤 ${user} sending message with mention: "${message}" mentioning ${mentionUserName}`);
+    console.log(`${user} sending message with mention: "${message}" mentioning ${mentionUserName}`);
     
     // Type the initial message
     await this.typeInChatInput(user, message);
@@ -1188,7 +1188,7 @@ export class SpacesMultiUserChatPage {
     // Send the message
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent message with mention`);
+    console.log(` ${user} sent message with mention`);
   }
 
   /**
@@ -1202,14 +1202,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`💻 ${user} clicking Code Block button`);
+    console.log(`${user} clicking Code Block button`);
 
     const codeBlockButton = currentUser.page.locator('button[aria-label="Code block"]:has(svg.lucide-file-code)');
     await codeBlockButton.waitFor({ state: 'visible', timeout: 10000 });
     await codeBlockButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Code Block button`);
+    console.log(` ${user} clicked Code Block button`);
   }
 
   /**
@@ -1223,14 +1223,14 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`💻 ${user} clicking Inline Code button`);
+    console.log(`${user} clicking Inline Code button`);
 
     const inlineCodeButton = currentUser.page.locator('button[aria-label="Inline code"]:has(svg.lucide-code)');
     await inlineCodeButton.waitFor({ state: 'visible', timeout: 10000 });
     await inlineCodeButton.click();
     await currentUser.page.waitForTimeout(500);
     
-    console.log(`✅ ${user} clicked Inline Code button`);
+    console.log(` ${user} clicked Inline Code button`);
   }
 
   /**
@@ -1245,7 +1245,7 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`📤 ${user} sending code block`);
+    console.log(`${user} sending code block`);
     
     // Click code block button
     await this.clickCodeBlockButton(user);
@@ -1267,7 +1267,7 @@ export class SpacesMultiUserChatPage {
     // Send the message
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent code block message`);
+    console.log(` ${user} sent code block message`);
   }
 
   /**
@@ -1277,7 +1277,7 @@ export class SpacesMultiUserChatPage {
    * @param code - Inline code to insert
    */
   async sendInlineCodeMessage(user: 'user1' | 'user2', message: string, code: string): Promise<void> {
-    console.log(`📤 ${user} sending message with inline code: "${message}" with code: ${code}`);
+    console.log(`${user} sending message with inline code: "${message}" with code: ${code}`);
     
     // Type the message
     await this.typeInChatInput(user, message);
@@ -1296,7 +1296,7 @@ export class SpacesMultiUserChatPage {
     // Send the message
     await this.clickSendButton(user);
     
-    console.log(`✅ ${user} sent message with inline code`);
+    console.log(` ${user} sent message with inline code`);
   }
 
   /**
@@ -1311,13 +1311,13 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying message with emoji: "${message}"`);
+    console.log(`${user} verifying message with emoji: "${message}"`);
     
     // Look for the message text (emoji will be part of the same message container)
     const messageLocator = currentUser.page.locator(`text="${message}"`).first();
     await expect(messageLocator).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified message with emoji`);
+    console.log(` ${user} verified message with emoji`);
   }
 
   /**
@@ -1332,13 +1332,13 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying mention of: ${mentionedUserName}`);
+    console.log(`${user} verifying mention of: ${mentionedUserName}`);
     
     // Look for mention - rendered as a span with class 'mention-text'
     const mention = currentUser.page.locator(`span.mention-text:has-text("${mentionedUserName}")`).first();
     await expect(mention).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified mention`);
+    console.log(` ${user} verified mention`);
   }
 
   /**
@@ -1353,13 +1353,13 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying code block`);
+    console.log(`${user} verifying code block`);
     
     // Look for pre or code block element containing the code
     const codeBlock = currentUser.page.locator('pre, code[class*="block"]').filter({ hasText: code }).first();
     await expect(codeBlock).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified code block`);
+    console.log(` ${user} verified code block`);
   }
 
   /**
@@ -1374,12 +1374,12 @@ export class SpacesMultiUserChatPage {
       throw new Error(`${user} not initialized`);
     }
 
-    console.log(`🔍 ${user} verifying inline code: "${code}"`);
+    console.log(`${user} verifying inline code: "${code}"`);
     
     // Look for inline code element (typically <code> tag without pre parent)
     const inlineCode = currentUser.page.locator('code').filter({ hasText: code }).first();
     await expect(inlineCode).toBeVisible({ timeout: 10000 });
     
-    console.log(`✅ ${user} verified inline code`);
+    console.log(` ${user} verified inline code`);
   }
 }

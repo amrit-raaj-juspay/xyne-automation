@@ -37,7 +37,7 @@ async function globalSetup(config: FullConfig) {
     const fullPath = path.join(process.cwd(), dir);
     if (!fs.existsSync(fullPath)) {
       fs.mkdirSync(fullPath, { recursive: true });
-      console.log(`📁 Created directory: ${dir}`);
+      console.log(` Created directory: ${dir}`);
     }
   });
   

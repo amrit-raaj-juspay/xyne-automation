@@ -118,7 +118,7 @@ echo "Cron Run ID: $CRON_RUN_ID"
 echo "--------------------------------------------------"
 
 # Directory containing the test files (only Xyne tests, excluding Spaces)
-TEST_DIR="tests/functional/xyne"
+TEST_DIR="tests/functional/xyne-spaces"
 
 # Find all test spec files (excluding meta orchestrator files) and sort them
 TEST_FILES=$(find "$TEST_DIR" -name "*.spec.ts" \

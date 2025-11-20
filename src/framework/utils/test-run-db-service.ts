@@ -48,7 +48,7 @@ export class TestRunDbService {
   /**
    * Authenticate with Juspay APIs
    */
-  private async authenticate(): Promise<string> {
+  public async authenticate(): Promise<string> {
     try {
       if (this.authToken && Date.now() < this.tokenExpiry) {
         return this.authToken;
@@ -107,7 +107,7 @@ export class TestRunDbService {
   /**
    * Execute a database query
    */
-  private async executeQuery(query: string): Promise<any> {
+  public async executeQuery(query: string): Promise<any> {
     const axios = require('axios');
     const token = await this.authenticate();
     const dbEndpoint = process.env.DB_API_ENDPOINT ||
